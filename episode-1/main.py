@@ -8,14 +8,14 @@ import pyglet.gl as gl
 
 class Window(pyglet.window.Window): # create a class extending pyglet.window.Window
 	def __init__(self, **args):
-		super(Window, self).__init__(**args) # pass on arguments to pyglet.window.Window.__init__ function
+		super().__init__(**args) # pass on arguments to pyglet.window.Window.__init__ function
 	
 	def on_draw(self):
 		gl.glClearColor(1.0, 0.5, 1.0, 1.0) # set clear colour
 		self.clear() # clear screen
 	
 	def on_resize(self, width, height):
-		print("Resize {} * {}".format(width, height)) # print out window size
+		print(f"Resize {width} * {height}") # print out window size
 
 class Game:
 	def __init__(self):
