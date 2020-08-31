@@ -9,7 +9,7 @@ import pyglet.gl as gl
 
 import shader
 
-vertex_positions = [
+vertex_positions = [ # 3d coordinates for each vertex
 	-0.5,  0.5, 1.0,
 	-0.5, -0.5, 1.0,
 	 0.5, -0.5, 1.0,
@@ -36,7 +36,7 @@ class Window(pyglet.window.Window):
 		self.vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, ctypes.byref(self.vbo))
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-
+		
 		gl.glBufferData(gl.GL_ARRAY_BUFFER,
 			ctypes.sizeof(gl.GLfloat * len(vertex_positions)),
 			(gl.GLfloat * len(vertex_positions)) (*vertex_positions),
@@ -64,7 +64,7 @@ class Window(pyglet.window.Window):
 	def on_draw(self):
 		gl.glClearColor(0.0, 0.0, 0.0, 1.0)
 		self.clear()
-
+		
 		gl.glDrawElements(
 			gl.GL_TRIANGLES,
 			len(indices),
