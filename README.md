@@ -6,7 +6,7 @@ Click on the thumbnail below to watch the introduction video:
 
 [<img alt = "Introduction" src = "https://i.imgur.com/gMBuSJb.png" width = 50% />](https://youtu.be/YgvNuY8Iq6Q?list=PL6_bLxRDFzoKjaa3qCGkwR5L_ouSreaVP)
 
-## Prerequesits
+## Prerequisites
 Here is the setup video for Windows 10:
 
 [<img alt = "Setup: Windows 10" src = "https://i.imgur.com/VVQrYbG.png" width = 50% />](https://youtu.be/lrAIYPlvMZw?list=PL6_bLxRDFzoKjaa3qCGkwR5L_ouSreaVP)
