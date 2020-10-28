@@ -129,8 +129,8 @@ class Window(pyglet.window.Window):
 		print(f"Resize {width} * {height}")
 		gl.glViewport(0, 0, width, height)
 
-        self.camera.width = width
-        self.camera.height = height
+		self.camera.width = width
+		self.camera.height = height
 	
 	def on_mouse_press(self, x, y, button, modifiers):
 		self.mouse_captured = not self.mouse_captured
