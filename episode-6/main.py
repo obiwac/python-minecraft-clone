@@ -123,7 +123,7 @@ class Window(pyglet.window.Window):
 			gl.GL_UNSIGNED_INT,
 			None)
 	
-    # input functions
+	# input functions
 
 	def on_resize(self, width, height):
 		print(f"Resize {width} * {height}")
