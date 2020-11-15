@@ -171,7 +171,7 @@ class Window(pyglet.window.Window):
 
 class Game:
 	def __init__(self):
-		self.config = gl.Config(major_version = 3)
+		self.config = gl.Config(major_version = 3, depth_size = 16)
 		self.window = Window(config = self.config, width = 800, height = 600, caption = "Minecraft clone", resizable = True, vsync = False)
 	
 	def run(self):
