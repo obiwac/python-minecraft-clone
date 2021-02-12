@@ -1,1 +1,2 @@
-__pycache__/
+# Replace *.cpython-37 with *.cpython-xy where x is the major Python version and y is the minor Python version. 
+*.cpython-37
