@@ -24,4 +24,4 @@ $ python3 main.py
 
 ## List of implementations in other languages
 
-- *Java:* https://github.com/StartForKillerMC/JavaMinecraft
+- **Java:** https://github.com/StartForKillerMC/JavaMinecraft
