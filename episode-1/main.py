@@ -19,7 +19,7 @@ class Window(pyglet.window.Window): # create a class extending pyglet.window.Win
 
 class Game:
 	def __init__(self):
-		self.config = gl.Config(major_version = 3) # use modern opengl
+		self.config = gl.Config(double_buffer = True, major_version = 3) # use modern opengl
 		self.window = Window(config = self.config, width = 800, height = 600, caption = "Minecraft clone", resizable = True, vsync = False) # vsync with pyglet causes problems on some computers, so disable it
 	
 	def run(self):
