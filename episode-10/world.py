@@ -41,14 +41,10 @@ class World:
 				for i in range(chunk.CHUNK_WIDTH):
 					for j in range(chunk.CHUNK_HEIGHT):
 						for k in range(chunk.CHUNK_LENGTH):
-							# if k == 15: current_chunk.blocks[i][j][k] = random.choice([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 10])
-							# elif k == 14: current_chunk.blocks[i][j][k] = 2
-							# elif k > 10: current_chunk.blocks[i][j][k] = 4
-							# else: current_chunk.blocks[i][j][k] = 5
-
-							if j < 14: current_chunk.blocks[i][j][k] = i % 5
-				
-				current_chunk.blocks[15][15][15] = 7
+							if j == 15: current_chunk.blocks[i][j][k] = random.choice([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 10])
+							elif j == 14: current_chunk.blocks[i][j][k] = 2
+							elif j > 10: current_chunk.blocks[i][j][k] = 4
+							else: current_chunk.blocks[i][j][k] = 5
 
 				self.chunks[chunk_position] = current_chunk
 		

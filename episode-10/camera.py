@@ -30,7 +30,7 @@ class Camera:
 		self.position[1] += self.input[1] * multiplier
 
 		if self.input[0] or self.input[2]:
-			angle = self.rotation[0] + math.atan2(self.input[2], self.input[0]) - math.tau / 4
+			angle = self.rotation[0] - math.atan2(self.input[2], self.input[0]) + math.tau / 4
 
 			self.position[0] += math.cos(angle) * multiplier
 			self.position[2] += math.sin(angle) * multiplier
@@ -40,7 +40,7 @@ class Camera:
 
 		self.p_matrix.load_identity()
 		self.p_matrix.perspective(90, float(self.width) / self.height, 0.1, 500)
-		
+
 		# create modelview matrix
 
 		self.mv_matrix.load_identity()

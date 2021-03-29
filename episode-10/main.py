@@ -110,6 +110,8 @@ class Window(pyglet.window.Window):
 			self.camera.rotation[0] += delta_x * sensitivity
 			self.camera.rotation[1] += delta_y * sensitivity
 
+			print(self.camera.rotation)
+
 			self.camera.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.camera.rotation[1]))
 	
 	def on_mouse_drag(self, x, y, delta_x, delta_y, buttons, modifiers):
@@ -119,8 +121,8 @@ class Window(pyglet.window.Window):
 		if not self.mouse_captured:
 			return
 
-		if   key == pyglet.window.key.D: self.camera.input[0] -= 1
-		elif key == pyglet.window.key.A: self.camera.input[0] += 1
+		if   key == pyglet.window.key.D: self.camera.input[0] += 1
+		elif key == pyglet.window.key.A: self.camera.input[0] -= 1
 		elif key == pyglet.window.key.W: self.camera.input[2] += 1
 		elif key == pyglet.window.key.S: self.camera.input[2] -= 1
 
@@ -135,8 +137,8 @@ class Window(pyglet.window.Window):
 		if not self.mouse_captured:
 			return
 
-		if   key == pyglet.window.key.D: self.camera.input[0] += 1
-		elif key == pyglet.window.key.A: self.camera.input[0] -= 1
+		if   key == pyglet.window.key.D: self.camera.input[0] -= 1
+		elif key == pyglet.window.key.A: self.camera.input[0] += 1
 		elif key == pyglet.window.key.W: self.camera.input[2] -= 1
 		elif key == pyglet.window.key.S: self.camera.input[2] += 1
 
