@@ -68,7 +68,7 @@ class Window(pyglet.window.Window):
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
 
-		gl.glClearColor(0.0, 0.0, 0.0, 1.0)
+		gl.glClearColor(0.0, 0.0, 0.0, 0.0)
 		self.clear()
 		self.world.draw()
 
@@ -99,7 +99,7 @@ class Window(pyglet.window.Window):
 		
 		hit_ray = hit.Hit_ray(self.world, self.camera.rotation, self.camera.position)
 
-		while hit_ray.length < hit.HIT_RANGE:
+		while hit_ray.distance < hit.HIT_RANGE:
 			if hit_ray.step(hit_callback):
 				break
 	
@@ -109,8 +109,6 @@ class Window(pyglet.window.Window):
 
 			self.camera.rotation[0] += delta_x * sensitivity
 			self.camera.rotation[1] += delta_y * sensitivity
-
-			print(self.camera.rotation)
 
 			self.camera.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.camera.rotation[1]))
 	

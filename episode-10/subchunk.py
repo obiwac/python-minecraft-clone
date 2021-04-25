@@ -78,12 +78,12 @@ class Subchunk:
 						# since the vast majority of blocks are probably anyway going to be cubes, this won't impact performance all that much; the amount of useless faces drawn is going to be minimal
 
 						if block_type.is_cube:
-							if not self.world.is_solid_block((x + 1, y, z)): add_face(0)
-							if not self.world.is_solid_block((x - 1, y, z)): add_face(1)
-							if not self.world.is_solid_block((x, y + 1, z)): add_face(2)
-							if not self.world.is_solid_block((x, y - 1, z)): add_face(3)
-							if not self.world.is_solid_block((x, y, z + 1)): add_face(4)
-							if not self.world.is_solid_block((x, y, z - 1)): add_face(5)
+							if not self.world.is_opaque_block((x + 1, y, z)): add_face(0)
+							if not self.world.is_opaque_block((x - 1, y, z)): add_face(1)
+							if not self.world.is_opaque_block((x, y + 1, z)): add_face(2)
+							if not self.world.is_opaque_block((x, y - 1, z)): add_face(3)
+							if not self.world.is_opaque_block((x, y, z + 1)): add_face(4)
+							if not self.world.is_opaque_block((x, y, z - 1)): add_face(5)
 						
 						else:
 							for i in range(len(block_type.vertex_positions)):

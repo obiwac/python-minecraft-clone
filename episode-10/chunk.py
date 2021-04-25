@@ -59,7 +59,12 @@ class Chunk:
 		self.ibo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.ibo)
 	
-	def update_position(self, position):
+	def update_subchunk_meshes(self):
+		for subchunk_position in self.subchunks:
+			subchunk = self.subchunks[subchunk_position]
+			subchunk.update_mesh()
+
+	def update_at_position(self, position):
 		x, y, z = position
 
 		lx = int(x % subchunk.SUBCHUNK_WIDTH )
@@ -74,21 +79,18 @@ class Chunk:
 
 		self.subchunks[(sx, sy, sz)].update_mesh()
 
-		if lx == subchunk.SUBCHUNK_WIDTH - 1 and (sx + 1, sy, sz) in self.subchunks: self.subchunks[(sx + 1, sy, sz)].update_mesh()
-		if lx == 0 and (sx - 1, sy, sz) in self.subchunks: self.subchunks[(sx - 1, sy, sz)].update_mesh()
+		def try_update_subchunk_mesh(subchunk_position):
+			if subchunk_position in self.subchunks:
+				self.subchunks[subchunk_position].update_mesh()
 
-		if ly == subchunk.SUBCHUNK_HEIGHT - 1 and (sx, sy + 1, sz) in self.subchunks: self.subchunks[(sx, sy + 1, sz)].update_mesh()
-		if ly == 0 and (sx, sy - 1, sz) in self.subchunks: self.subchunks[(sx, sy - 1, sz)].update_mesh()
+		if lx == subchunk.SUBCHUNK_WIDTH - 1: try_update_subchunk_mesh((sx + 1, sy, sz))
+		if lx == 0: try_update_subchunk_mesh((sx - 1, sy, sz))
 
-		if lz == subchunk.SUBCHUNK_LENGTH - 1 and (sx, sy, sz + 1) in self.subchunks: self.subchunks[(sx, sy, sz + 1)].update_mesh()
-		if lz == 0 and (sx, sy, sz - 1) in self.subchunks: self.subchunks[(sx, sy, sz - 1)].update_mesh()
+		if ly == subchunk.SUBCHUNK_HEIGHT - 1: try_update_subchunk_mesh((sx, sy + 1, sz))
+		if ly == 0: try_update_subchunk_mesh((sx, sy - 1, sz))
 
-		self.update_mesh()
-
-	def update_subchunk_meshes(self):
-		for subchunk_position in self.subchunks:
-			subchunk = self.subchunks[subchunk_position]
-			subchunk.update_mesh()
+		if lz == subchunk.SUBCHUNK_LENGTH - 1: try_update_subchunk_mesh((sx, sy, sz + 1))
+		if lz == 0: try_update_subchunk_mesh((sx, sy, sz - 1))
 
 	def update_mesh(self):
 		# combine all the small subchunk meshes into one big chunk mesh

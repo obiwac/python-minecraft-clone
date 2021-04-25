@@ -7,41 +7,41 @@ class Hit_ray:
 		self.world = world
 
 		# get the ray unit vector based on rotation angles
-		# sqrt(vx ^ 2 + vy ^ 2 + vz ^ 2) must always equal 1
+		# sqrt(ux ^ 2 + uy ^ 2 + uz ^ 2) must always equal 1
 
 		self.vector = (
 			math.cos(rotation[0]) * math.cos(rotation[1]),
 			math.sin(rotation[1]),
 			math.sin(rotation[0]) * math.cos(rotation[1]))
 		
-		# ray position
+		# point position
 		self.position = list(starting_position)
 
-		# block position in which ray position currently is
+		# block position in which point currently is
 		self.block = tuple(map(lambda x: int(round(x)), self.position))
 
-		# current distance the ray has travelled
-		self.length = 0
+		# current distance the point has travelled
+		self.distance = 0
 	
 	# 'check' and 'step' both return 'True' if something is hit, and 'False' if not
 
-	def check(self, hit_callback, length, current_block, next_block):
+	def check(self, hit_callback, distance, current_block, next_block):
 		if self.world.get_block_number(next_block):
 			hit_callback(current_block, next_block)
 			return True
 		
 		else:
-			self.position = list(map(lambda x: self.position[x] + self.vector[x] * length, range(3)))
+			self.position = list(map(lambda x: self.position[x] + self.vector[x] * distance, range(3)))
 			
 			self.block = next_block
-			self.length += length
+			self.distance += distance
 
 			return False
 
 	def step(self, hit_callback):
 		bx, by, bz = self.block
 
-		# ray position relative to block centre
+		# point position relative to block centre
 		local_position = list(map(lambda x: self.position[x] - self.block[x], range(3)))
 
 		# we don't want to deal with negatives, so remove the sign
@@ -62,9 +62,9 @@ class Hit_ray:
 		vx, vy, vz = absolute_vector
 
 		# calculate intersections
-		# I only detail the math for the first component (X) because the rest is self-explanatory
+		# I only detail the math for the first component (X) because the rest is pretty self-explanatory
 
-		# ray line r ≡ (x - lx) / vx = (y - ly) / lz = (z - lz) / vz (parametric equation)
+		# ray line (passing through the point) r ≡ (x - lx) / vx = (y - ly) / lz = (z - lz) / vz (parametric equation)
 
 		# +x face fx ≡ x = 0.5 (y & z can be any real number)
 		# r ∩ fx ≡ (0.5 - lx) / vx = (y - ly) / vy = (z - lz) / vz
@@ -79,12 +79,12 @@ class Hit_ray:
 			z = (0.5 - lx) / vx * vz + lz
 
 			if y >= -0.5 and y <= 0.5 and z >= -0.5 and z <= 0.5:
-				length = math.sqrt((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2)
+				distance = math.sqrt((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2)
 				
 				# we can return straight away here
 				# if we intersect with one face, we know for a fact we're not intersecting with any of the others
 
-				return self.check(hit_callback, length, (bx, by, bz), (bx + sign[0], by, bz))
+				return self.check(hit_callback, distance, (bx, by, bz), (bx + sign[0], by, bz))
 
 		if vy:
 			x = (0.5 - ly) / vy * vx + lx
@@ -92,8 +92,8 @@ class Hit_ray:
 			z = (0.5 - ly) / vy * vz + lz
 
 			if x >= -0.5 and x <= 0.5 and z >= -0.5 and z <= 0.5:
-				length = math.sqrt((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2)
-				return self.check(hit_callback, length, (bx, by, bz), (bx, by + sign[1], bz))
+				distance = math.sqrt((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2)
+				return self.check(hit_callback, distance, (bx, by, bz), (bx, by + sign[1], bz))
 		
 		if vz:
 			x = (0.5 - lz) / vz * vx + lx
@@ -101,5 +101,5 @@ class Hit_ray:
 			z = 0.5
 
 			if x >= -0.5 and x <= 0.5 and y >= -0.5 and y <= 0.5:
-				length = math.sqrt((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2)
-				return self.check(hit_callback, length, (bx, by, bz), (bx, by, bz + sign[2]))
+				distance = math.sqrt((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2)
+				return self.check(hit_callback, distance, (bx, by, bz), (bx, by, bz + sign[2]))
