@@ -22,6 +22,7 @@ Run the following command in the directory of any episode to run the result from
 $ python3 main.py
 ```
 
-## List of implementations in other languages
+## List of projects based on this
 
-- **Java:** https://github.com/StartForKillerMC/JavaMinecraft
+- **Java implementation:** https://github.com/StartForKillerMC/JavaMinecraft
+- **Lighting test:** https://github.com/Jukitsu/python-minecraft-clone-ep10-lighting
