@@ -89,7 +89,7 @@ class Window(pyglet.window.Window):
 
 		# multiply the two matrices together and send to the shader program
 
-		mvp_matrix = self.mv_matrix * self.p_matrix
+		mvp_matrix = self.p_matrix * self.mv_matrix
 		self.shader.uniform_matrix(self.shader_matrix_location, mvp_matrix)
 
 		# draw stuff
