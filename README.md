@@ -25,4 +25,5 @@ $ python3 main.py
 ## List of projects based on this
 
 - **Java implementation:** https://github.com/StartForKillerMC/JavaMinecraft
+- **C++ implementation:** https://github.com/Jukitsu/CppMinecraft-clone
 - **Lighting test:** https://github.com/Jukitsu/python-minecraft-clone-ep10-lighting
