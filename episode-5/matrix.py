@@ -18,30 +18,13 @@ def multiply_matrices(x_matrix, y_matrix):
 	result_matrix = copy_matrix(clean_matrix)
 	
 	for i in range(4):
-		result_matrix[i][0] = \
-			(x_matrix[i][0] * y_matrix[0][0]) + \
-			(x_matrix[i][1] * y_matrix[1][0]) + \
-			(x_matrix[i][2] * y_matrix[2][0]) + \
-			(x_matrix[i][3] * y_matrix[3][0])
-		
-		result_matrix[i][1] = \
-			(x_matrix[i][0] * y_matrix[0][1]) + \
-			(x_matrix[i][1] * y_matrix[1][1]) + \
-			(x_matrix[i][2] * y_matrix[2][1]) + \
-			(x_matrix[i][3] * y_matrix[3][1])
-		
-		result_matrix[i][2] = \
-			(x_matrix[i][0] * y_matrix[0][2]) + \
-			(x_matrix[i][1] * y_matrix[1][2]) + \
-			(x_matrix[i][2] * y_matrix[2][2]) + \
-			(x_matrix[i][3] * y_matrix[3][2])
-		
-		result_matrix[i][3] = \
-			(x_matrix[i][0] * y_matrix[0][3]) + \
-			(x_matrix[i][1] * y_matrix[1][3]) + \
-			(x_matrix[i][2] * y_matrix[2][3]) + \
-			(x_matrix[i][3] * y_matrix[3][3])
-	
+		for j in range(4):
+			result_matrix[i][j] = \
+				(x_matrix[0][j] * y_matrix[i][0]) + \
+				(x_matrix[1][j] * y_matrix[i][1]) + \
+				(x_matrix[2][j] * y_matrix[i][2]) + \
+				(x_matrix[3][j] * y_matrix[i][3])
+
 	return result_matrix
 
 class Matrix:
@@ -106,7 +89,7 @@ class Matrix:
 		rotation_matrix[2][2] = (one_minus_cos * zz) + cos_angle
 		
 		rotation_matrix[3][3] = 1.0
-		self.data = multiply_matrices(rotation_matrix, self.data)
+		self.data = multiply_matrices(self.data, rotation_matrix)
 	
 	def rotate_2d(self, x, y):
 		self.rotate(x, 0, 1.0, 0)
@@ -129,7 +112,7 @@ class Matrix:
 		frustum_matrix[2][3] = -1.0
 		frustum_matrix[3][2] = -2 * near * far / deltaz
 		
-		self.data = multiply_matrices(frustum_matrix, self.data)
+		self.data = multiply_matrices(self.data, frustum_matrix)
 	
 	def perspective(self, fovy, aspect, near, far):
 		frustum_y = math.tan(math.radians(fovy) / 2)
@@ -153,4 +136,4 @@ class Matrix:
 		orthographic_matrix[2][2] = 2.0 / deltax
 		orthographic_matrix[3][2] = -(near + far) / deltaz
 		
-		self.data = multiply_matrices(orthographic_matrix, self.data)
+		self.data = multiply_matrices(self.data, orthographic_matrix)
