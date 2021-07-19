@@ -112,7 +112,7 @@ class Window(pyglet.window.Window):
 
 		# modelviewprojection matrix
 
-		mvp_matrix = self.mv_matrix * self.p_matrix
+		mvp_matrix = self.p_matrix * self.mv_matrix
 		self.shader.uniform_matrix(self.shader_matrix_location, mvp_matrix)
 
 		# bind textures
