@@ -16,12 +16,6 @@ class Save:
 			base36.dumps(x % 64), base36.dumps(z % 64),
 			f"c.{base36.dumps(x)}.{base36.dumps(z)}.dat"))
 		
-		a = '/'.join((base36.dumps(x % 64), base36.dumps(z % 64)))
-		os.system(f"mkdir -p /tmp/save2/{a}")
-
-		b = f"c.{base36.dumps(x)}.{base36.dumps(z)}.dat"
-		os.system(f"cp {chunk_path} /tmp/save2/{a}/{b}")
-
 		return chunk_path
 
 	def load_chunk(self, chunk_position):
