@@ -73,7 +73,7 @@ class Save:
 		# save the chunk file
 
 		chunk_data.root["Level"]["Blocks"] = chunk_blocks
-		chunk_data.save(chunk_path)
+		chunk_data.save(chunk_path, gzipped = True)
 
 	def load(self):
 		# for x in range(-1, 15):
