@@ -61,7 +61,7 @@
 56: name "Diamond Ore", texture.all diamond_ore
 57: name "Diamond Block", texture.all diamond_block
 58: name "Crafting Table", texture.top crafting_table_top, texture.bottom planks, texture.x crafting_table_x, texture.z crafting_table_z
-59: name "Crops", model models.crops, texture.all crops
+59: name "Crops", model models.crop, texture.all crops
 60: name "Soil", model models.soil, texture.all dirt, texture.top soil
 61: name "Furnace", texture.y furnace_y, texture.sides furnace_side, texture.front furnace_front
 62: name "Lit Furnace", texture.y furnace_y, texture.sides furnace_side, texture.front lit_furnace_front

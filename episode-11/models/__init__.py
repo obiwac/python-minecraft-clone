@@ -11,7 +11,7 @@ __all__ = [
 	"fire",
 	"stairs",
 	"flat",
-	"crops",
+	"crop",
 	"soil",
 	"sign_post",
 	"door",
