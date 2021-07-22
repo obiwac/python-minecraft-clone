@@ -1,6 +1,9 @@
 import math
 import matrix
 
+WALKING_SPEED = 7
+SPRINTING_SPEED = 21
+
 class Camera:
 	def __init__(self, shader, width, height):
 		self.width = width
@@ -22,10 +25,13 @@ class Camera:
 
 		self.position = [0, 80, 0]
 		self.rotation = [-math.tau / 4, 0]
+
+		self.target_speed = WALKING_SPEED
+		self.speed = self.target_speed
 	
 	def update_camera(self, delta_time):
-		speed = 7
-		multiplier = speed * delta_time
+		self.speed += (self.target_speed - self.speed) * delta_time * 20
+		multiplier = self.speed * delta_time
 
 		self.position[1] += self.input[1] * multiplier
 
@@ -39,7 +45,10 @@ class Camera:
 		# create projection matrix
 
 		self.p_matrix.load_identity()
-		self.p_matrix.perspective(90, float(self.width) / self.height, 0.1, 500)
+		
+		self.p_matrix.perspective(
+			90 + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED),
+			float(self.width) / self.height, 0.1, 500)
 
 		# create modelview matrix
 

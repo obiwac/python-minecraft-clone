@@ -127,6 +127,7 @@ class Window(pyglet.window.Window):
 
 		elif key == pyglet.window.key.SPACE : self.camera.input[1] += 1
 		elif key == pyglet.window.key.LSHIFT: self.camera.input[1] -= 1
+		elif key == pyglet.window.key.LCTRL : self.camera.target_speed = camera.SPRINTING_SPEED
 
 		elif key == pyglet.window.key.G:
 			self.holding = random.randint(1, len(self.world.block_types) - 1)
@@ -149,6 +150,7 @@ class Window(pyglet.window.Window):
 
 		elif key == pyglet.window.key.SPACE : self.camera.input[1] -= 1
 		elif key == pyglet.window.key.LSHIFT: self.camera.input[1] += 1
+		elif key == pyglet.window.key.LCTRL : self.camera.target_speed = camera.WALKING_SPEED
 
 class Game:
 	def __init__(self):
