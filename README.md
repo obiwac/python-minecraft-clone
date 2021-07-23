@@ -18,7 +18,7 @@ and for Debian-based Linux distros:
 The `pyglet` and `nbtlib` modules are necessary dependencies. You can install them with PIP by issuing:
 
 ```shell
-$ pip install --user pyglet nbtlib
+$ pip install --user pyglet nbtlib base36
 ```
 
 ## Running
