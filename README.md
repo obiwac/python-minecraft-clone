@@ -15,10 +15,16 @@ and for Debian-based Linux distros:
 
 [<img alt = "Setup: Linux" src = "https://i.imgur.com/9rZiv4B.png" width = 25% />](https://youtu.be/TtkTkfwwefA?list=PL6_bLxRDFzoKjaa3qCGkwR5L_ouSreaVP)
 
+The `pyglet` and `nbtlib` modules are necessary dependencies. You can install them with PIP by issuing:
+
+```shell
+$ pip install --user pyglet nbtlib base36
+```
+
 ## Running
 Run the following command in the directory of any episode to run the result from that episode:
 
-```Shell
+```shell
 $ python3 main.py
 ```
 
