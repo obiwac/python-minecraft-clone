@@ -2,7 +2,6 @@ import nbtlib as nbt
 import base36
 
 import chunk
-import os
 
 class Save:
 	def __init__(self, world, path = "save"):
