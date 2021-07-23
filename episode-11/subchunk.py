@@ -77,7 +77,7 @@ class Subchunk:
 							if not self.world.is_opaque_block(position):
 								if block_type.glass and self.world.get_block_number(position) == block_number:
 									return False
-
+								
 								return True
 							
 							return False

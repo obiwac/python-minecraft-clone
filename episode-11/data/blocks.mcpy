@@ -9,9 +9,9 @@
 5:  name "Planks", texture.all planks
 6:  name "Sapling", model models.plant, texture.all sapling
 7:  name "Bedrock", texture.all bedrock
-8:  name "Water", texture.all water
+8:  name "Water", model models.liquid, texture.all water
 9:  sameas 8, name "Stationary Water"
-10: name "Lava", texture.all lava
+10: name "Lava", model models.liquid, texture.all lava
 11: sameas 10, name "Stationary Lava"
 12: name "Sand", texture.all sand
 13: name "Gravel", texture.all gravel
