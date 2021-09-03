@@ -30,6 +30,7 @@ $ python3 main.py
 
 ## List of projects based on this
 
+- **Nim implementation:** https://github.com/phargobikcin/nim-minecraft-clone
 - **Java implementation:** https://github.com/StartForKillerMC/JavaMinecraft
 - **C++ implementation:** https://github.com/Jukitsu/CppMinecraft-clone
 - **Lighting test:** https://github.com/Jukitsu/python-minecraft-clone-ep10-lighting
