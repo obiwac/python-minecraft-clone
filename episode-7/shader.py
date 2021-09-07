@@ -65,7 +65,9 @@ class Shader:
 		return gl.glGetUniformLocation(self.program, ctypes.create_string_buffer(name))
 	
 	def uniform_matrix(self, location, matrix):
-		gl.glUniformMatrix4fv(location, 1, gl.GL_FALSE, (gl.GLfloat * 16) (*sum(matrix.data, [])))
+		matrix = [y for x in matrix for y in x]
+
+		gl.glUniformMatrix4fv(location, 1, gl.GL_FALSE, (gl.GLfloat * len(matrix))(*matrix))
 
 	def use(self):
 		gl.glUseProgram(self.program)
