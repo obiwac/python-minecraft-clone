@@ -8,6 +8,7 @@ pyglet.options["debug_gl"] = False
 
 import pyglet.gl as gl
 
+import matrix
 import shader
 import camera
 
