@@ -23,7 +23,7 @@ class Save:
 		chunk_path = self.chunk_position_to_path(chunk_position)
 
 		try:
-			chunk_blocks = nbt.load(chunk_path).root["Level"]["Blocks"]
+			chunk_blocks = nbt.load(chunk_path)["Level"]["Blocks"]
 		
 		except FileNotFoundError:
 			return
@@ -54,8 +54,8 @@ class Save:
 		except FileNotFoundError:
 			chunk_data = nbt.File({"": nbt.Compound({"Level": nbt.Compound()})})
 			
-			chunk_data.root["Level"]["xPos"] = x
-			chunk_data.root["Level"]["zPos"] = z
+			chunk_data["Level"]["xPos"] = x
+			chunk_data["Level"]["zPos"] = z
 
 		# fill the chunk file with the blocks from our chunk
 
@@ -71,7 +71,7 @@ class Save:
 		
 		# save the chunk file
 
-		chunk_data.root["Level"]["Blocks"] = chunk_blocks
+		chunk_data["Level"]["Blocks"] = chunk_blocks
 		chunk_data.save(chunk_path, gzipped = True)
 
 	def load(self):
