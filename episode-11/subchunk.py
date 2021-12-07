@@ -30,7 +30,7 @@ class Subchunk:
 		tex_coords = block_type.tex_coords[face]
 		shading_values = block_type.shading_values[face]
 
-		if hasattr(block_type.model, "translucent"):
+		if block_type.model.translucent:
 			mesh = self.translucent_mesh
 		else:
 			mesh = self.mesh

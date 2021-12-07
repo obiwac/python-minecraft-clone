@@ -1,6 +1,7 @@
 transparent = False
 is_cube = True
 glass = False
+translucent = False
 
 vertex_positions = [
 	[ 0.5,  0.5,  0.5,  0.5, -0.5,  0.5,  0.5, -0.5, -0.5,  0.5,  0.5, -0.5], # right

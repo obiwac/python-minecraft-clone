@@ -134,8 +134,6 @@ class Chunk:
 			(gl.GLfloat * len(self.mesh)) (*self.mesh),
 			gl.GL_DYNAMIC_DRAW)
 
-		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.world.ibo)
-		
 
 	def draw(self):
 		if not self.mesh_quad_count:
