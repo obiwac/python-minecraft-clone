@@ -21,40 +21,38 @@ class Subchunk:
 
 		# mesh variables
 
-		self.mesh_vertex_positions = []
-		self.mesh_tex_coords = []
-		self.mesh_shading_values = []
-
-		self.mesh_index_counter = 0
-		self.mesh_indices = []
+		self.mesh = []
+		self.translucent_mesh = []
 	
+	def add_face(self, face, pos, block_type):
+		x, y, z = pos
+		vertex_positions = block_type.vertex_positions[face]
+		tex_coords = block_type.tex_coords[face]
+		shading_values = block_type.shading_values[face]
+
+		if hasattr(block_type.model, "translucent"):
+			mesh = self.translucent_mesh
+		else:
+			mesh = self.mesh
+		
+		for i in range(4):
+			mesh.append(vertex_positions[i * 3 + 0] + x)
+			mesh.append(vertex_positions[i * 3 + 1] + y)
+			mesh.append(vertex_positions[i * 3 + 2] + z)
+
+			mesh.append(tex_coords[i * 3 + 0])
+			mesh.append(tex_coords[i * 3 + 1])
+			mesh.append(tex_coords[i * 3 + 2])
+
+			mesh.append(shading_values[i])
+
+	def can_render_face(self, glass, block_number, position):
+		return not (self.world.is_opaque_block(position)
+			or (glass and self.world.get_block_number(position) == block_number))
+
 	def update_mesh(self):
-		self.mesh_vertex_positions = []
-		self.mesh_tex_coords = []
-		self.mesh_shading_values = []
-
-		self.mesh_index_counter = 0
-		self.mesh_indices = []
-
-		def add_face(face):
-			vertex_positions = block_type.vertex_positions[face].copy()
-
-			for i in range(4):
-				vertex_positions[i * 3 + 0] += x
-				vertex_positions[i * 3 + 1] += y
-				vertex_positions[i * 3 + 2] += z
-			
-			self.mesh_vertex_positions.extend(vertex_positions)
-
-			indices = [0, 1, 2, 0, 2, 3]
-			for i in range(6):
-				indices[i] += self.mesh_index_counter
-			
-			self.mesh_indices.extend(indices)
-			self.mesh_index_counter += 4
-
-			self.mesh_tex_coords.extend(block_type.tex_coords[face])
-			self.mesh_shading_values.extend(block_type.shading_values[face])
+		self.mesh = []
+		self.translucent_mesh = []
 
 		for local_x in range(SUBCHUNK_WIDTH):
 			for local_y in range(SUBCHUNK_HEIGHT):
@@ -68,32 +66,24 @@ class Subchunk:
 					if block_number:
 						block_type = self.world.block_types[block_number]
 
-						x, y, z = (
+						x, y, z = pos = (
 							self.position[0] + local_x,
 							self.position[1] + local_y,
 							self.position[2] + local_z)
 						
-						def can_render_face(position):
-							if not self.world.is_opaque_block(position):
-								if block_type.glass and self.world.get_block_number(position) == block_number:
-									return False
-								
-								return True
-							
-							return False
 
 						# if block is cube, we want it to check neighbouring blocks so that we don't uselessly render faces
 						# if block isn't a cube, we just want to render all faces, regardless of neighbouring blocks
 						# since the vast majority of blocks are probably anyway going to be cubes, this won't impact performance all that much; the amount of useless faces drawn is going to be minimal
 
 						if block_type.is_cube:
-							if can_render_face((x + 1, y, z)): add_face(0)
-							if can_render_face((x - 1, y, z)): add_face(1)
-							if can_render_face((x, y + 1, z)): add_face(2)
-							if can_render_face((x, y - 1, z)): add_face(3)
-							if can_render_face((x, y, z + 1)): add_face(4)
-							if can_render_face((x, y, z - 1)): add_face(5)
+							if self.can_render_face(block_type.glass, block_number, (x + 1, y, z)): self.add_face(0, pos, block_type)
+							if self.can_render_face(block_type.glass, block_number, (x - 1, y, z)): self.add_face(1, pos, block_type)
+							if self.can_render_face(block_type.glass, block_number, (x, y + 1, z)): self.add_face(2, pos, block_type)
+							if self.can_render_face(block_type.glass, block_number, (x, y - 1, z)): self.add_face(3, pos, block_type)
+							if self.can_render_face(block_type.glass, block_number, (x, y, z + 1)): self.add_face(4, pos, block_type)
+							if self.can_render_face(block_type.glass, block_number, (x, y, z - 1)): self.add_face(5, pos, block_type)
 						
 						else:
 							for i in range(len(block_type.vertex_positions)):
-								add_face(i)
+								self.add_face(i, pos, block_type)

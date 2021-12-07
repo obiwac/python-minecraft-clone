@@ -23,10 +23,6 @@ import hit
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
-
-		# create world
-
-		self.world = world.World()
 		
 		# create shader
 
@@ -36,16 +32,38 @@ class Window(pyglet.window.Window):
 
 		# pyglet stuff
 
-		pyglet.clock.schedule_interval(self.update, 1.0 / 10000)
+		pyglet.clock.schedule(self.update)
 		self.mouse_captured = False
 
 		# camera stuff
 
 		self.camera = camera.Camera(self.shader, self.width, self.height)
 
+		# create world
+
+		self.world = world.World(self.camera)
+
 		# misc stuff
 
 		self.holding = 5
+
+		# bind textures
+
+		gl.glActiveTexture(gl.GL_TEXTURE0)
+		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
+		gl.glUniform1i(self.shader_sampler_location, 0)
+
+		# enable cool stuff
+
+		gl.glEnable(gl.GL_DEPTH_TEST)
+		gl.glEnable(gl.GL_CULL_FACE)
+		gl.glBlendFunc(gl.GL_SRC_COLOR, gl.GL_ONE_MINUS_SRC_COLOR)
+
+		# Creating fence sync
+		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+
+	def __del__(self):
+		gl.glDeleteSync(self.fence)
 	
 	def update(self, delta_time):
 		# print(f"FPS: {1.0 / delta_time}")
@@ -58,22 +76,12 @@ class Window(pyglet.window.Window):
 	def on_draw(self):
 		self.camera.update_matrices()
 
-		# bind textures
-
-		gl.glActiveTexture(gl.GL_TEXTURE0)
-		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
-		gl.glUniform1i(self.shader_sampler_location, 0)
-
-		# draw stuff
-
-		gl.glEnable(gl.GL_DEPTH_TEST)
-		gl.glEnable(gl.GL_CULL_FACE)
-
 		gl.glClearColor(0.0, 0.0, 0.0, 0.0)
 		self.clear()
-		self.world.draw()
 
-		gl.glFinish()
+		self.world.draw()
+		
+		gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 16666667)
 	
 	# input functions
 
@@ -154,8 +162,8 @@ class Window(pyglet.window.Window):
 
 class Game:
 	def __init__(self):
-		self.config = gl.Config(major_version = 3, depth_size = 16)
-		self.window = Window(config = self.config, width = 800, height = 600, caption = "Minecraft clone", resizable = True, vsync = False)
+		self.config = gl.Config(double_buffer = True, major_version = 3, depth_size = 16)
+		self.window = Window(config = self.config, width = 854, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
 	
 	def run(self):
 		pyglet.app.run()

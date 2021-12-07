@@ -7,12 +7,16 @@ import chunk
 import block_type
 import texture_manager
 
+import pyglet.gl as gl
+import ctypes
+
 # import custom block models
 
 import models
 
 class World:
-	def __init__(self):
+	def __init__(self, camera):
+		self.camera = camera
 		self.texture_manager = texture_manager.Texture_manager(16, 16, 256)
 		self.block_types = [None]
 
@@ -70,6 +74,30 @@ class World:
 
 		self.texture_manager.generate_mipmaps()
 
+		chunk_indices = []
+
+		for nquad in range(chunk.CHUNK_WIDTH * chunk.CHUNK_HEIGHT * chunk.CHUNK_LENGTH * 8):
+			chunk_indices.append(4 * nquad + 0)
+			chunk_indices.append(4 * nquad + 1)
+			chunk_indices.append(4 * nquad + 2)
+			chunk_indices.append(4 * nquad + 0)
+			chunk_indices.append(4 * nquad + 2)
+			chunk_indices.append(4 * nquad + 3)
+
+		print(len(chunk_indices))
+
+		self.ibo = gl.GLuint(0)
+		gl.glGenBuffers(1, ctypes.byref(self.ibo))
+		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
+		gl.glBufferData(
+			gl.GL_ELEMENT_ARRAY_BUFFER,
+			ctypes.sizeof(gl.GLuint * len(chunk_indices)),
+			(gl.GLuint * len(chunk_indices))(*chunk_indices),
+			gl.GL_STATIC_DRAW)
+		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, 0)
+
+		
+
 		# load the world
 
 		self.save = save.Save(self)
@@ -80,14 +108,19 @@ class World:
 		for chunk_position in self.chunks:
 			self.chunks[chunk_position].update_subchunk_meshes()
 			self.chunks[chunk_position].update_mesh()
+
+		del chunk_indices
+
+	def __del__(self):
+		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
 	
 	def get_chunk_position(self, position):
 		x, y, z = position
 
 		return (
-			math.floor(x / chunk.CHUNK_WIDTH),
-			math.floor(y / chunk.CHUNK_HEIGHT),
-			math.floor(z / chunk.CHUNK_LENGTH))
+			(x // chunk.CHUNK_WIDTH),
+			(y // chunk.CHUNK_HEIGHT),
+			(z // chunk.CHUNK_LENGTH))
 
 	def get_local_position(self, position):
 		x, y, z = position
@@ -157,6 +190,33 @@ class World:
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position((cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position((cx, cy, cz - 1), (x, y, z - 1))
 	
+	def can_render_chunk(self, chunk_position, pl_c_pos):
+		rx, ry, rz = (chunk_position[0] - pl_c_pos[0]) \
+					* math.cos(self.camera.rotation[0]) \
+					* math.cos(self.camera.rotation[1]) , \
+				(chunk_position[1] - pl_c_pos[1]) \
+					* math.sin(self.camera.rotation[1]) , \
+				(chunk_position[2] - pl_c_pos[2]) \
+					* math.sin(self.camera.rotation[0]) \
+					* math.cos(self.camera.rotation[1])
+		return rx >= -1 and ry >= -1 and rz >= -1 
+	
 	def draw(self):
+		player_floored_pos = tuple(self.camera.position)
+		player_chunk_pos = self.get_chunk_position(player_floored_pos)
+
 		for chunk_position in self.chunks:
-			self.chunks[chunk_position].draw()
+			if self.can_render_chunk(chunk_position, player_chunk_pos):
+				self.chunks[chunk_position].draw()
+		
+		gl.glDisable(gl.GL_CULL_FACE)
+		gl.glEnable(gl.GL_BLEND)
+		gl.glDepthMask(gl.GL_FALSE)
+
+		for chunk_position in self.chunks:
+			if self.can_render_chunk(chunk_position, player_chunk_pos):
+				self.chunks[chunk_position].draw_translucent()
+
+		gl.glDepthMask(gl.GL_TRUE)
+		gl.glDisable(gl.GL_BLEND)
+		gl.glEnable(gl.GL_CULL_FACE)
