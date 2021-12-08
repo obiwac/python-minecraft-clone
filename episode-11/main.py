@@ -58,15 +58,9 @@ class Window(pyglet.window.Window):
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glBlendFunc(gl.GL_SRC_COLOR, gl.GL_ONE_MINUS_SRC_COLOR)
-
-		# Creating fence sync
-		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
-
-	def __del__(self):
-		gl.glDeleteSync(self.fence)
 	
 	def update(self, delta_time):
-		# print(f"FPS: {1.0 / delta_time}")
+		print(pyglet.clock.get_fps())
 
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
@@ -80,8 +74,11 @@ class Window(pyglet.window.Window):
 		self.clear()
 
 		self.world.draw()
-		
-		gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 16666667)
+
+		# Not really necessary tbf
+		fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+		gl.glClientWaitSync(fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 8333333)
+		gl.glDeleteSync(fence)
 	
 	# input functions
 
