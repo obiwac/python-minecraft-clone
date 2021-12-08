@@ -34,7 +34,7 @@ class Block_type:
 			texture_index = texture_manager.textures.index(texture)
 
 			if face == "all":
-				for i in range(6):
+				for i in range(len(self.tex_coords)):
 					set_block_face(i, texture_index)
 			
 			elif face == "sides":
