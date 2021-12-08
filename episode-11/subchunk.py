@@ -27,7 +27,7 @@ class Subchunk:
 	def add_face(self, face, pos, block_type):
 		x, y, z = pos
 		vertex_positions = block_type.vertex_positions[face]
-		tex_coords = block_type.tex_coords[face]
+		tex_index = block_type.tex_indices[face]
 		shading_values = block_type.shading_values[face]
 
 		if block_type.model.translucent:
@@ -40,9 +40,8 @@ class Subchunk:
 			mesh.append(vertex_positions[i * 3 + 1] + y)
 			mesh.append(vertex_positions[i * 3 + 2] + z)
 
-			mesh.append(tex_coords[i * 3 + 0])
-			mesh.append(tex_coords[i * 3 + 1])
-			mesh.append(tex_coords[i * 3 + 2])
+			mesh.append(i)
+			mesh.append(tex_index)
 
 			mesh.append(shading_values[i])
 

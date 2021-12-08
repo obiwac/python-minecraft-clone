@@ -13,6 +13,7 @@ class Camera:
 
 		self.mv_matrix = matrix.Matrix()
 		self.p_matrix = matrix.Matrix()
+		self.mvp_matrix = matrix.Matrix()
 
 		# shaders
 
@@ -58,5 +59,5 @@ class Camera:
 
 		# modelviewprojection matrix
 
-		mvp_matrix = self.p_matrix * self.mv_matrix
-		self.shader.uniform_matrix(self.shader_matrix_location, mvp_matrix)
+		self.mvp_matrix = self.p_matrix * self.mv_matrix
+		self.shader.uniform_matrix(self.shader_matrix_location, self.mvp_matrix)

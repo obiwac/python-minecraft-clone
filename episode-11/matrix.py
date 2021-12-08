@@ -43,9 +43,9 @@ class Matrix:
 		self.data = multiply_matrices(self.data, matrix.data)
 	
 	def scale(self, x, y, z):
-		for i in range(4): self.data[0][i] *= scale_x
-		for i in range(4): self.data[1][i] *= scale_y
-		for i in range(4): self.data[2][i] *= scale_z
+		for i in range(4): self.data[0][i] *= x
+		for i in range(4): self.data[1][i] *= y
+		for i in range(4): self.data[2][i] *= z
 	
 	def translate(self, x, y, z):
 		for i in range(4):

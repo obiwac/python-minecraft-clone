@@ -51,13 +51,13 @@ class Chunk:
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
 		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, 
-				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 0)
+				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 0)
 		gl.glEnableVertexAttribArray(0)
-		gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, 
-				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 3 * ctypes.sizeof(gl.GLfloat))
+		gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, 
+				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 3 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(1)
 		gl.glVertexAttribPointer(2, 1, gl.GL_FLOAT, 
-				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 6 * ctypes.sizeof(gl.GLfloat))
+				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 5 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(2)
 
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
@@ -111,8 +111,8 @@ class Chunk:
 		# send the full mesh data to the GPU and free the memory used client-side (we don't need it anymore)
 		# don't forget to save the length of 'self.mesh_indices' before freeing
 
-		self.mesh_quad_count = len(self.mesh) // 28
-		self.translucent_quad_count = len(self.translucent_mesh) // 28
+		self.mesh_quad_count = len(self.mesh) // 24
+		self.translucent_quad_count = len(self.translucent_mesh) // 24
 
 		self.send_mesh_data_to_gpu()
 	

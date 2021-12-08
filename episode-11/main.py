@@ -13,6 +13,7 @@ import matrix
 import shader
 import camera
 
+
 import block_type
 import texture_manager
 
@@ -60,7 +61,7 @@ class Window(pyglet.window.Window):
 		gl.glBlendFunc(gl.GL_SRC_COLOR, gl.GL_ONE_MINUS_SRC_COLOR)
 	
 	def update(self, delta_time):
-		print(pyglet.clock.get_fps())
+		# print(pyglet.clock.get_fps())
 
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
