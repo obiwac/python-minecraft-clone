@@ -11,12 +11,12 @@ out float interpolated_shading_value;
 
 uniform mat4 matrix;
 
-vec2 texture_UV[4] = {
+vec2 texture_UV[4] = vec2[4](
 	vec2(0.0, 1.0),
 	vec2(0.0, 0.0),
 	vec2(1.0, 0.0),
 	vec2(1.0, 1.0)
-};
+);
 
 void main(void) {
 	local_position = vertex_position;
