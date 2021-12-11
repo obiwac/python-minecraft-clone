@@ -1,6 +1,5 @@
 
 import math
-import ctypes
 import random
 import pyglet
 
@@ -9,7 +8,6 @@ pyglet.options["debug_gl"] = False
 
 import pyglet.gl as gl
 
-import matrix
 import shader
 import camera
 
@@ -28,7 +26,7 @@ class Window(pyglet.window.Window):
 		# create shader
 
 		self.shader = shader.Shader("vert.glsl", "frag.glsl")
-		self.shader_sampler_location = self.shader.find_uniform(b"texture_array_sampler")
+		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
 		self.shader.use()
 
 		# pyglet stuff
@@ -59,6 +57,10 @@ class Window(pyglet.window.Window):
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glBlendFunc(gl.GL_SRC_COLOR, gl.GL_ONE_MINUS_SRC_COLOR)
+
+		# Sync status:
+		self.status = gl.GL_CONDITION_SATISFIED
+		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
 	
 	def update(self, delta_time):
 		# print(pyglet.clock.get_fps())
@@ -71,15 +73,17 @@ class Window(pyglet.window.Window):
 	def on_draw(self):
 		self.camera.update_matrices()
 
+		self.status = gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 2985984)
+		gl.glDeleteSync(self.fence)
+
 		gl.glClearColor(0.0, 0.0, 0.0, 0.0)
 		self.clear()
 
 		self.world.draw()
 
-		# Not really necessary tbf
-		fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
-		gl.glClientWaitSync(fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 8333333)
-		gl.glDeleteSync(fence)
+		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+		gl.glFlush()
+
 	
 	# input functions
 
@@ -160,10 +164,12 @@ class Window(pyglet.window.Window):
 
 class Game:
 	def __init__(self):
-		self.config = gl.Config(double_buffer = True, major_version = 3, depth_size = 16)
+		self.config = gl.Config(double_buffer = True,
+				major_version = 3, minor_version = 3,
+				depth_size = 16)
 		self.window = Window(config = self.config, width = 854, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
 	
-	def run(self):
+	def run(self): 
 		pyglet.app.run()
 
 if __name__ == "__main__":

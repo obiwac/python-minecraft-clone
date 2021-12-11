@@ -12,6 +12,7 @@ class Block_type:
 		self.transparent = model.transparent
 		self.is_cube = model.is_cube
 		self.glass = model.glass
+		self.translucent = model.translucent
 
 		# replace data contained in numbers.py with model specific data
 
@@ -25,7 +26,6 @@ class Block_type:
 			if face > len(self.tex_coords) - 1:
 				return
 			self.tex_indices[face] = texture
-			print("Appended texture", texture, "for block", name)
 
 		for face in block_face_textures:
 			texture = block_face_textures[face]

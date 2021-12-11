@@ -1,18 +1,17 @@
-import math
-import random
-
-import save
 import chunk
+import ctypes
+import math
 
-import block_type
-import texture_manager
 
 import pyglet.gl as gl
-import ctypes
 
+import block_type
+import models
+import save
+import texture_manager
+import options
 # import custom block models
 
-import models
 
 class World:
 	def __init__(self, camera):
@@ -201,14 +200,7 @@ class World:
 					* math.cos(self.camera.rotation[1])
 		return rx >= -1 and ry >= -1 and rz >= -1 
 	
-	def draw(self):
-		player_floored_pos = tuple(self.camera.position)
-		player_chunk_pos = self.get_chunk_position(player_floored_pos)
-
-		for chunk_position in self.chunks:
-			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				self.chunks[chunk_position].draw()
-		
+	def draw_translucent_fast(self, player_chunk_pos):
 		gl.glDisable(gl.GL_CULL_FACE)
 		gl.glEnable(gl.GL_BLEND)
 		gl.glDepthMask(gl.GL_FALSE)
@@ -220,3 +212,37 @@ class World:
 		gl.glDepthMask(gl.GL_TRUE)
 		gl.glDisable(gl.GL_BLEND)
 		gl.glEnable(gl.GL_CULL_FACE)
+		
+	def draw_translucent_fancy(self, player_chunk_pos):
+		gl.glDepthMask(gl.GL_FALSE)
+		gl.glFrontFace(gl.GL_CW)
+		gl.glEnable(gl.GL_BLEND)
+
+		for chunk_position in self.chunks:
+			if self.can_render_chunk(chunk_position, player_chunk_pos):
+				self.chunks[chunk_position].draw_translucent()
+		
+		gl.glFrontFace(gl.GL_CCW)
+		gl.glEnable(gl.GL_BLEND)
+		
+		for chunk_position in self.chunks:
+			if self.can_render_chunk(chunk_position, player_chunk_pos):
+				self.chunks[chunk_position].draw_translucent()
+
+		gl.glDisable(gl.GL_BLEND)
+		gl.glDepthMask(gl.GL_TRUE)
+
+	draw_translucent = draw_translucent_fancy if options.TRANSLUCENT_BLENDING else draw_translucent_fast
+	
+	def draw(self):
+		player_floored_pos = tuple(self.camera.position)
+		player_chunk_pos = self.get_chunk_position(player_floored_pos)
+
+		for chunk_position in self.chunks:
+			if self.can_render_chunk(chunk_position, player_chunk_pos):
+				self.chunks[chunk_position].draw()
+
+		self.draw_translucent(player_chunk_pos)
+
+	
+		

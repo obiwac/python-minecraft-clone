@@ -18,7 +18,7 @@ class Camera:
 		# shaders
 
 		self.shader = shader
-		self.shader_matrix_location = self.shader.find_uniform(b"matrix")
+		self.shader_matrix_location = self.shader.find_uniform(b"u_ModelViewProjMatrix")
 
 		# camera variables
 

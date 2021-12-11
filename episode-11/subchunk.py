@@ -1,3 +1,6 @@
+import options
+import random
+
 SUBCHUNK_WIDTH  = 4
 SUBCHUNK_HEIGHT = 4
 SUBCHUNK_LENGTH = 4
@@ -25,6 +28,9 @@ class Subchunk:
 		self.translucent_mesh = []
 	
 	def add_face(self, face, pos, block_type):
+		rotation = 0
+		if options.ALTERNATE_BLOCKS and block_type.is_cube and not block_type.transparent:
+			rotation = random.randint(0, 3)
 		x, y, z = pos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
@@ -40,14 +46,16 @@ class Subchunk:
 			mesh.append(vertex_positions[i * 3 + 1] + y)
 			mesh.append(vertex_positions[i * 3 + 2] + z)
 
-			mesh.append(i)
+			mesh.append((i + rotation) % 4)
 			mesh.append(tex_index)
 
 			mesh.append(shading_values[i])
 
-	def can_render_face(self, glass, block_number, position):
+	def can_render_face(self, block_type, block_number, position):
 		return not (self.world.is_opaque_block(position)
-			or (glass and self.world.get_block_number(position) == block_number))
+			or (block_type.glass and self.world.get_block_number(position) == block_number)) \
+			or (block_type.translucent and self.world.get_block_number(position) != block_number)
+			
 
 	def update_mesh(self):
 		self.mesh = []
@@ -76,12 +84,12 @@ class Subchunk:
 						# since the vast majority of blocks are probably anyway going to be cubes, this won't impact performance all that much; the amount of useless faces drawn is going to be minimal
 
 						if block_type.is_cube:
-							if self.can_render_face(block_type.glass, block_number, (x + 1, y, z)): self.add_face(0, pos, block_type)
-							if self.can_render_face(block_type.glass, block_number, (x - 1, y, z)): self.add_face(1, pos, block_type)
-							if self.can_render_face(block_type.glass, block_number, (x, y + 1, z)): self.add_face(2, pos, block_type)
-							if self.can_render_face(block_type.glass, block_number, (x, y - 1, z)): self.add_face(3, pos, block_type)
-							if self.can_render_face(block_type.glass, block_number, (x, y, z + 1)): self.add_face(4, pos, block_type)
-							if self.can_render_face(block_type.glass, block_number, (x, y, z - 1)): self.add_face(5, pos, block_type)
+							if self.can_render_face(block_type, block_number, (x + 1, y, z)): self.add_face(0, pos, block_type)
+							if self.can_render_face(block_type, block_number, (x - 1, y, z)): self.add_face(1, pos, block_type)
+							if self.can_render_face(block_type, block_number, (x, y + 1, z)): self.add_face(2, pos, block_type)
+							if self.can_render_face(block_type, block_number, (x, y - 1, z)): self.add_face(3, pos, block_type)
+							if self.can_render_face(block_type, block_number, (x, y, z + 1)): self.add_face(4, pos, block_type)
+							if self.can_render_face(block_type, block_number, (x, y, z - 1)): self.add_face(5, pos, block_type)
 						
 						else:
 							for i in range(len(block_type.vertex_positions)):

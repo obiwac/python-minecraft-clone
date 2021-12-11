@@ -1,6 +1,5 @@
 
 import copy
-import ctypes
 import math
 
 def copy_matrix(matrix):
