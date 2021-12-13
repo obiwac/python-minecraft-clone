@@ -1,4 +1,3 @@
-
 import math
 import random
 import pyglet
@@ -11,9 +10,6 @@ import pyglet.gl as gl
 import shader
 import camera
 
-
-import block_type
-import texture_manager
 
 import world
 
@@ -76,7 +72,7 @@ class Window(pyglet.window.Window):
 		self.status = gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 2985984)
 		gl.glDeleteSync(self.fence)
 
-		gl.glClearColor(0.0, 0.0, 0.0, 0.0)
+		gl.glClearColor(0.4, 0.7, 1.0, 1.0)
 		self.clear()
 
 		self.world.draw()
