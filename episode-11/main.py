@@ -1,5 +1,6 @@
 
 import math
+import ctypes
 import random
 import pyglet
 
@@ -8,9 +9,9 @@ pyglet.options["debug_gl"] = False
 
 import pyglet.gl as gl
 
+import matrix
 import shader
 import camera
-
 
 import block_type
 import texture_manager
@@ -22,48 +23,32 @@ import hit
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
+
+		# create world
+
+		self.world = world.World()
 		
 		# create shader
 
 		self.shader = shader.Shader("vert.glsl", "frag.glsl")
-		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
+		self.shader_sampler_location = self.shader.find_uniform(b"texture_array_sampler")
 		self.shader.use()
 
 		# pyglet stuff
 
-		pyglet.clock.schedule(self.update)
+		pyglet.clock.schedule_interval(self.update, 1.0 / 10000)
 		self.mouse_captured = False
 
 		# camera stuff
 
 		self.camera = camera.Camera(self.shader, self.width, self.height)
 
-		# create world
-
-		self.world = world.World(self.camera)
-
 		# misc stuff
 
 		self.holding = 5
-
-		# bind textures
-
-		gl.glActiveTexture(gl.GL_TEXTURE0)
-		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
-		gl.glUniform1i(self.shader_sampler_location, 0)
-
-		# enable cool stuff
-
-		gl.glEnable(gl.GL_DEPTH_TEST)
-		gl.glEnable(gl.GL_CULL_FACE)
-		gl.glBlendFunc(gl.GL_SRC_COLOR, gl.GL_ONE_MINUS_SRC_COLOR)
-
-		# Sync status:
-		self.status = gl.GL_CONDITION_SATISFIED
-		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
 	
 	def update(self, delta_time):
-		# print(pyglet.clock.get_fps())
+		# print(f"FPS: {1.0 / delta_time}")
 
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
@@ -73,17 +58,22 @@ class Window(pyglet.window.Window):
 	def on_draw(self):
 		self.camera.update_matrices()
 
-		self.status = gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 2985984)
-		gl.glDeleteSync(self.fence)
+		# bind textures
+
+		gl.glActiveTexture(gl.GL_TEXTURE0)
+		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
+		gl.glUniform1i(self.shader_sampler_location, 0)
+
+		# draw stuff
+
+		gl.glEnable(gl.GL_DEPTH_TEST)
+		gl.glEnable(gl.GL_CULL_FACE)
 
 		gl.glClearColor(0.0, 0.0, 0.0, 0.0)
 		self.clear()
-
 		self.world.draw()
 
-		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
-		gl.glFlush()
-
+		gl.glFinish()
 	
 	# input functions
 
@@ -164,12 +154,10 @@ class Window(pyglet.window.Window):
 
 class Game:
 	def __init__(self):
-		self.config = gl.Config(double_buffer = True,
-				major_version = 3, minor_version = 3,
-				depth_size = 16)
-		self.window = Window(config = self.config, width = 854, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
+		self.config = gl.Config(major_version = 3, depth_size = 16)
+		self.window = Window(config = self.config, width = 800, height = 600, caption = "Minecraft clone", resizable = True, vsync = False)
 	
-	def run(self): 
+	def run(self):
 		pyglet.app.run()
 
 if __name__ == "__main__":
