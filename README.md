@@ -28,6 +28,13 @@ Run the following command in the directory of any episode to run the result from
 $ python3 main.py
 ```
 
+## Community
+
+The `community` directory is for experiments & contributions made by other people on the latest tutorial's code (see PR #29).
+It more generally extends the project with functionality I've yet to cover in a tutorial or that I don't intend on covering at all.
+Characteristic contributions are contributions which *add* something to the code.
+Contributions which *fix* something are still merged on the source of all episodes.
+
 ## List of projects based on this
 
 - **Nim implementation:** https://github.com/phargobikcin/nim-minecraft-clone
