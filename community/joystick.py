@@ -30,7 +30,7 @@ class Joystick_controller:
 		self.joystick_buttons = []
 
 	def update_controller(self):
-		if not self.game.mouse_captured:
+		if not self.game.mouse_captured and self.joysticks:
 			return
 
 		self.game.camera.rotation[0] += self.joystick_rpos[0] * self.camera_sensitivity
