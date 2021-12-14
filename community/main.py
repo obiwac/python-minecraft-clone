@@ -1,4 +1,3 @@
-
 import math
 import ctypes
 import random
@@ -19,6 +18,8 @@ import texture_manager
 import world
 
 import hit
+
+import joystick
 
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
@@ -42,6 +43,9 @@ class Window(pyglet.window.Window):
 		# camera stuff
 
 		self.camera = camera.Camera(self.shader, self.width, self.height)
+
+		# joystick stuff
+		self.joystick_controller = joystick.Joystick_controller(self)
 
 		# misc stuff
 
