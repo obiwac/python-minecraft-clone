@@ -57,7 +57,7 @@ class Window(pyglet.window.Window):
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
 
-		self.Joystick_controller.update_controller()
+		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
 	
 	def on_draw(self):
