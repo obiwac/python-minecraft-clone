@@ -1,0 +1,7 @@
+# FAST = 0; FANCY = 1
+import pyglet.gl as gl
+
+
+TRANSLUCENT_BLENDING = 1
+ALTERNATE_BLOCKS = False # True is in WIP
+MIPMAP_TYPE = gl.GL_LINEAR_MIPMAP_LINEAR
