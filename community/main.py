@@ -1,4 +1,3 @@
-
 import math
 import ctypes
 import random
@@ -19,6 +18,8 @@ import texture_manager
 import world
 
 import hit
+
+import joystick
 
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
@@ -43,6 +44,9 @@ class Window(pyglet.window.Window):
 
 		self.camera = camera.Camera(self.shader, self.width, self.height)
 
+		# joystick stuff
+		self.joystick_controller = joystick.Joystick_controller(self)
+
 		# misc stuff
 
 		self.holding = 5
@@ -53,6 +57,7 @@ class Window(pyglet.window.Window):
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
 
+		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
 	
 	def on_draw(self):
