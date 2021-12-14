@@ -88,8 +88,6 @@ class Joystick_controller:
 		if not button in self.joystick_buttons:
 			self.joystick_buttons.append(button)
 
-		print(button)
-
 	def on_joybutton_release(self, joystick, button):
 		if button in self.joystick_buttons:
 			del self.joystick_buttons[self.joystick_buttons.index(button)]
