@@ -51,12 +51,10 @@ class Hit_ray:
 		sign = [1, 1, 1] # '1' for positive, '-1' for negative
 		absolute_vector = list(self.vector)
 
-		for component in range(3):
-			if self.vector[component] < 0:
-				sign[component] = -1
-
-				absolute_vector[component] = -absolute_vector[component]
-				local_position[component] = -local_position[component]
+		for component, element in enumerate(self.vector):
+			sign[component] = 2 * (element >= 0) - 1
+			absolute_vector[component] *= sign[component]
+			local_position[component] *= sign[component]
 		
 		lx, ly, lz = local_position
 		vx, vy, vz = absolute_vector

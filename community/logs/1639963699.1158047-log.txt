@@ -1,0 +1,200 @@
+Logging file[2021-12-20 02:28:19,272] [MainThread/INFO] Compiling Shaders
+[2021-12-20 02:28:19,311] [MainThread/INFO] Creating Texture Array
+[2021-12-20 02:28:19,319] [MainThread/INFO] Setting up camera scene
+[2021-12-20 02:28:19,319] [MainThread/INFO] Loading block models
+[2021-12-20 02:28:19,319] [MainThread/DEBUG] Loading texture textures/stone.png
+[2021-12-20 02:28:19,457] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,461] [MainThread/DEBUG] Loading texture textures/grass.png
+[2021-12-20 02:28:19,463] [MainThread/DEBUG] Loading texture textures/dirt.png
+[2021-12-20 02:28:19,466] [MainThread/DEBUG] Loading texture textures/grass_side.png
+[2021-12-20 02:28:19,468] [MainThread/DEBUG] Loading texture textures/dirt.png
+[2021-12-20 02:28:19,468] [MainThread/DEBUG] Loading texture textures/cobblestone.png
+[2021-12-20 02:28:19,470] [MainThread/DEBUG] Loading texture textures/planks.png
+[2021-12-20 02:28:19,472] [MainThread/DEBUG] Loading texture textures/sapling.png
+[2021-12-20 02:28:19,475] [MainThread/DEBUG] Loading texture textures/bedrock.png
+[2021-12-20 02:28:19,477] [MainThread/DEBUG] Loading texture textures/water.png
+[2021-12-20 02:28:19,479] [MainThread/DEBUG] Loading texture textures/water.png
+[2021-12-20 02:28:19,480] [MainThread/DEBUG] Loading texture textures/lava.png
+[2021-12-20 02:28:19,482] [MainThread/DEBUG] Loading texture textures/lava.png
+[2021-12-20 02:28:19,482] [MainThread/DEBUG] Loading texture textures/sand.png
+[2021-12-20 02:28:19,483] [MainThread/DEBUG] Loading texture textures/gravel.png
+[2021-12-20 02:28:19,485] [MainThread/DEBUG] Loading texture textures/gold_ore.png
+[2021-12-20 02:28:19,487] [MainThread/DEBUG] Loading texture textures/iron_ore.png
+[2021-12-20 02:28:19,490] [MainThread/DEBUG] Loading texture textures/coal_ore.png
+[2021-12-20 02:28:19,494] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,494] [MainThread/DEBUG] Loading texture textures/log_y.png
+[2021-12-20 02:28:19,496] [MainThread/DEBUG] Loading texture textures/log_side.png
+[2021-12-20 02:28:19,497] [MainThread/DEBUG] Loading texture textures/leaves.png
+[2021-12-20 02:28:19,499] [MainThread/DEBUG] Loading texture textures/sponge.png
+[2021-12-20 02:28:19,501] [MainThread/DEBUG] Loading texture textures/glass.png
+[2021-12-20 02:28:19,503] [MainThread/DEBUG] Loading texture textures/red_cloth.png
+[2021-12-20 02:28:19,506] [MainThread/DEBUG] Loading texture textures/orange_cloth.png
+[2021-12-20 02:28:19,509] [MainThread/DEBUG] Loading texture textures/yellow_cloth.png
+[2021-12-20 02:28:19,512] [MainThread/DEBUG] Loading texture textures/lime_cloth.png
+[2021-12-20 02:28:19,513] [MainThread/DEBUG] Loading texture textures/green_cloth.png
+[2021-12-20 02:28:19,515] [MainThread/DEBUG] Loading texture textures/aqua_cloth.png
+[2021-12-20 02:28:19,519] [MainThread/DEBUG] Loading texture textures/cyan_cloth.png
+[2021-12-20 02:28:19,521] [MainThread/DEBUG] Loading texture textures/blue_cloth.png
+[2021-12-20 02:28:19,523] [MainThread/DEBUG] Loading texture textures/purple_cloth.png
+[2021-12-20 02:28:19,527] [MainThread/DEBUG] Loading texture textures/indigo_cloth.png
+[2021-12-20 02:28:19,530] [MainThread/DEBUG] Loading texture textures/violet_cloth.png
+[2021-12-20 02:28:19,531] [MainThread/DEBUG] Loading texture textures/magenta_cloth.png
+[2021-12-20 02:28:19,533] [MainThread/DEBUG] Loading texture textures/pink_cloth.png
+[2021-12-20 02:28:19,536] [MainThread/DEBUG] Loading texture textures/black_cloth.png
+[2021-12-20 02:28:19,538] [MainThread/DEBUG] Loading texture textures/grey_cloth.png
+[2021-12-20 02:28:19,540] [MainThread/DEBUG] Loading texture textures/white_cloth.png
+[2021-12-20 02:28:19,544] [MainThread/DEBUG] Loading texture textures/yellow_flower.png
+[2021-12-20 02:28:19,546] [MainThread/DEBUG] Loading texture textures/red_rose.png
+[2021-12-20 02:28:19,548] [MainThread/DEBUG] Loading texture textures/brown_mushroom.png
+[2021-12-20 02:28:19,550] [MainThread/DEBUG] Loading texture textures/red_mushroom.png
+[2021-12-20 02:28:19,552] [MainThread/DEBUG] Loading texture textures/gold_block.png
+[2021-12-20 02:28:19,554] [MainThread/DEBUG] Loading texture textures/iron_block.png
+[2021-12-20 02:28:19,557] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,557] [MainThread/DEBUG] Loading texture textures/slab_side.png
+[2021-12-20 02:28:19,560] [MainThread/DEBUG] Loading texture textures/slab_y.png
+[2021-12-20 02:28:19,562] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,562] [MainThread/DEBUG] Loading texture textures/slab_side.png
+[2021-12-20 02:28:19,562] [MainThread/DEBUG] Loading texture textures/slab_y.png
+[2021-12-20 02:28:19,562] [MainThread/DEBUG] Loading texture textures/bricks.png
+[2021-12-20 02:28:19,564] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,564] [MainThread/DEBUG] Loading texture textures/tnt_top.png
+[2021-12-20 02:28:19,566] [MainThread/DEBUG] Loading texture textures/tnt_bottom.png
+[2021-12-20 02:28:19,567] [MainThread/DEBUG] Loading texture textures/tnt_side.png
+[2021-12-20 02:28:19,570] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,570] [MainThread/DEBUG] Loading texture textures/planks.png
+[2021-12-20 02:28:19,570] [MainThread/DEBUG] Loading texture textures/bookshelf.png
+[2021-12-20 02:28:19,572] [MainThread/DEBUG] Loading texture textures/mossy_cobblestone.png
+[2021-12-20 02:28:19,576] [MainThread/DEBUG] Loading texture textures/obsidian.png
+[2021-12-20 02:28:19,580] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,580] [MainThread/DEBUG] Loading texture textures/torch_top.png
+[2021-12-20 02:28:19,581] [MainThread/DEBUG] Loading texture textures/torch.png
+[2021-12-20 02:28:19,583] [MainThread/DEBUG] Loading texture textures/torch.png
+[2021-12-20 02:28:19,583] [MainThread/DEBUG] Loading texture textures/fire.png
+[2021-12-20 02:28:19,585] [MainThread/DEBUG] Loading texture textures/mob_spawner.png
+[2021-12-20 02:28:19,587] [MainThread/DEBUG] Loading texture textures/planks.png
+[2021-12-20 02:28:19,587] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,587] [MainThread/DEBUG] Loading texture textures/chest_top.png
+[2021-12-20 02:28:19,590] [MainThread/DEBUG] Loading texture textures/chest_side.png
+[2021-12-20 02:28:19,592] [MainThread/DEBUG] Loading texture textures/chest_front.png
+[2021-12-20 02:28:19,595] [MainThread/DEBUG] Loading texture textures/redstone_wire.png
+[2021-12-20 02:28:19,596] [MainThread/DEBUG] Loading texture textures/diamond_ore.png
+[2021-12-20 02:28:19,599] [MainThread/DEBUG] Loading texture textures/diamond_block.png
+[2021-12-20 02:28:19,601] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,601] [MainThread/DEBUG] Loading texture textures/crafting_table_top.png
+[2021-12-20 02:28:19,603] [MainThread/DEBUG] Loading texture textures/planks.png
+[2021-12-20 02:28:19,604] [MainThread/DEBUG] Loading texture textures/crafting_table_x.png
+[2021-12-20 02:28:19,605] [MainThread/DEBUG] Loading texture textures/crafting_table_z.png
+[2021-12-20 02:28:19,608] [MainThread/DEBUG] Loading texture textures/crops.png
+[2021-12-20 02:28:19,611] [MainThread/DEBUG] Loading texture textures/dirt.png
+[2021-12-20 02:28:19,611] [MainThread/DEBUG] Loading texture textures/soil.png
+[2021-12-20 02:28:19,613] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,613] [MainThread/DEBUG] Loading texture textures/furnace_y.png
+[2021-12-20 02:28:19,615] [MainThread/DEBUG] Loading texture textures/furnace_side.png
+[2021-12-20 02:28:19,618] [MainThread/DEBUG] Loading texture textures/furnace_front.png
+[2021-12-20 02:28:19,620] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,620] [MainThread/DEBUG] Loading texture textures/furnace_y.png
+[2021-12-20 02:28:19,620] [MainThread/DEBUG] Loading texture textures/furnace_side.png
+[2021-12-20 02:28:19,620] [MainThread/DEBUG] Loading texture textures/lit_furnace_front.png
+[2021-12-20 02:28:19,622] [MainThread/DEBUG] Loading texture textures/planks.png
+[2021-12-20 02:28:19,623] [MainThread/DEBUG] Loading texture textures/wooden_door.png
+[2021-12-20 02:28:19,626] [MainThread/DEBUG] Loading texture textures/ladder.png
+[2021-12-20 02:28:19,629] [MainThread/DEBUG] Loading texture textures/rails.png
+[2021-12-20 02:28:19,631] [MainThread/DEBUG] Loading texture textures/cobblestone.png
+[2021-12-20 02:28:19,631] [MainThread/DEBUG] Loading texture textures/planks.png
+[2021-12-20 02:28:19,632] [MainThread/DEBUG] Loading texture textures/lever.png
+[2021-12-20 02:28:19,633] [MainThread/DEBUG] Loading texture textures/stone.png
+[2021-12-20 02:28:19,634] [MainThread/DEBUG] Loading texture textures/iron_door_bottom_half.png
+[2021-12-20 02:28:19,635] [MainThread/DEBUG] Loading texture textures/planks.png
+[2021-12-20 02:28:19,636] [MainThread/DEBUG] Loading texture textures/redstone_ore.png
+[2021-12-20 02:28:19,637] [MainThread/DEBUG] Loading texture textures/redstone_ore.png
+[2021-12-20 02:28:19,637] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,638] [MainThread/DEBUG] Loading texture textures/redstone_torch_top.png
+[2021-12-20 02:28:19,640] [MainThread/DEBUG] Loading texture textures/redstone_torch.png
+[2021-12-20 02:28:19,643] [MainThread/DEBUG] Loading texture textures/redstone_torch.png
+[2021-12-20 02:28:19,644] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,644] [MainThread/DEBUG] Loading texture textures/off_redstone_torch_top.png
+[2021-12-20 02:28:19,645] [MainThread/DEBUG] Loading texture textures/off_redstone_torch.png
+[2021-12-20 02:28:19,647] [MainThread/DEBUG] Loading texture textures/off_redstone_torch.png
+[2021-12-20 02:28:19,648] [MainThread/DEBUG] Loading texture textures/stone.png
+[2021-12-20 02:28:19,648] [MainThread/DEBUG] Loading texture textures/snow.png
+[2021-12-20 02:28:19,650] [MainThread/DEBUG] Loading texture textures/ice.png
+[2021-12-20 02:28:19,652] [MainThread/DEBUG] Loading texture textures/snow.png
+[2021-12-20 02:28:19,653] [MainThread/DEBUG] Loading texture textures/unknown.png
+[2021-12-20 02:28:19,653] [MainThread/DEBUG] Loading texture textures/cactus_top.png
+[2021-12-20 02:28:19,654] [MainThread/DEBUG] Loading texture textures/cactus_bottom.png
+[2021-12-20 02:28:19,657] [MainThread/DEBUG] Loading texture textures/cactus_side.png
+[2021-12-20 02:28:19,660] [MainThread/DEBUG] Loading texture textures/clay.png
+[2021-12-20 02:28:19,662] [MainThread/DEBUG] Loading texture textures/sugar_cane.png
+[2021-12-20 02:28:19,664] [MainThread/DEBUG] Loading texture textures/jukebox.png
+[2021-12-20 02:28:19,666] [MainThread/DEBUG] Loading texture textures/jukebox_top.png
+[2021-12-20 02:28:19,670] [MainThread/DEBUG] Generating Mipmaps, using mipmap type 9987
+[2021-12-20 02:28:20,613] [MainThread/DEBUG] Created Shared Index Buffer
+[2021-12-20 02:28:20,613] [MainThread/INFO] Loading world
+[2021-12-20 02:28:20,613] [MainThread/DEBUG] Loading chunk at position (-4, 0, -4)
+[2021-12-20 02:28:20,837] [MainThread/DEBUG] Loading chunk at position (-4, 0, -3)
+[2021-12-20 02:28:20,941] [MainThread/DEBUG] Loading chunk at position (-4, 0, -2)
+[2021-12-20 02:28:21,157] [MainThread/DEBUG] Loading chunk at position (-4, 0, -1)
+[2021-12-20 02:28:21,254] [MainThread/DEBUG] Loading chunk at position (-4, 0, 0)
+[2021-12-20 02:28:21,379] [MainThread/DEBUG] Loading chunk at position (-4, 0, 1)
+[2021-12-20 02:28:21,551] [MainThread/DEBUG] Loading chunk at position (-4, 0, 2)
+[2021-12-20 02:28:21,660] [MainThread/DEBUG] Loading chunk at position (-4, 0, 3)
+[2021-12-20 02:28:21,848] [MainThread/DEBUG] Loading chunk at position (-3, 0, -4)
+[2021-12-20 02:28:21,966] [MainThread/DEBUG] Loading chunk at position (-3, 0, -3)
+[2021-12-20 02:28:22,059] [MainThread/DEBUG] Loading chunk at position (-3, 0, -2)
+[2021-12-20 02:28:22,263] [MainThread/DEBUG] Loading chunk at position (-3, 0, -1)
+[2021-12-20 02:28:22,372] [MainThread/DEBUG] Loading chunk at position (-3, 0, 0)
+[2021-12-20 02:28:22,466] [MainThread/DEBUG] Loading chunk at position (-3, 0, 1)
+[2021-12-20 02:28:22,707] [MainThread/DEBUG] Loading chunk at position (-3, 0, 2)
+[2021-12-20 02:28:22,819] [MainThread/DEBUG] Loading chunk at position (-3, 0, 3)
+[2021-12-20 02:28:22,931] [MainThread/DEBUG] Loading chunk at position (-2, 0, -4)
+[2021-12-20 02:28:23,195] [MainThread/DEBUG] Loading chunk at position (-2, 0, -3)
+[2021-12-20 02:28:23,299] [MainThread/DEBUG] Loading chunk at position (-2, 0, -2)
+[2021-12-20 02:28:23,411] [MainThread/DEBUG] Loading chunk at position (-2, 0, -1)
+[2021-12-20 02:28:23,522] [MainThread/DEBUG] Loading chunk at position (-2, 0, 0)
+[2021-12-20 02:28:23,621] [MainThread/DEBUG] Loading chunk at position (-2, 0, 1)
+[2021-12-20 02:28:23,887] [MainThread/DEBUG] Loading chunk at position (-2, 0, 2)
+[2021-12-20 02:28:23,996] [MainThread/DEBUG] Loading chunk at position (-2, 0, 3)
+[2021-12-20 02:28:24,090] [MainThread/DEBUG] Loading chunk at position (-1, 0, -4)
+[2021-12-20 02:28:24,199] [MainThread/DEBUG] Loading chunk at position (-1, 0, -3)
+[2021-12-20 02:28:24,301] [MainThread/DEBUG] Loading chunk at position (-1, 0, -2)
+[2021-12-20 02:28:24,411] [MainThread/DEBUG] Loading chunk at position (-1, 0, -1)
+[2021-12-20 02:28:24,707] [MainThread/DEBUG] Loading chunk at position (-1, 0, 0)
+[2021-12-20 02:28:24,817] [MainThread/DEBUG] Loading chunk at position (-1, 0, 1)
+[2021-12-20 02:28:24,910] [MainThread/DEBUG] Loading chunk at position (-1, 0, 2)
+[2021-12-20 02:28:25,020] [MainThread/DEBUG] Loading chunk at position (-1, 0, 3)
+[2021-12-20 02:28:25,129] [MainThread/DEBUG] Loading chunk at position (0, 0, -4)
+[2021-12-20 02:28:25,223] [MainThread/DEBUG] Loading chunk at position (0, 0, -3)
+[2021-12-20 02:28:25,332] [MainThread/DEBUG] Loading chunk at position (0, 0, -2)
+[2021-12-20 02:28:25,660] [MainThread/DEBUG] Loading chunk at position (0, 0, -1)
+[2021-12-20 02:28:25,754] [MainThread/DEBUG] Loading chunk at position (0, 0, 0)
+[2021-12-20 02:28:25,863] [MainThread/DEBUG] Loading chunk at position (0, 0, 1)
+[2021-12-20 02:28:25,983] [MainThread/DEBUG] Loading chunk at position (0, 0, 2)
+[2021-12-20 02:28:26,091] [MainThread/DEBUG] Loading chunk at position (0, 0, 3)
+[2021-12-20 02:28:26,203] [MainThread/DEBUG] Loading chunk at position (1, 0, -4)
+[2021-12-20 02:28:26,312] [MainThread/DEBUG] Loading chunk at position (1, 0, -3)
+[2021-12-20 02:28:26,424] [MainThread/DEBUG] Loading chunk at position (1, 0, -2)
+[2021-12-20 02:28:26,549] [MainThread/DEBUG] Loading chunk at position (1, 0, -1)
+[2021-12-20 02:28:26,994] [MainThread/DEBUG] Loading chunk at position (1, 0, 0)
+[2021-12-20 02:28:27,097] [MainThread/DEBUG] Loading chunk at position (1, 0, 1)
+[2021-12-20 02:28:27,195] [MainThread/DEBUG] Loading chunk at position (1, 0, 2)
+[2021-12-20 02:28:27,304] [MainThread/DEBUG] Loading chunk at position (1, 0, 3)
+[2021-12-20 02:28:27,429] [MainThread/DEBUG] Loading chunk at position (2, 0, -4)
+[2021-12-20 02:28:27,526] [MainThread/DEBUG] Loading chunk at position (2, 0, -3)
+[2021-12-20 02:28:27,669] [MainThread/DEBUG] Loading chunk at position (2, 0, -2)
+[2021-12-20 02:28:27,775] [MainThread/DEBUG] Loading chunk at position (2, 0, -1)
+[2021-12-20 02:28:27,884] [MainThread/DEBUG] Loading chunk at position (2, 0, 0)
+[2021-12-20 02:28:27,978] [MainThread/DEBUG] Loading chunk at position (2, 0, 1)
+[2021-12-20 02:28:28,091] [MainThread/DEBUG] Loading chunk at position (2, 0, 2)
+[2021-12-20 02:28:28,184] [MainThread/DEBUG] Loading chunk at position (2, 0, 3)
+[2021-12-20 02:28:28,686] [MainThread/DEBUG] Loading chunk at position (3, 0, -4)
+[2021-12-20 02:28:28,795] [MainThread/DEBUG] Loading chunk at position (3, 0, -3)
+[2021-12-20 02:28:28,906] [MainThread/DEBUG] Loading chunk at position (3, 0, -2)
+[2021-12-20 02:28:29,001] [MainThread/DEBUG] Loading chunk at position (3, 0, -1)
+[2021-12-20 02:28:29,110] [MainThread/DEBUG] Loading chunk at position (3, 0, 0)
+[2021-12-20 02:28:29,220] [MainThread/DEBUG] Loading chunk at position (3, 0, 1)
+[2021-12-20 02:28:29,314] [MainThread/DEBUG] Loading chunk at position (3, 0, 2)
+[2021-12-20 02:28:29,423] [MainThread/DEBUG] Loading chunk at position (3, 0, 3)
+[2021-12-20 02:28:29,532] [MainThread/INFO] Generating chunks
+[2021-12-20 02:29:00,934] [MainThread/INFO] Resize 854 * 480
+[2021-12-20 02:29:00,934] [MainThread/WARNING] Warning: framerate dropping below 20 fps (0 fps)
+[2021-12-20 02:29:00,969] [MainThread/INFO] Resize 854 * 480

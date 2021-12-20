@@ -1,6 +1,7 @@
 import chunk
 import ctypes
 import math
+import logging
 
 
 import pyglet.gl as gl
@@ -10,13 +11,15 @@ import models
 import save
 import texture_manager
 import options
+
+from functools import cache
 # import custom block models
 
 
 class World:
-	def __init__(self, camera):
+	def __init__(self, camera, texture_manager):
 		self.camera = camera
-		self.texture_manager = texture_manager.Texture_manager(16, 16, 256)
+		self.texture_manager = texture_manager
 		self.block_types = [None]
 
 		# parse block type data file
@@ -25,6 +28,7 @@ class World:
 		blocks_data = blocks_data_file.readlines()
 		blocks_data_file.close()
 
+		logging.info("Loading block models")
 		for block in blocks_data:
 			if block[0] in ['\n', '#']: # skip if empty line or comment
 				continue
@@ -73,42 +77,42 @@ class World:
 
 		self.texture_manager.generate_mipmaps()
 
-		chunk_indices = []
+		indices = []
 
 		for nquad in range(chunk.CHUNK_WIDTH * chunk.CHUNK_HEIGHT * chunk.CHUNK_LENGTH * 8):
-			chunk_indices.append(4 * nquad + 0)
-			chunk_indices.append(4 * nquad + 1)
-			chunk_indices.append(4 * nquad + 2)
-			chunk_indices.append(4 * nquad + 0)
-			chunk_indices.append(4 * nquad + 2)
-			chunk_indices.append(4 * nquad + 3)
-
-		print(len(chunk_indices))
+			indices.append(4 * nquad + 0)
+			indices.append(4 * nquad + 1)
+			indices.append(4 * nquad + 2)
+			indices.append(4 * nquad + 0)
+			indices.append(4 * nquad + 2)
+			indices.append(4 * nquad + 3)
 
 		self.ibo = gl.GLuint(0)
-		gl.glGenBuffers(1, ctypes.byref(self.ibo))
+		gl.glGenBuffers(1, self.ibo)
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
 		gl.glBufferData(
 			gl.GL_ELEMENT_ARRAY_BUFFER,
-			ctypes.sizeof(gl.GLuint * len(chunk_indices)),
-			(gl.GLuint * len(chunk_indices))(*chunk_indices),
+			ctypes.sizeof(gl.GLuint * len(indices)),
+			(gl.GLuint * len(indices))(*indices),
 			gl.GL_STATIC_DRAW)
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, 0)
 
-		
+		logging.debug("Created Shared Index Buffer")
 
 		# load the world
 
 		self.save = save.Save(self)
 
 		self.chunks = {}
+
 		self.save.load()
 		
-		for chunk_position in self.chunks:
-			self.chunks[chunk_position].update_subchunk_meshes()
-			self.chunks[chunk_position].update_mesh()
+		logging.info("Generating chunks")
+		for world_chunk in self.chunks.values():
+			world_chunk.update_subchunk_meshes()
+			world_chunk.update_mesh()
 
-		del chunk_indices
+		del indices
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
@@ -189,6 +193,7 @@ class World:
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position((cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position((cx, cy, cz - 1), (x, y, z - 1))
 	
+	
 	def can_render_chunk(self, chunk_position, pl_c_pos):
 		rx, ry, rz = (chunk_position[0] - pl_c_pos[0]) \
 					* math.cos(self.camera.rotation[0]) \
@@ -205,9 +210,9 @@ class World:
 		gl.glEnable(gl.GL_BLEND)
 		gl.glDepthMask(gl.GL_FALSE)
 
-		for chunk_position in self.chunks:
+		for chunk_position, render_chunk in self.chunks.items():
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				self.chunks[chunk_position].draw_translucent()
+				render_chunk.draw_translucent()
 
 		gl.glDepthMask(gl.GL_TRUE)
 		gl.glDisable(gl.GL_BLEND)
@@ -218,16 +223,16 @@ class World:
 		gl.glFrontFace(gl.GL_CW)
 		gl.glEnable(gl.GL_BLEND)
 
-		for chunk_position in self.chunks:
+		for chunk_position, render_chunk in self.chunks.items():
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				self.chunks[chunk_position].draw_translucent()
+				render_chunk.draw_translucent()
 		
 		gl.glFrontFace(gl.GL_CCW)
 		gl.glEnable(gl.GL_BLEND)
 		
-		for chunk_position in self.chunks:
+		for chunk_position, render_chunk in self.chunks.items():
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				self.chunks[chunk_position].draw_translucent()
+				render_chunk.draw_translucent()
 
 		gl.glDisable(gl.GL_BLEND)
 		gl.glDepthMask(gl.GL_TRUE)
@@ -238,9 +243,9 @@ class World:
 		player_floored_pos = tuple(self.camera.position)
 		player_chunk_pos = self.get_chunk_position(player_floored_pos)
 
-		for chunk_position in self.chunks:
+		for chunk_position, render_chunk in self.chunks.items():
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				self.chunks[chunk_position].draw()
+				render_chunk.draw()
 
 		self.draw_translucent(player_chunk_pos)
 

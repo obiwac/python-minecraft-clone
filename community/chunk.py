@@ -43,11 +43,11 @@ class Chunk:
 		# create VAO and VBO's
 
 		self.vao = gl.GLuint(0)
-		gl.glGenVertexArrays(1, ctypes.byref(self.vao))
+		gl.glGenVertexArrays(1, self.vao)
 		gl.glBindVertexArray(self.vao)
 
 		self.vbo = gl.GLuint(0)
-		gl.glGenBuffers(1, ctypes.byref(self.vbo))
+		gl.glGenBuffers(1, self.vbo)
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 8), None, gl.GL_DYNAMIC_DRAW)
 
@@ -64,12 +64,11 @@ class Chunk:
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
 
 	def __del__(self):
-		gl.glDeleteBuffers(1, ctypes.byref(self.vbo))
-		gl.glDeleteVertexArrays(1, ctypes.byref(self.vao))
+		gl.glDeleteBuffers(1, self.vbo)
+		gl.glDeleteVertexArrays(1, self.vao)
 	
 	def update_subchunk_meshes(self):
-		for subchunk_position in self.subchunks:
-			subchunk = self.subchunks[subchunk_position]
+		for subchunk in self.subchunks.values():
 			subchunk.update_mesh()
 
 	def update_at_position(self, position):
@@ -103,16 +102,14 @@ class Chunk:
 	def update_mesh(self):
 		# combine all the small subchunk meshes into one big chunk mesh
 
-		for subchunk_position in self.subchunks:
-			subchunk = self.subchunks[subchunk_position]
-
+		for subchunk in self.subchunks.values():
 			self.mesh.extend(subchunk.mesh)
 			self.translucent_mesh.extend(subchunk.translucent_mesh)
 		
 		# send the full mesh data to the GPU and free the memory used client-side (we don't need it anymore)
 		# don't forget to save the length of 'self.mesh_indices' before freeing
 
-		self.mesh_quad_count = len(self.mesh) // 24
+		self.mesh_quad_count = len(self.mesh) // 24 # 24 = 6 (attributes of a vertex) * 4 (number of vertices per quad)
 		self.translucent_quad_count = len(self.translucent_mesh) // 24
 
 		self.send_mesh_data_to_gpu()
@@ -124,8 +121,6 @@ class Chunk:
 		if not self.mesh_quad_count:
 			return
 
-		self.mesh.extend(self.translucent_mesh)
-
 		gl.glBindVertexArray(self.vao)
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
@@ -133,7 +128,14 @@ class Chunk:
 			gl.GL_ARRAY_BUFFER,
 			0,
 			ctypes.sizeof(gl.GLfloat * len(self.mesh)),
-			(gl.GLfloat * len(self.mesh)) (*self.mesh))
+			(gl.GLfloat * len(self.mesh)) (*self.mesh)
+		)
+		gl.glBufferSubData(
+			gl.GL_ARRAY_BUFFER,
+			ctypes.sizeof(gl.GLfloat * len(self.mesh)),
+			ctypes.sizeof(gl.GLfloat * len(self.translucent_mesh)),
+			(gl.GLfloat * len(self.translucent_mesh)) (*self.translucent_mesh)
+		)
 
 
 	def draw(self):

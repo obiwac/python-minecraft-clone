@@ -1,5 +1,6 @@
 import nbtlib as nbt
 import base36
+import logging
 
 import chunk
 
@@ -9,7 +10,7 @@ class Save:
 		self.path = path
 	
 	def chunk_position_to_path(self, chunk_position):
-		x, y, z = chunk_position
+		x, _, z = chunk_position
 
 		chunk_path = '/'.join((self.path,
 			base36.dumps(x % 64), base36.dumps(z % 64),
@@ -18,6 +19,7 @@ class Save:
 		return chunk_path
 
 	def load_chunk(self, chunk_position):
+		logging.debug(f"Loading chunk at position {chunk_position}")
 		# load the chunk file
 		
 		chunk_path = self.chunk_position_to_path(chunk_position)
@@ -41,6 +43,7 @@ class Save:
 						y]
 
 	def save_chunk(self, chunk_position):
+		logging.debug(f"Saving chunk at position {chunk_position}")
 		x, y, z = chunk_position
 		
 		# try to load the chunk file
@@ -75,6 +78,7 @@ class Save:
 		chunk_data.save(chunk_path, gzipped = True)
 
 	def load(self):
+		logging.info("Loading world")
 		# for x in range(-1, 15):
 		# 	for y in range(-15, 1):
 		# 		self.load_chunk((x, y))
@@ -84,6 +88,7 @@ class Save:
 				self.load_chunk((x, 0, y))
 	
 	def save(self):
+		logging.info("Saving world")
 		for chunk_position in self.world.chunks:
 			if chunk_position[1] != 0: # reject all chunks above and below the world limit
 				continue
