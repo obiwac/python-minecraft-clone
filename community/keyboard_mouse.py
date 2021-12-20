@@ -21,9 +21,9 @@ class Keyboard_Mouse(controller.Controller):
 
 			return
 
-		if button == pyglet.window.mouse.RIGHT: self.interact(self.InteractMode.Place)
-		elif button == pyglet.window.mouse.LEFT: self.interact(self.InteractMode.Break)
-		elif button == pyglet.window.mouse.MIDDLE: self.interact(self.InteractMode.Pick)
+		if button == pyglet.window.mouse.RIGHT: self.interact(self.InteractMode.PLACE)
+		elif button == pyglet.window.mouse.LEFT: self.interact(self.InteractMode.BREAK)
+		elif button == pyglet.window.mouse.MIDDLE: self.interact(self.InteractMode.PICK)
 
 	def on_mouse_motion(self, x, y, delta_x, delta_y):
 		if self.game.mouse_captured:
@@ -41,28 +41,28 @@ class Keyboard_Mouse(controller.Controller):
 		if not self.game.mouse_captured:
 			return
 
-		if key == pyglet.window.key.D: self.start_move(self.MoveMode.Right)
-		elif key == pyglet.window.key.A: self.start_move(self.MoveMode.Left)
-		elif key == pyglet.window.key.W: self.start_move(self.MoveMode.Forward)
-		elif key == pyglet.window.key.S: self.start_move(self.MoveMode.Backward)
-		elif key == pyglet.window.key.SPACE : self.start_move(self.MoveMode.Up)
-		elif key == pyglet.window.key.LSHIFT: self.start_move(self.MoveMode.Down)
+		if key == pyglet.window.key.D: self.start_move(self.MoveMode.RIGHT)
+		elif key == pyglet.window.key.A: self.start_move(self.MoveMode.LEFT)
+		elif key == pyglet.window.key.W: self.start_move(self.MoveMode.FORWARD)
+		elif key == pyglet.window.key.S: self.start_move(self.MoveMode.BACKWARD)
+		elif key == pyglet.window.key.SPACE : self.start_move(self.MoveMode.UP)
+		elif key == pyglet.window.key.LSHIFT: self.start_move(self.MoveMode.DOWN)
 
-		elif key == pyglet.window.key.LCTRL : self.start_modifier(self.ModifierMode.Sprint)
+		elif key == pyglet.window.key.LCTRL : self.start_modifier(self.ModifierMode.SPRINT)
 
-		elif key == pyglet.window.key.G: self.misc(self.MiscMode.Random)
-		elif key == pyglet.window.key.O: self.misc(self.MiscMode.Save)
-		elif key == pyglet.window.key.ESCAPE: self.misc(self.MiscMode.Escape)
+		elif key == pyglet.window.key.G: self.misc(self.MiscMode.RANDOM)
+		elif key == pyglet.window.key.O: self.misc(self.MiscMode.SAVE)
+		elif key == pyglet.window.key.ESCAPE: self.misc(self.MiscMode.ESCAPE)
 
 	def on_key_release(self, key, modifiers):
 		if not self.game.mouse_captured:
 			return
 
-		if key == pyglet.window.key.D: self.end_move(self.MoveMode.Right)
-		elif key == pyglet.window.key.A: self.end_move(self.MoveMode.Left)
-		elif key == pyglet.window.key.W: self.end_move(self.MoveMode.Forward)
-		elif key == pyglet.window.key.S: self.end_move(self.MoveMode.Backward)
-		elif key == pyglet.window.key.SPACE : self.end_move(self.MoveMode.Up)
-		elif key == pyglet.window.key.LSHIFT: self.end_move(self.MoveMode.Down)
+		if key == pyglet.window.key.D: self.end_move(self.MoveMode.RIGHT)
+		elif key == pyglet.window.key.A: self.end_move(self.MoveMode.LEFT)
+		elif key == pyglet.window.key.W: self.end_move(self.MoveMode.FORWARD)
+		elif key == pyglet.window.key.S: self.end_move(self.MoveMode.BACKWARD)
+		elif key == pyglet.window.key.SPACE : self.end_move(self.MoveMode.UP)
+		elif key == pyglet.window.key.LSHIFT: self.end_move(self.MoveMode.DOWN)
 
-		elif key == pyglet.window.key.LCTRL : self.end_modifier(self.ModifierMode.Sprint)
+		elif key == pyglet.window.key.LCTRL : self.end_modifier(self.ModifierMode.SPRINT)

@@ -4,34 +4,34 @@ import hit
 
 class Controller:
 	class InteractMode:
-		Place = 0
-		Break = 1
-		Pick = 2
+		PLACE = 0
+		BREAK = 1
+		PICK = 2
 
 	class MiscMode:
-		Random = 0
-		Save = 1
-		Escape = 2
+		RANDOM = 0
+		SAVE = 1
+		ESCAPE = 2
 
 	class MoveMode:
-		Left = 0
-		Right = 1
-		Down = 2
-		Up = 3
-		Backward = 4
-		Forward = 5
+		LEFT = 0
+		RIGHT = 1
+		DOWN = 2
+		UP = 3
+		BACKWARD = 4
+		FORWARD = 5
 
 	class ModifierMode:
-		Sprint = 0
+		SPRINT = 0
 
 	def __init__(self, game):
 		self.game = game
 
 	def interact(self, mode):
 		def hit_callback(current_block, next_block):
-			if mode == self.InteractMode.Place: self.game.world.set_block(current_block, self.game.holding)
-			elif mode == self.InteractMode.Break: self.game.world.set_block(next_block, 0)
-			elif mode == self.InteractMode.Pick: self.game.holding = self.game.world.get_block_number(next_block)
+			if mode == self.InteractMode.PLACE: self.game.world.set_block(current_block, self.game.holding)
+			elif mode == self.InteractMode.BREAK: self.game.world.set_block(next_block, 0)
+			elif mode == self.InteractMode.PICK: self.game.holding = self.game.world.get_block_number(next_block)
 
 		hit_ray = hit.Hit_ray(self.game.world, self.game.camera.rotation, self.game.camera.position)
 
@@ -40,21 +40,16 @@ class Controller:
 				break
 
 	def misc(self, mode):
-		if mode == self.MiscMode.Random:
+		if mode == self.MiscMode.RANDOM:
 			self.game.holding = random.randint(1, len(self.game.world.block_types) - 1)
-		elif mode == self.MiscMode.Save:
+		elif mode == self.MiscMode.SAVE:
 			self.game.world.save.save()
-		elif mode == self.MiscMode.Escape:
+		elif mode == self.MiscMode.ESCAPE:
 			self.game.mouse_captured = False
 			self.game.set_exclusive_mouse(False)
 
 	def update_move(self, axis):
-		if self.game.controls[axis] > 0:
-			self.game.camera.input[axis] = 1
-		elif self.game.controls[axis] < 0:
-			self.game.camera.input[axis] = -1
-		elif self.game.controls[axis] == 0:
-			self.game.camera.input[axis] = 0
+		self.game.camera.input[axis] = max(-1, min(self.game.controls[axis], 1))
 
 	def start_move(self, mode):
 		axis = int((mode if mode % 2 == 0 else mode - 1) / 2)
@@ -67,9 +62,9 @@ class Controller:
 		self.update_move(axis)
 
 	def start_modifier(self, mode):
-		if mode == self.ModifierMode.Sprint:
+		if mode == self.ModifierMode.SPRINT:
 			self.game.camera.target_speed = camera.SPRINTING_SPEED
 
 	def end_modifier(self, mode):
-		if mode == self.ModifierMode.Sprint:
+		if mode == self.ModifierMode.SPRINT:
 			self.game.camera.target_speed = camera.WALKING_SPEED
