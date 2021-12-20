@@ -17,7 +17,7 @@ import world
 import hit
 import time
 
-log_filename = f"logs/{time.time()}-log.txt"
+log_filename = f"logs/{time.time()}.log"
 with open(log_filename, 'x') as file:
 	file.write("Logging file\n")
 
