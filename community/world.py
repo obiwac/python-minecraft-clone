@@ -87,6 +87,7 @@ class World:
 			indices.append(4 * nquad + 2)
 			indices.append(4 * nquad + 3)
 
+
 		self.ibo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.ibo)
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
