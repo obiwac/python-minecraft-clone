@@ -22,7 +22,7 @@ with open(log_filename, 'x') as file:
 	file.write("Logging file\n")
 
 logging.basicConfig(level=logging.INFO, filename=log_filename, 
-	format="[%(asctime)s] [%(threadName)s/%(levelname)s] %(message)s")
+	format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
 
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
