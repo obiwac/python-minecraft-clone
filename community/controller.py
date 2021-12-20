@@ -49,7 +49,7 @@ class Controller:
 			self.game.set_exclusive_mouse(False)
 
 	def update_move(self, axis):
-		self.game.camera.input[axis] = max(-1, min(self.game.controls[axis], 1))
+		self.game.camera.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))
 
 	def start_move(self, mode):
 		axis = int((mode if mode % 2 == 0 else mode - 1) / 2)
