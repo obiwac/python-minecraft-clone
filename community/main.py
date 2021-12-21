@@ -3,6 +3,7 @@ import time
 import os
 
 import pyglet
+from pyglet.gl.gl import GLfloat
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
@@ -76,10 +77,14 @@ class Window(pyglet.window.Window):
 
 		self.player = pyglet.media.Player()
 		self.player.volume = 0.5
-		self.player.queue(random.choice(self.music))
-		self.player.play()
 
-		self.player.standby = False
+		if len(self.music) > 0:
+			self.player.queue(random.choice(self.music))
+			self.player.play()
+			self.player.standby = False
+		else:
+			self.player.standby = True
+
 		self.player.next_time = 0
 	
 	def update(self, delta_time):
@@ -88,7 +93,7 @@ class Window(pyglet.window.Window):
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
 
-		if not self.player.source:
+		if not self.player.source and len(self.music) > 0:
 			if not self.player.standby:
 				self.player.standby = True
 				self.player.next_time = time.time() + random.randint(240, 360)
@@ -96,7 +101,6 @@ class Window(pyglet.window.Window):
 				self.player.standby = False
 				self.player.queue(random.choice(self.music))
 				self.player.play()
-
 
 		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
