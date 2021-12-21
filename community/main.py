@@ -1,9 +1,13 @@
-import math
 import random
+import time
+import os
+
 import pyglet
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
+pyglet.options["search_local_libs"] = True
+pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2" "silent")
 
 import pyglet.gl as gl
 
@@ -11,8 +15,6 @@ import shader
 import camera
 
 import world
-
-import hit
 
 import joystick
 import keyboard_mouse
@@ -65,15 +67,36 @@ class Window(pyglet.window.Window):
 		# mouse and keyboard stuff
 		self.keyboard_mouse = keyboard_mouse.Keyboard_Mouse(self)
 
-		# Sync status:
+		# sync status
 		self.status = gl.GL_CONDITION_SATISFIED
 		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+
+		# music stuff
+		self.music = [pyglet.media.load(os.path.join("audio/music", file)) for file in os.listdir("audio/music") if os.path.isfile(os.path.join("audio/music", file))]
+
+		self.player = pyglet.media.Player()
+		self.player.volume = 0.5
+		self.player.queue(random.choice(self.music))
+		self.player.play()
+
+		self.player.standby = False
+		self.player.next_time = 0
 	
 	def update(self, delta_time):
 		# print(pyglet.clock.get_fps())
 
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
+
+		if not self.player.source:
+			if not self.player.standby:
+				self.player.standby = True
+				self.player.next_time = time.time() + random.randint(240, 360)
+			elif time.time() >= self.player.next_time:
+				self.player.standby = False
+				self.player.queue(random.choice(self.music))
+				self.player.play()
+
 
 		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
