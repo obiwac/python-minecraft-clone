@@ -1,5 +1,6 @@
 import options
 import random
+from util import DIRECTIONS
 
 SUBCHUNK_WIDTH  = 4
 SUBCHUNK_HEIGHT = 4
@@ -26,15 +27,20 @@ class Subchunk:
 
 		self.mesh = []
 		self.translucent_mesh = []
+
+	def get_shading_values(self, pos, npos, raw_shading_values):
+		if not npos:
+			light_level = self.world.get_light(pos)
+		else:
+			light_level = self.world.get_light(npos)
+		raw_light_multiplier = min(0.8 ** (15 - light_level) + options.BRIGHTNESS/10, 1)
+		return [raw_light_multiplier * shading_value for shading_value in raw_shading_values]
 	
-	def add_face(self, face, pos, block_type):
-		rotation = 0
-		if options.ALTERNATE_BLOCKS and block_type.is_cube and not block_type.transparent:
-			rotation = random.randint(0, 3)
+	def add_face(self, face, pos, block_type, npos=None):
 		x, y, z = pos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
-		shading_values = block_type.shading_values[face]
+		shading_values = self.get_shading_values(pos, npos, block_type.shading_values[face])
 
 		if block_type.model.translucent:
 			mesh = self.translucent_mesh
@@ -46,7 +52,7 @@ class Subchunk:
 			mesh.append(vertex_positions[i * 3 + 1] + y)
 			mesh.append(vertex_positions[i * 3 + 2] + z)
 
-			mesh.append((i + rotation) % 4)
+			mesh.append(i)
 			mesh.append(tex_index)
 
 			mesh.append(shading_values[i])
@@ -67,6 +73,7 @@ class Subchunk:
 					parent_lx = self.local_position[0] + local_x
 					parent_ly = self.local_position[1] + local_y
 					parent_lz = self.local_position[2] + local_z
+					parent_lpos = (parent_lx, parent_ly, parent_lz)
 
 					block_number = self.parent.blocks[parent_lx][parent_ly][parent_lz]
 
@@ -84,13 +91,12 @@ class Subchunk:
 						# since the vast majority of blocks are probably anyway going to be cubes, this won't impact performance all that much; the amount of useless faces drawn is going to be minimal
 
 						if block_type.is_cube:
-							if self.can_render_face(block_type, block_number, (x + 1, y, z)): self.add_face(0, pos, block_type)
-							if self.can_render_face(block_type, block_number, (x - 1, y, z)): self.add_face(1, pos, block_type)
-							if self.can_render_face(block_type, block_number, (x, y + 1, z)): self.add_face(2, pos, block_type)
-							if self.can_render_face(block_type, block_number, (x, y - 1, z)): self.add_face(3, pos, block_type)
-							if self.can_render_face(block_type, block_number, (x, y, z + 1)): self.add_face(4, pos, block_type)
-							if self.can_render_face(block_type, block_number, (x, y, z - 1)): self.add_face(5, pos, block_type)
-						
+							for face, direction in enumerate(DIRECTIONS):
+								dx, dy, dz = direction
+								npos = (x + dx, y + dy, z + dz)
+								if self.can_render_face(block_type, block_number, npos):
+									self.add_face(face, pos, block_type, npos)
+														
 						else:
 							for i in range(len(block_type.vertex_positions)):
 								self.add_face(i, pos, block_type)

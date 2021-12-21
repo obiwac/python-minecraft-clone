@@ -59,7 +59,7 @@ class Window(pyglet.window.Window):
 
 		# misc stuff
 
-		self.holding = 5
+		self.holding = 50
 
 		# bind textures
 

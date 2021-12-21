@@ -3,16 +3,29 @@ import ctypes
 import math
 import logging
 
+from collections import deque
 
 import pyglet.gl as gl
 
 import block_type
 import models
 import save
-import texture_manager
 import options
+from util import DIRECTIONS
 
-from functools import cache
+class Queue:
+	def __init__(self):
+		self.queue = deque()
+	
+	def put_nowait(self, item):
+		self.queue.append(item)
+
+	def get_nowait(self):
+		return self.queue.popleft()
+	
+	def qsize(self):
+		return len(self.queue)
+
 # import custom block models
 
 
@@ -106,6 +119,12 @@ class World:
 
 		self.chunks = {}
 
+		# light update queue
+
+		self.light_increase_queue = Queue() # Node: World Position, light
+		self.light_decrease_queue = Queue() # Node: World position, light
+		self.chunk_update_queue = Queue() 
+
 		self.save.load()
 		
 		logging.info("Generating chunks")
@@ -117,6 +136,80 @@ class World:
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
+
+	def increase_light(self, world_pos, newlight):
+		logging.debug("Propagating block light increase")
+		chunk = self.chunks.get(self.get_chunk_position(world_pos), None)
+		if not chunk: 
+			return
+		lx, ly, lz = self.get_local_position(world_pos)
+		chunk.lightmap[lx][ly][lz] = newlight
+		self.light_increase_queue.put_nowait((*world_pos, newlight-1))
+		self.propagate_increase()
+
+	def propagate_increase(self):
+		while self.light_increase_queue.qsize():
+			x, y, z, light_level = self.light_increase_queue.get_nowait()
+
+			for direction in DIRECTIONS:
+				dx, dy, dz = direction
+				nx, ny, nz = x + dx, y + dy, z + dz
+				chunk = self.chunks.get(self.get_chunk_position((nx, ny, nz)), None)
+				if not chunk:
+					continue
+				lx, ly, lz = self.get_local_position((nx, ny, nz))
+				if not self.is_opaque_block((nx, ny, nz)) and chunk.lightmap[lx][ly][lz] + 2 <= light_level:
+					chunk.lightmap[lx][ly][lz] = light_level - 1
+					if chunk not in self.chunk_update_queue.queue:
+						self.chunk_update_queue.put_nowait((chunk, nx, ny, nz))
+
+					self.light_increase_queue.put_nowait((nx, ny, nz, light_level - 1))
+
+	def decrease_light(self, world_pos):
+		chunk = self.chunks.get(self.get_chunk_position(world_pos), None)
+		if not chunk: 
+			return
+		lx, ly, lz = self.get_local_position(world_pos)
+		old_light = chunk.lightmap[lx][ly][lz]
+		chunk.lightmap[lx][ly][lz] = 0
+		self.light_decrease_queue.put_nowait((*world_pos, old_light))
+		
+		self.propagate_decrease()
+		self.propagate_increase()
+
+	def propagate_decrease(self):
+		while self.light_decrease_queue.qsize():
+			x, y, z, light_level = self.light_decrease_queue.get_nowait()
+
+			for direction in DIRECTIONS:
+				dx, dy, dz = direction
+				nx, ny, nz = x + dx, y + dy, z + dz
+				chunk = self.chunks.get(self.get_chunk_position((nx, ny, nz)), None)
+				if not chunk:
+					continue
+				nlx, nly, nlz = self.get_local_position((nx, ny, nz))
+				if not self.is_opaque_block((nx, ny, nz)):
+					neighbour_level = chunk.lightmap[nlx][nly][nlz]
+					if chunk not in self.chunk_update_queue.queue:
+						self.chunk_update_queue.put_nowait((chunk, nx, ny, nz))
+					if neighbour_level and neighbour_level < light_level:
+						chunk.lightmap[nlx][nly][nlz] = 0
+						self.light_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
+					elif neighbour_level >= light_level:
+						self.light_increase_queue.put_nowait((nx, ny, nz, neighbour_level))
+
+	def get_light(self, position):
+		chunk = self.chunks.get(self.get_chunk_position(position), None)
+		if not chunk:
+			return 0
+		lx, ly, lz = self.get_local_position(position)
+		return chunk.lightmap[lx][ly][lz]
+
+	def set_light(self, position, light):
+		chunk = self.chunks.get(self.get_chunk_position(position), None)
+		lx, ly, lz = self.get_local_position(position)
+		chunk.lightmap[lx][ly][lz] = light
+
 	
 	def get_chunk_position(self, position):
 		x, y, z = position
@@ -169,6 +262,16 @@ class World:
 		
 		if self.get_block_number(position) == number: # no point updating mesh if the block is the same
 			return
+
+		if number:
+			if number == 50:
+				self.increase_light(position, 15)
+
+			elif not self.block_types[number].transparent:
+				self.decrease_light(position)
+		
+		if not number:
+			self.decrease_light(position)
 		
 		lx, ly, lz = self.get_local_position(position)
 
@@ -193,6 +296,11 @@ class World:
 
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position((cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position((cx, cy, cz - 1), (x, y, z - 1))
+		
+		while self.chunk_update_queue.qsize():
+			pending_chunk, nx, ny, nz = self.chunk_update_queue.get_nowait()
+			pending_chunk.update_at_position((nx, ny, nz))
+			pending_chunk.update_mesh()
 	
 	
 	def can_render_chunk(self, chunk_position, pl_c_pos):
