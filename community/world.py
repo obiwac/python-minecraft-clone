@@ -455,15 +455,11 @@ class World:
 		self.draw_translucent(player_chunk_pos)
 
 	def update(self):
-		built_chunks = []
 		if self.chunk_update_queue.qsize():
 			pending_chunk, sx, sy, sz = self.chunk_update_queue.get_nowait()
 			pending_chunk.subchunks[(sx, sy, sz)].update_mesh()
-			if pending_chunk not in built_chunks:
-				built_chunks.append(pending_chunk)
-		for built_chunk in built_chunks:
-			built_chunk.update_mesh()
-		built_chunks = []
+			pending_chunk.update_mesh()
+				
 		
 	
 		
