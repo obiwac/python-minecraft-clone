@@ -111,6 +111,8 @@ class World:
 			else:
 				self.block_types.append(_block_type)
 
+		self.light_blocks = [10, 11, 50, 51, 62, 75]
+
 		self.texture_manager.generate_mipmaps()
 
 		indices = []
@@ -166,16 +168,16 @@ class World:
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
 
-	def increase_light(self, world_pos, newlight):
+	def increase_light(self, world_pos, newlight, light_update=True):
 		logging.debug(f"Propagating block light increase at position {world_pos}")
 
 		chunk = self.chunks[get_chunk_position(world_pos)]
 		lx, ly, lz = get_local_position(world_pos)
 		chunk.lightmap[lx][ly][lz] = newlight
 		self.light_increase_queue.put_nowait((*world_pos, newlight))
-		self.propagate_increase()
+		self.propagate_increase(light_update)
 
-	def propagate_increase(self):
+	def propagate_increase(self, light_update):
 		while self.light_increase_queue.qsize():
 			x, y, z, light_level = self.light_increase_queue.get_nowait()
 
@@ -185,15 +187,18 @@ class World:
 				chunk = self.chunks.get(get_chunk_position((nx, ny, nz)), None)
 				if not chunk: continue
 				lx, ly, lz = get_local_position((nx, ny, nz))
+
 				if not self.is_opaque_block((nx, ny, nz)) and chunk.lightmap[lx][ly][lz] + 2 <= light_level:
 					chunk.lightmap[lx][ly][lz] = light_level - 1
-					if (chunk, nx, ny, nz) not in self.chunk_update_queue.queue:
+					self.light_increase_queue.put_nowait((nx, ny, nz, light_level - 1))
+
+					if light_update:
 						sx = lx // subchunk.SUBCHUNK_WIDTH
 						sy = ly // subchunk.SUBCHUNK_HEIGHT
 						sz = lz // subchunk.SUBCHUNK_LENGTH
-						self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
+						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue and light_update:
+							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 
-					self.light_increase_queue.put_nowait((nx, ny, nz, light_level - 1))
 
 	def init_skylight(self, pending_chunk):
 		for lx in range(chunk.CHUNK_WIDTH):
@@ -221,15 +226,16 @@ class World:
 				lx, ly, lz = get_local_position((nx, ny, nz))
 				if not self.is_opaque_block((nx, ny, nz)) and chunk.skylightmap[lx][ly][lz] + 2 <= light_level:
 					chunk.skylightmap[lx][ly][lz] = light_level - 1
-					if (chunk, nx, ny, nz) not in self.chunk_update_queue.queue and light_update:
-						sx = lx // subchunk.SUBCHUNK_WIDTH
-						sy = ly // subchunk.SUBCHUNK_HEIGHT
-						sz = lz // subchunk.SUBCHUNK_LENGTH
-						self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 					if not dy:
 						self.skylight_increase_queue.put_nowait((nx, ny, nz, light_level - 1))
 					else:
 						self.skylight_increase_queue.put_nowait((nx, ny, nz, light_level))
+					if light_update:
+						sx = lx // subchunk.SUBCHUNK_WIDTH
+						sy = ly // subchunk.SUBCHUNK_HEIGHT
+						sz = lz // subchunk.SUBCHUNK_LENGTH
+						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue and light_update:
+							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 
 	def decrease_light(self, world_pos):
 		chunk_lightmap = self.chunks[get_chunk_position(world_pos)].lightmap
@@ -238,10 +244,10 @@ class World:
 		chunk_lightmap[lx][ly][lz] = 0
 		self.light_decrease_queue.put_nowait((*world_pos, old_light))
 		
-		self.propagate_decrease()
-		self.propagate_increase()
+		self.propagate_decrease(True)
+		self.propagate_increase(True)
 
-	def propagate_decrease(self):
+	def propagate_decrease(self, light_update):
 		while self.light_decrease_queue.qsize():
 			x, y, z, light_level = self.light_decrease_queue.get_nowait()
 
@@ -255,16 +261,17 @@ class World:
 					neighbour_level = chunk.lightmap[nlx][nly][nlz]
 					if not neighbour_level:
 						continue
-					if (chunk, nx, ny, nz) not in self.chunk_update_queue.queue:
-						sx = nlx // subchunk.SUBCHUNK_WIDTH
-						sy = nly // subchunk.SUBCHUNK_HEIGHT
-						sz = nlz // subchunk.SUBCHUNK_LENGTH
-						self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 					if neighbour_level < light_level:
 						chunk.lightmap[nlx][nly][nlz] = 0
 						self.light_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.light_increase_queue.put_nowait((nx, ny, nz, neighbour_level))
+					if light_update:
+						sx = nlx // subchunk.SUBCHUNK_WIDTH
+						sy = nly // subchunk.SUBCHUNK_HEIGHT
+						sz = nlz // subchunk.SUBCHUNK_LENGTH
+						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue and light_update:
+							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 	
 	def decrease_skylight(self, world_pos, light_update=True):
 		chunk_skylightmap = self.chunks[get_chunk_position(world_pos)].skylightmap
@@ -290,16 +297,17 @@ class World:
 					neighbour_level = chunk.skylightmap[nlx][nly][nlz]
 					if not neighbour_level:
 						continue
-					if (chunk, nx, ny, nz) not in self.chunk_update_queue.queue and light_update:
-						sx = nlx // subchunk.SUBCHUNK_WIDTH
-						sy = nly // subchunk.SUBCHUNK_HEIGHT
-						sz = nlz // subchunk.SUBCHUNK_LENGTH
-						self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 					if neighbour_level < light_level:
 						chunk.skylightmap[nlx][nly][nlz] = 0
 						self.skylight_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.skylight_increase_queue.put_nowait((nx, ny, nz, neighbour_level))
+					if light_update:
+						sx = nlx // subchunk.SUBCHUNK_WIDTH
+						sy = nly // subchunk.SUBCHUNK_HEIGHT
+						sz = nlz // subchunk.SUBCHUNK_LENGTH
+						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue and light_update:
+							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 
 	def get_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
@@ -327,7 +335,6 @@ class World:
 
 
 	def get_block_number(self, position):
-		x, y, z = position
 		chunk_position = get_chunk_position(position)
 
 		if not chunk_position in self.chunks:
@@ -368,7 +375,7 @@ class World:
 		self.chunks[chunk_position].modified = True
 
 		if number:
-			if number == 50:
+			if number in self.light_blocks:
 				self.increase_light(position, 15)
 
 			elif not self.block_types[number].transparent:

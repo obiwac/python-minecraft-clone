@@ -1,5 +1,4 @@
 import logging
-import math
 import random
 import time
 import os
@@ -98,6 +97,10 @@ class Window(pyglet.window.Window):
 			self.player.standby = True
 
 		self.player.next_time = 0
+
+	def __del__(self):
+		self.player.delete()
+
 
 	def update(self, delta_time):
 		if pyglet.clock.get_fps() < 20:

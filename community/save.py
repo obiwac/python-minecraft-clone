@@ -86,6 +86,18 @@ class Save:
 		for x in range(-4, 4):
 			for y in range(-4, 4):
 				self.load_chunk((x, 0, y))
+			
+		for chunk_position, unlit_chunk in self.world.chunks.items():
+			for x in range(chunk.CHUNK_WIDTH):
+				for y in range(chunk.CHUNK_HEIGHT):
+					for z in range(chunk.CHUNK_LENGTH):
+						if unlit_chunk.blocks[x][y][z] in self.world.light_blocks:
+							world_pos = (
+								chunk_position[0] * chunk.CHUNK_WIDTH + x,
+								chunk_position[1] * chunk.CHUNK_HEIGHT + y,
+								chunk_position[2] * chunk.CHUNK_LENGTH + z
+							)
+							self.world.increase_light(world_pos, 15, False)
 	
 	def save(self):
 		logging.info("Saving world")
