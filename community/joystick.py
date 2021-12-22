@@ -13,7 +13,7 @@ class Joystick_controller(controller.Controller):
 
 		self.camera_sensitivity = 0.007
 		self.joystick_deadzone = 0.25
-		self.update_delay = 0.1
+		self.update_delay = 0.15
 		self.last_update = 0
 
 		self.joystick_move = [0, 0]
