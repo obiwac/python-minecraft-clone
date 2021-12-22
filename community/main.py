@@ -79,10 +79,6 @@ class Window(pyglet.window.Window):
 		# mouse and keyboard stuff
 		self.keyboard_mouse = keyboard_mouse.Keyboard_Mouse(self)
 
-		# sync status
-		self.status = gl.GL_CONDITION_SATISFIED
-		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
-
 		# music stuff
 		self.music = [pyglet.media.load(os.path.join("audio/music", file)) for file in os.listdir("audio/music") if os.path.isfile(os.path.join("audio/music", file))]
 
@@ -125,15 +121,12 @@ class Window(pyglet.window.Window):
 	def on_draw(self):
 		self.camera.update_matrices()
 
-		self.status = gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 2985984)
-		gl.glDeleteSync(self.fence)
-
 		gl.glClearColor(0.4, 0.7, 1.0, 1.0)
 		self.clear()
 
 		self.world.draw()
 
-		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+		gl.glFinish()
 
 	# input functions
 
@@ -155,14 +148,23 @@ class Game:
 		pyglet.app.run()
 		pyglet.app.exit()
 
-def main():
-	log_filename = f"logs/{time.time()}.log"
-	with open(log_filename, 'x') as file:
-		file.write("Logging file\n")
+def init_logger():
+	log_folder = "logs"
+	log_filename = f"{time.time()}.log"
+	log_path = os.path.join(log_folder, log_filename)
 
-	logging.basicConfig(level=logging.INFO, filename=log_filename, 
+	if not os.path.isdir(log_folder):
+		os.mkdir(log_folder)
+
+	with open(log_path, 'x') as file:
+		file.write("[LOGS]\n")
+
+	logging.basicConfig(level=logging.INFO, filename=log_path, 
 		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
 
+
+def main():
+	init_logger()
 	game = Game()
 	game.run()
 

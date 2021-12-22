@@ -209,7 +209,7 @@ class World:
 						chunk.CHUNK_HEIGHT - 1,
 						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
 				)
-				self.skylight_increase_queue.put_nowait((x, y, z, 15))
+				self.skylight_increase_queue.put_nowait((x, y, z, 16))
 		self.propagate_skylight_increase(False)
 
 	def propagate_skylight_increase(self, light_update):

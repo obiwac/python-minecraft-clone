@@ -28,19 +28,24 @@ class Subchunk:
 		self.mesh = []
 		self.translucent_mesh = []
 
-	def get_shading_values(self, pos, npos, raw_shading_values):
+	def get_shading_values(self, block_type, face, pos, npos):
+		raw_shading_values = block_type.shading_values[face]
 		if not npos:
 			light_level = max(self.world.get_light(pos), self.world.get_skylight(pos))
 		else:
 			light_level = max(self.world.get_light(npos), self.world.get_skylight(npos))
-		raw_light_multiplier = min(0.8 ** (15- light_level) + options.BRIGHTNESS/10, 1)
+		if block_type.translucent:
+			raw_light_multiplier = min((6 + light_level)/16 + options.BRIGHTNESS/10, 1)
+		else:
+			raw_light_multiplier = min(0.8 ** (15 - light_level) + options.BRIGHTNESS/10, 1)
+		
 		return [raw_light_multiplier * shading_value for shading_value in raw_shading_values]
 	
 	def add_face(self, face, pos, block_type, npos=None):
 		x, y, z = pos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
-		shading_values = block_type.shading_values[face] if block_type.model.translucent else self.get_shading_values(pos, npos, block_type.shading_values[face])
+		shading_values = self.get_shading_values(block_type, face, pos, npos)
 
 		if block_type.model.translucent:
 			mesh = self.translucent_mesh
