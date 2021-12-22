@@ -2,6 +2,8 @@ import logging
 import math
 import random
 import pyglet
+import cProfile
+import pstats
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
@@ -16,6 +18,7 @@ import world
 
 import hit
 import time
+
 
 log_filename = f"logs/{time.time()}.log"
 with open(log_filename, 'x') as file:

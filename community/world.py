@@ -3,6 +3,8 @@ import ctypes
 import math
 import logging
 
+from functools import cache
+
 from collections import deque
 
 import pyglet.gl as gl
@@ -26,7 +28,23 @@ class Queue:
 	def qsize(self):
 		return len(self.queue)
 
-# import custom block models
+@cache
+def get_chunk_position(position):
+	x, y, z = position
+
+	return (
+		(x // chunk.CHUNK_WIDTH),
+		(y // chunk.CHUNK_HEIGHT),
+		(z // chunk.CHUNK_LENGTH))
+
+@cache
+def get_local_position(position):
+	x, y, z = position
+	
+	return (
+		int(x % chunk.CHUNK_WIDTH),
+		int(y % chunk.CHUNK_HEIGHT),
+		int(z % chunk.CHUNK_LENGTH))
 
 
 class World:
@@ -34,6 +52,10 @@ class World:
 		self.camera = camera
 		self.texture_manager = texture_manager
 		self.block_types = [None]
+
+		# Compat
+		self.get_chunk_position = get_chunk_position
+		self.get_local_position = get_local_position
 
 		# parse block type data file
 
@@ -139,10 +161,8 @@ class World:
 
 	def increase_light(self, world_pos, newlight):
 		logging.debug("Propagating block light increase")
-		chunk = self.chunks.get(self.get_chunk_position(world_pos), None)
-		if not chunk: 
-			return
-		lx, ly, lz = self.get_local_position(world_pos)
+		chunk = self.chunks[get_chunk_position(world_pos)]
+		lx, ly, lz = get_local_position(world_pos)
 		chunk.lightmap[lx][ly][lz] = newlight
 		self.light_increase_queue.put_nowait((*world_pos, newlight-1))
 		self.propagate_increase()
@@ -154,10 +174,8 @@ class World:
 			for direction in DIRECTIONS:
 				dx, dy, dz = direction
 				nx, ny, nz = x + dx, y + dy, z + dz
-				chunk = self.chunks.get(self.get_chunk_position((nx, ny, nz)), None)
-				if not chunk:
-					continue
-				lx, ly, lz = self.get_local_position((nx, ny, nz))
+				chunk = self.chunks[get_chunk_position((nx, ny, nz))]
+				lx, ly, lz = get_local_position((nx, ny, nz))
 				if not self.is_opaque_block((nx, ny, nz)) and chunk.lightmap[lx][ly][lz] + 2 <= light_level:
 					chunk.lightmap[lx][ly][lz] = light_level - 1
 					if chunk not in self.chunk_update_queue.queue:
@@ -166,12 +184,10 @@ class World:
 					self.light_increase_queue.put_nowait((nx, ny, nz, light_level - 1))
 
 	def decrease_light(self, world_pos):
-		chunk = self.chunks.get(self.get_chunk_position(world_pos), None)
-		if not chunk: 
-			return
-		lx, ly, lz = self.get_local_position(world_pos)
-		old_light = chunk.lightmap[lx][ly][lz]
-		chunk.lightmap[lx][ly][lz] = 0
+		chunk_lightmap = self.chunks[get_chunk_position(world_pos)].lightmap
+		lx, ly, lz = get_local_position(world_pos)
+		old_light = chunk_lightmap[lx][ly][lz]
+		chunk_lightmap[lx][ly][lz] = 0
 		self.light_decrease_queue.put_nowait((*world_pos, old_light))
 		
 		self.propagate_decrease()
@@ -184,57 +200,40 @@ class World:
 			for direction in DIRECTIONS:
 				dx, dy, dz = direction
 				nx, ny, nz = x + dx, y + dy, z + dz
-				chunk = self.chunks.get(self.get_chunk_position((nx, ny, nz)), None)
-				if not chunk:
-					continue
-				nlx, nly, nlz = self.get_local_position((nx, ny, nz))
+				chunk = self.chunks[get_chunk_position((nx, ny, nz))]
+				nlx, nly, nlz = get_local_position((nx, ny, nz))
 				if not self.is_opaque_block((nx, ny, nz)):
 					neighbour_level = chunk.lightmap[nlx][nly][nlz]
+					if not neighbour_level:
+						continue
 					if chunk not in self.chunk_update_queue.queue:
 						self.chunk_update_queue.put_nowait((chunk, nx, ny, nz))
-					if neighbour_level and neighbour_level < light_level:
+					if neighbour_level < light_level:
 						chunk.lightmap[nlx][nly][nlz] = 0
 						self.light_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.light_increase_queue.put_nowait((nx, ny, nz, neighbour_level))
 
 	def get_light(self, position):
-		chunk = self.chunks.get(self.get_chunk_position(position), None)
+		chunk = self.chunks.get(get_chunk_position(position), None)
 		if not chunk:
 			return 0
 		lx, ly, lz = self.get_local_position(position)
 		return chunk.lightmap[lx][ly][lz]
 
 	def set_light(self, position, light):
-		chunk = self.chunks.get(self.get_chunk_position(position), None)
-		lx, ly, lz = self.get_local_position(position)
+		chunk = self.chunks.get(get_chunk_position(position), None)
+		lx, ly, lz = get_local_position(position)
 		chunk.lightmap[lx][ly][lz] = light
-
-	
-	def get_chunk_position(self, position):
-		x, y, z = position
-
-		return (
-			(x // chunk.CHUNK_WIDTH),
-			(y // chunk.CHUNK_HEIGHT),
-			(z // chunk.CHUNK_LENGTH))
-
-	def get_local_position(self, position):
-		x, y, z = position
-		
-		return (
-			int(x % chunk.CHUNK_WIDTH),
-			int(y % chunk.CHUNK_HEIGHT),
-			int(z % chunk.CHUNK_LENGTH))
 
 	def get_block_number(self, position):
 		x, y, z = position
-		chunk_position = self.get_chunk_position(position)
+		chunk_position = get_chunk_position(position)
 
 		if not chunk_position in self.chunks:
 			return 0
 		
-		lx, ly, lz = self.get_local_position(position)
+		lx, ly, lz = get_local_position(position)
 
 		block_number = self.chunks[chunk_position].blocks[lx][ly][lz]
 		return block_number
@@ -252,7 +251,7 @@ class World:
 
 	def set_block(self, position, number): # set number to 0 (air) to remove block
 		x, y, z = position
-		chunk_position = self.get_chunk_position(position)
+		chunk_position = get_chunk_position(position)
 
 		if not chunk_position in self.chunks: # if no chunks exist at this position, create a new one
 			if number == 0:
@@ -262,21 +261,21 @@ class World:
 		
 		if self.get_block_number(position) == number: # no point updating mesh if the block is the same
 			return
+		
+		lx, ly, lz = get_local_position(position)
+
+		self.chunks[chunk_position].blocks[lx][ly][lz] = number
+		self.chunks[chunk_position].modified = True
 
 		if number:
 			if number == 50:
-				self.increase_light(position, 15)
+				self.increase_light(position, 7)
 
 			elif not self.block_types[number].transparent:
 				self.decrease_light(position)
 		
 		if not number:
 			self.decrease_light(position)
-		
-		lx, ly, lz = self.get_local_position(position)
-
-		self.chunks[chunk_position].blocks[lx][ly][lz] = number
-		self.chunks[chunk_position].modified = True
 
 		self.chunks[chunk_position].update_at_position((x, y, z))
 		self.chunks[chunk_position].update_mesh()
@@ -337,7 +336,6 @@ class World:
 				render_chunk.draw_translucent()
 		
 		gl.glFrontFace(gl.GL_CCW)
-		gl.glEnable(gl.GL_BLEND)
 		
 		for chunk_position, render_chunk in self.chunks.items():
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
