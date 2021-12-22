@@ -1,3 +1,7 @@
 *.pyc
 *.core
 *.log
+
+/*/__pycache__/     # Just to make sure
+venv/               # PyCharm
+.idea/              # Again, PyCharm
