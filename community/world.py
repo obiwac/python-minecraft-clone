@@ -169,12 +169,13 @@ class World:
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
 
 	def increase_light(self, world_pos, newlight, light_update=True):
-		logging.debug(f"Propagating block light increase at position {world_pos}")
-
 		chunk = self.chunks[get_chunk_position(world_pos)]
 		lx, ly, lz = get_local_position(world_pos)
+
 		chunk.lightmap[lx][ly][lz] = newlight
+
 		self.light_increase_queue.put_nowait((*world_pos, newlight))
+
 		self.propagate_increase(light_update)
 
 	def propagate_increase(self, light_update):
@@ -184,19 +185,21 @@ class World:
 			for direction in DIRECTIONS:
 				dx, dy, dz = direction
 				nx, ny, nz = x + dx, y + dy, z + dz
+
 				chunk = self.chunks.get(get_chunk_position((nx, ny, nz)), None)
 				if not chunk: continue
 				lx, ly, lz = get_local_position((nx, ny, nz))
 
 				if not self.is_opaque_block((nx, ny, nz)) and chunk.lightmap[lx][ly][lz] + 2 <= light_level:
 					chunk.lightmap[lx][ly][lz] = light_level - 1
+
 					self.light_increase_queue.put_nowait((nx, ny, nz, light_level - 1))
 
 					if light_update:
 						sx = lx // subchunk.SUBCHUNK_WIDTH
 						sy = ly // subchunk.SUBCHUNK_HEIGHT
 						sz = lz // subchunk.SUBCHUNK_LENGTH
-						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue and light_update:
+						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
 							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 
 
@@ -204,12 +207,15 @@ class World:
 		for lx in range(chunk.CHUNK_WIDTH):
 			for lz in range(chunk.CHUNK_LENGTH):
 				pending_chunk.skylightmap[lx][chunk.CHUNK_HEIGHT-1][lz] = 16
+
 				chunk_pos = pending_chunk.chunk_position
 				x, y, z = (chunk.CHUNK_WIDTH * chunk_pos[0] + lx,
 						chunk.CHUNK_HEIGHT - 1,
 						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
 				)
+
 				self.skylight_increase_queue.put_nowait((x, y, z, 16))
+
 		self.propagate_skylight_increase(False)
 
 	def propagate_skylight_increase(self, light_update):
@@ -218,12 +224,13 @@ class World:
 
 			for direction in DIRECTIONS:
 				dx, dy, dz = direction
-				if dy > 0:
-					continue
+				if dy > 0: continue
+
 				nx, ny, nz = x + dx, y + dy, z + dz
 				chunk = self.chunks.get(get_chunk_position((nx, ny, nz)), None)
 				if not chunk: continue
 				lx, ly, lz = get_local_position((nx, ny, nz))
+
 				if not self.is_opaque_block((nx, ny, nz)) and chunk.skylightmap[lx][ly][lz] + 2 <= light_level:
 					chunk.skylightmap[lx][ly][lz] = light_level - 1
 					if not dy:
@@ -234,7 +241,8 @@ class World:
 						sx = lx // subchunk.SUBCHUNK_WIDTH
 						sy = ly // subchunk.SUBCHUNK_HEIGHT
 						sz = lz // subchunk.SUBCHUNK_LENGTH
-						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue and light_update:
+
+						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
 							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 
 	def decrease_light(self, world_pos):
@@ -254,23 +262,26 @@ class World:
 			for direction in DIRECTIONS:
 				dx, dy, dz = direction
 				nx, ny, nz = x + dx, y + dy, z + dz
+
 				chunk = self.chunks.get(get_chunk_position((nx, ny, nz)), None)
 				if not chunk: continue
 				nlx, nly, nlz = get_local_position((nx, ny, nz))
+
 				if not self.is_opaque_block((nx, ny, nz)):
 					neighbour_level = chunk.lightmap[nlx][nly][nlz]
-					if not neighbour_level:
-						continue
+					if not neighbour_level: continue
+
 					if neighbour_level < light_level:
 						chunk.lightmap[nlx][nly][nlz] = 0
 						self.light_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.light_increase_queue.put_nowait((nx, ny, nz, neighbour_level))
+
 					if light_update:
 						sx = nlx // subchunk.SUBCHUNK_WIDTH
 						sy = nly // subchunk.SUBCHUNK_HEIGHT
 						sz = nlz // subchunk.SUBCHUNK_LENGTH
-						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue and light_update:
+						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
 							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 	
 	def decrease_skylight(self, world_pos, light_update=True):
@@ -290,23 +301,26 @@ class World:
 			for direction in DIRECTIONS:
 				dx, dy, dz = direction
 				nx, ny, nz = x + dx, y + dy, z + dz
+
 				chunk = self.chunks.get(get_chunk_position((nx, ny, nz)), None)
 				if not chunk: continue
 				nlx, nly, nlz = get_local_position((nx, ny, nz))
+				
 				if not self.is_opaque_block((nx, ny, nz)):
 					neighbour_level = chunk.skylightmap[nlx][nly][nlz]
-					if not neighbour_level:
-						continue
+					if not neighbour_level: continue
+
 					if neighbour_level < light_level:
 						chunk.skylightmap[nlx][nly][nlz] = 0
 						self.skylight_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.skylight_increase_queue.put_nowait((nx, ny, nz, neighbour_level))
+
 					if light_update:
 						sx = nlx // subchunk.SUBCHUNK_WIDTH
 						sy = nly // subchunk.SUBCHUNK_HEIGHT
 						sz = nlz // subchunk.SUBCHUNK_LENGTH
-						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue and light_update:
+						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
 							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 
 	def get_light(self, position):
