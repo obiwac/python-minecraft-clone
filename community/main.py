@@ -80,6 +80,7 @@ class Window(pyglet.window.Window):
 		self.keyboard_mouse = keyboard_mouse.Keyboard_Mouse(self)
 
 		# music stuff
+		logging.info("Loading audio")
 		self.music = [pyglet.media.load(os.path.join("audio/music", file)) for file in os.listdir("audio/music") if os.path.isfile(os.path.join("audio/music", file))]
 
 		self.player = pyglet.media.Player()
@@ -94,8 +95,11 @@ class Window(pyglet.window.Window):
 
 		self.player.next_time = 0
 
-	def __del__(self):
+	def on_close(self):
+		logging.info("Deleting player")
 		self.player.delete()
+
+		pyglet.app.exit() # Closes the game
 
 
 	def update(self, delta_time):
@@ -146,10 +150,10 @@ class Game:
 
 	def run(self): 
 		pyglet.app.run()
-		pyglet.app.exit()
+
 
 def init_logger():
-	log_folder = "logs"
+	log_folder = "logs/"
 	log_filename = f"{time.time()}.log"
 	log_path = os.path.join(log_folder, log_filename)
 
