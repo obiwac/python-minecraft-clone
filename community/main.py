@@ -1,9 +1,10 @@
+import logging
+import math
 import random
 import time
 import os
 
 import pyglet
-from pyglet.gl.gl import GLfloat
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
@@ -14,8 +15,12 @@ import pyglet.gl as gl
 
 import shader
 import camera
+import texture_manager
 
 import world
+
+import hit
+import time
 
 import joystick
 import keyboard_mouse
@@ -26,26 +31,33 @@ class Window(pyglet.window.Window):
 		
 		# create shader
 
+		logging.info("Compiling Shaders")
 		self.shader = shader.Shader("vert.glsl", "frag.glsl")
 		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
 		self.shader.use()
+
+		# create textures
+		logging.info("Creating Texture Array")
+		self.texture_manager = texture_manager.TextureManager(16, 16, 256)
 
 		# pyglet stuff
 
 		pyglet.clock.schedule(self.update)
 		self.mouse_captured = False
 
+
 		# camera stuff
 
+		logging.info("Setting up camera scene")
 		self.camera = camera.Camera(self.shader, self.width, self.height)
 
 		# create world
 
-		self.world = world.World(self.camera)
+		self.world = world.World(self.camera, self.texture_manager)
 
 		# misc stuff
 
-		self.holding = 5
+		self.holding = 50
 
 		# bind textures
 
@@ -88,7 +100,8 @@ class Window(pyglet.window.Window):
 		self.player.next_time = 0
 	
 	def update(self, delta_time):
-		# print(pyglet.clock.get_fps())
+		if pyglet.clock.get_fps() < 20:
+			logging.warning(f"Warning: framerate dropping below 20 fps ({pyglet.clock.get_fps()} fps)")
 
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
@@ -121,7 +134,7 @@ class Window(pyglet.window.Window):
 	# input functions
 
 	def on_resize(self, width, height):
-		print(f"Resize {width} * {height}")
+		logging.info(f"Resize {width} * {height}")
 		gl.glViewport(0, 0, width, height)
 
 		self.camera.width = width
@@ -133,10 +146,20 @@ class Game:
 				major_version = 3, minor_version = 3,
 				depth_size = 16)
 		self.window = Window(config = self.config, width = 854, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
-	
+
 	def run(self): 
 		pyglet.app.run()
 
-if __name__ == "__main__":
+def main():
+	log_filename = f"logs/{time.time()}.log"
+	with open(log_filename, 'x') as file:
+		file.write("Logging file\n")
+
+	logging.basicConfig(level=logging.INFO, filename=log_filename, 
+		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
+
 	game = Game()
 	game.run()
+
+if __name__ == "__main__":
+	main()
