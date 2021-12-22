@@ -22,15 +22,6 @@ import world
 import hit
 import time
 
-
-log_filename = f"logs/{time.time()}.log"
-with open(log_filename, 'x') as file:
-	file.write("Logging file\n")
-
-logging.basicConfig(level=logging.INFO, filename=log_filename, 
-	format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
-
-
 import joystick
 import keyboard_mouse
 
@@ -160,6 +151,13 @@ class Game:
 		pyglet.app.run()
 
 def main():
+	log_filename = f"logs/{time.time()}.log"
+	with open(log_filename, 'x') as file:
+		file.write("Logging file\n")
+
+	logging.basicConfig(level=logging.INFO, filename=log_filename, 
+		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
+
 	game = Game()
 	game.run()
 
