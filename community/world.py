@@ -1,4 +1,5 @@
 import chunk
+import subchunk
 import ctypes
 import math
 import logging
@@ -186,15 +187,18 @@ class World:
 				lx, ly, lz = get_local_position((nx, ny, nz))
 				if not self.is_opaque_block((nx, ny, nz)) and chunk.lightmap[lx][ly][lz] + 2 <= light_level:
 					chunk.lightmap[lx][ly][lz] = light_level - 1
-					if chunk not in self.chunk_update_queue.queue:
-						self.chunk_update_queue.put_nowait((chunk, nx, ny, nz))
+					if (chunk, nx, ny, nz) not in self.chunk_update_queue.queue:
+						sx = lx // subchunk.SUBCHUNK_WIDTH
+						sy = ly // subchunk.SUBCHUNK_HEIGHT
+						sz = lz // subchunk.SUBCHUNK_LENGTH
+						self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 
 					self.light_increase_queue.put_nowait((nx, ny, nz, light_level - 1))
 
 	def init_skylight(self, pending_chunk):
 		for lx in range(chunk.CHUNK_WIDTH):
 			for lz in range(chunk.CHUNK_LENGTH):
-				pending_chunk.skylightmap[lx][chunk.CHUNK_HEIGHT-1][lz] = 15
+				pending_chunk.skylightmap[lx][chunk.CHUNK_HEIGHT-1][lz] = 16
 				chunk_pos = pending_chunk.chunk_position
 				x, y, z = (chunk.CHUNK_WIDTH * chunk_pos[0] + lx,
 						chunk.CHUNK_HEIGHT - 1,
@@ -217,8 +221,11 @@ class World:
 				lx, ly, lz = get_local_position((nx, ny, nz))
 				if not self.is_opaque_block((nx, ny, nz)) and chunk.skylightmap[lx][ly][lz] + 2 <= light_level:
 					chunk.skylightmap[lx][ly][lz] = light_level - 1
-					if chunk not in self.chunk_update_queue.queue and light_update:
-						self.chunk_update_queue.put_nowait((chunk, nx, ny, nz))
+					if (chunk, nx, ny, nz) not in self.chunk_update_queue.queue and light_update:
+						sx = lx // subchunk.SUBCHUNK_WIDTH
+						sy = ly // subchunk.SUBCHUNK_HEIGHT
+						sz = lz // subchunk.SUBCHUNK_LENGTH
+						self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 					if not dy:
 						self.skylight_increase_queue.put_nowait((nx, ny, nz, light_level - 1))
 					else:
@@ -248,8 +255,11 @@ class World:
 					neighbour_level = chunk.lightmap[nlx][nly][nlz]
 					if not neighbour_level:
 						continue
-					if chunk not in self.chunk_update_queue.queue:
-						self.chunk_update_queue.put_nowait((chunk, nx, ny, nz))
+					if (chunk, nx, ny, nz) not in self.chunk_update_queue.queue:
+						sx = nlx // subchunk.SUBCHUNK_WIDTH
+						sy = nly // subchunk.SUBCHUNK_HEIGHT
+						sz = nlz // subchunk.SUBCHUNK_LENGTH
+						self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 					if neighbour_level < light_level:
 						chunk.lightmap[nlx][nly][nlz] = 0
 						self.light_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
@@ -280,8 +290,11 @@ class World:
 					neighbour_level = chunk.skylightmap[nlx][nly][nlz]
 					if not neighbour_level:
 						continue
-					if chunk not in self.chunk_update_queue.queue and light_update:
-						self.chunk_update_queue.put_nowait((chunk, nx, ny, nz))
+					if (chunk, nx, ny, nz) not in self.chunk_update_queue.queue and light_update:
+						sx = nlx // subchunk.SUBCHUNK_WIDTH
+						sy = nly // subchunk.SUBCHUNK_HEIGHT
+						sz = nlz // subchunk.SUBCHUNK_LENGTH
+						self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
 					if neighbour_level < light_level:
 						chunk.skylightmap[nlx][nly][nlz] = 0
 						self.skylight_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
@@ -356,7 +369,7 @@ class World:
 
 		if number:
 			if number == 50:
-				self.increase_light(position, 12)
+				self.increase_light(position, 15)
 
 			elif not self.block_types[number].transparent:
 				self.decrease_light(position)
@@ -384,11 +397,7 @@ class World:
 
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position((cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position((cx, cy, cz - 1), (x, y, z - 1))
-		
-		while self.chunk_update_queue.qsize():
-			pending_chunk, nx, ny, nz = self.chunk_update_queue.get_nowait()
-			pending_chunk.update_at_position((nx, ny, nz))
-			pending_chunk.update_mesh()
+	
 	
 	
 	def can_render_chunk(self, chunk_position, pl_c_pos):
@@ -445,5 +454,16 @@ class World:
 
 		self.draw_translucent(player_chunk_pos)
 
+	def update(self):
+		built_chunks = []
+		if self.chunk_update_queue.qsize():
+			pending_chunk, sx, sy, sz = self.chunk_update_queue.get_nowait()
+			pending_chunk.subchunks[(sx, sy, sz)].update_mesh()
+			if pending_chunk not in built_chunks:
+				built_chunks.append(pending_chunk)
+		for built_chunk in built_chunks:
+			built_chunk.update_mesh()
+		built_chunks = []
+		
 	
 		

@@ -40,7 +40,7 @@ class Subchunk:
 		x, y, z = pos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
-		shading_values = self.get_shading_values(pos, npos, block_type.shading_values[face])
+		shading_values = block_type.shading_values[face] if block_type.model.translucent else self.get_shading_values(pos, npos, block_type.shading_values[face])
 
 		if block_type.model.translucent:
 			mesh = self.translucent_mesh
@@ -73,7 +73,6 @@ class Subchunk:
 					parent_lx = self.local_position[0] + local_x
 					parent_ly = self.local_position[1] + local_y
 					parent_lz = self.local_position[2] + local_z
-					parent_lpos = (parent_lx, parent_ly, parent_lz)
 
 					block_number = self.parent.blocks[parent_lx][parent_ly][parent_lz]
 

@@ -9,7 +9,7 @@ import pyglet
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
 pyglet.options["search_local_libs"] = True
-pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2" "silent")
+pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent")
 
 import pyglet.gl as gl
 
@@ -98,7 +98,7 @@ class Window(pyglet.window.Window):
 			self.player.standby = True
 
 		self.player.next_time = 0
-	
+
 	def update(self, delta_time):
 		if pyglet.clock.get_fps() < 20:
 			logging.warning(f"Warning: framerate dropping below 20 fps ({pyglet.clock.get_fps()} fps)")
@@ -117,6 +117,7 @@ class Window(pyglet.window.Window):
 
 		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
+		self.world.update()
 	
 	def on_draw(self):
 		self.camera.update_matrices()
@@ -149,6 +150,7 @@ class Game:
 
 	def run(self): 
 		pyglet.app.run()
+		pyglet.app.exit()
 
 def main():
 	log_filename = f"logs/{time.time()}.log"
