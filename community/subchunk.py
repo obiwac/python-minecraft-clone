@@ -30,10 +30,10 @@ class Subchunk:
 
 	def get_shading_values(self, pos, npos, raw_shading_values):
 		if not npos:
-			light_level = self.world.get_light(pos)
+			light_level = max(self.world.get_light(pos), self.world.get_skylight(pos))
 		else:
-			light_level = self.world.get_light(npos)
-		raw_light_multiplier = min(0.8 ** (7 - light_level) + options.BRIGHTNESS/10, 1)
+			light_level = max(self.world.get_light(npos), self.world.get_skylight(npos))
+		raw_light_multiplier = min(0.8 ** (15- light_level) + options.BRIGHTNESS/10, 1)
 		return [raw_light_multiplier * shading_value for shading_value in raw_shading_values]
 	
 	def add_face(self, face, pos, block_type, npos=None):

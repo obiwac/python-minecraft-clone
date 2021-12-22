@@ -30,6 +30,11 @@ class Chunk:
 			for y in range(CHUNK_HEIGHT)]
 			for x in range(CHUNK_WIDTH )]
 
+		self.skylightmap = [[[0
+			for z in range(CHUNK_LENGTH)]
+			for y in range(CHUNK_HEIGHT)]
+			for x in range(CHUNK_WIDTH )]
+
 		self.subchunks = {}
 		
 		for x in range(int(CHUNK_WIDTH / subchunk.SUBCHUNK_WIDTH)):
