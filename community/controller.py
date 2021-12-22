@@ -2,27 +2,37 @@ import random
 import camera
 import hit
 
+iota_counter = 0
+
+def iota(reset=False):
+	if reset: iota_counter = 0
+	return (iota_counter := iota_counter + 1)
+
 class Controller:
 	class InteractMode:
-		PLACE = 0
-		BREAK = 1
-		PICK = 2
+		PLACE = iota()
+		BREAK = iota()
+		PICK = iota()
+	iota(True)
 
 	class MiscMode:
-		RANDOM = 0
-		SAVE = 1
-		ESCAPE = 2
+		RANDOM = iota()
+		SAVE = iota()
+		ESCAPE = iota()
+	iota(True)
 
 	class MoveMode:
-		LEFT = 0
-		RIGHT = 1
-		DOWN = 2
-		UP = 3
-		BACKWARD = 4
-		FORWARD = 5
+		LEFT = iota()
+		RIGHT = iota()
+		DOWN = iota()
+		UP = iota()
+		BACKWARD = iota()
+		FORWARD = iota()
+	iota(True)
 
 	class ModifierMode:
-		SPRINT = 0
+		SPRINT = iota()
+	iota(True)
 
 	def __init__(self, game):
 		self.game = game
