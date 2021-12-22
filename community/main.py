@@ -152,6 +152,7 @@ class Game:
 		pyglet.app.run()
 
 
+
 def init_logger():
 	log_folder = "logs/"
 	log_filename = f"{time.time()}.log"
@@ -165,6 +166,8 @@ def init_logger():
 
 	logging.basicConfig(level=logging.INFO, filename=log_path, 
 		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
+
+
 
 
 def main():
