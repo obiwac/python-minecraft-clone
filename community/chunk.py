@@ -134,6 +134,12 @@ class Chunk:
 		gl.glBindVertexArray(self.vao)
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+		gl.glBufferData(gl.GL_ARRAY_BUFFER, 
+			ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 8), 
+			None, 
+			gl.GL_DYNAMIC_DRAW
+		)
+		
 		gl.glBufferSubData(
 			gl.GL_ARRAY_BUFFER,
 			0,

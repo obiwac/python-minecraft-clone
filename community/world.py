@@ -29,7 +29,7 @@ class Queue:
 	def qsize(self):
 		return len(self.queue)
 
-@cache
+
 def get_chunk_position(position):
 	x, y, z = position
 
@@ -38,7 +38,7 @@ def get_chunk_position(position):
 		(y // chunk.CHUNK_HEIGHT),
 		(z // chunk.CHUNK_LENGTH))
 
-@cache
+
 def get_local_position(position):
 	x, y, z = position
 	
@@ -310,7 +310,7 @@ class World:
 					neighbour_level = chunk.skylightmap[nlx][nly][nlz]
 					if not neighbour_level: continue
 
-					if neighbour_level < light_level:
+					if neighbour_level < light_level or dy == -1:
 						chunk.skylightmap[nlx][nly][nlz] = 0
 						self.skylight_decrease_queue.put_nowait((nx, ny, nz, neighbour_level))
 					elif neighbour_level >= light_level:

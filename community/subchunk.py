@@ -64,8 +64,7 @@ class Subchunk:
 
 	def can_render_face(self, block_type, block_number, position):
 		return not (self.world.is_opaque_block(position)
-			or (block_type.glass and self.world.get_block_number(position) == block_number)) \
-			or (block_type.translucent and self.world.get_block_number(position) != block_number)
+			or (block_type.glass and self.world.get_block_number(position) == block_number))
 			
 
 	def update_mesh(self):
