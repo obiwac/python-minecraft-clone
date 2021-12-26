@@ -35,9 +35,9 @@ class Subchunk:
 		else:
 			light_level = max(self.world.get_light(npos), self.world.get_skylight(npos))
 		if block_type.translucent:
-			raw_light_multiplier = min((6 + light_level)/16 + options.BRIGHTNESS/10, 1)
+			raw_light_multiplier = min((6 + light_level)/16, 1)
 		else:
-			raw_light_multiplier = min(0.8 ** (15 - light_level) + options.BRIGHTNESS/10, 1)
+			raw_light_multiplier = min(0.8 ** (15 - light_level) * (1 + options.BRIGHTNESS), 1)
 		
 		return [raw_light_multiplier * shading_value for shading_value in raw_shading_values]
 	

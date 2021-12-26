@@ -1,6 +1,8 @@
 import ctypes
 import pyglet.gl as gl
 
+import glm
+
 class Shader_error(Exception):
 	def __init__(self, message):
 		self.message = message
@@ -8,9 +10,9 @@ class Shader_error(Exception):
 def create_shader(target, source_path):
 	# read shader source
 
-	source_file = open(source_path, "rb")
-	source = source_file.read()
-	source_file.close()
+	with open(source_path, "rb") as source_file:
+		source = source_file.read()
+	
 
 	source_length = ctypes.c_int(len(source) + 1)
 	source_buffer = ctypes.create_string_buffer(source)
@@ -65,7 +67,7 @@ class Shader:
 		return gl.glGetUniformLocation(self.program, ctypes.create_string_buffer(name))
 	
 	def uniform_matrix(self, location, matrix):
-		gl.glUniformMatrix4fv(location, 1, gl.GL_FALSE, (gl.GLfloat * 16) (*sum(matrix.data, [])))
+		gl.glUniformMatrix4fv(location, 1, gl.GL_FALSE, glm.value_ptr(matrix))
 
 	def use(self):
 		gl.glUseProgram(self.program)

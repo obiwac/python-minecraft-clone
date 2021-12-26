@@ -3,6 +3,7 @@ import base36
 import logging
 
 import chunk
+import glm
 
 class Save:
 	def __init__(self, world, path = "save"):
@@ -32,12 +33,12 @@ class Save:
 
 		# create chunk and fill it with the blocks from our chunk file
 
-		self.world.chunks[chunk_position] = chunk.Chunk(self.world, chunk_position)
+		self.world.chunks[glm.ivec3(chunk_position)] = chunk.Chunk(self.world, glm.ivec3(chunk_position))
 
 		for x in range(chunk.CHUNK_WIDTH):
 			for y in range(chunk.CHUNK_HEIGHT):
 				for z in range(chunk.CHUNK_LENGTH):
-					self.world.chunks[chunk_position].blocks[x][y][z] = chunk_blocks[
+					self.world.chunks[glm.ivec3(chunk_position)].blocks[x][y][z] = chunk_blocks[
 						x * chunk.CHUNK_LENGTH * chunk.CHUNK_HEIGHT +
 						z * chunk.CHUNK_HEIGHT +
 						y]
@@ -92,7 +93,7 @@ class Save:
 				for y in range(chunk.CHUNK_HEIGHT):
 					for z in range(chunk.CHUNK_LENGTH):
 						if unlit_chunk.blocks[x][y][z] in self.world.light_blocks:
-							world_pos = (
+							world_pos = glm.ivec3(
 								chunk_position[0] * chunk.CHUNK_WIDTH + x,
 								chunk_position[1] * chunk.CHUNK_HEIGHT + y,
 								chunk_position[2] * chunk.CHUNK_LENGTH + z

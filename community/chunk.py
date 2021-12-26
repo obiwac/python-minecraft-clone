@@ -1,4 +1,5 @@
 import ctypes
+import numpy as np
 
 import pyglet.gl as gl
 
@@ -25,15 +26,10 @@ class Chunk:
 			for y in range(CHUNK_HEIGHT)]
 			for x in range(CHUNK_WIDTH )]
 
-		self.lightmap = [[[0
-			for z in range(CHUNK_LENGTH)]
-			for y in range(CHUNK_HEIGHT)]
-			for x in range(CHUNK_WIDTH )]
-
-		self.skylightmap = [[[0
-			for z in range(CHUNK_LENGTH)]
-			for y in range(CHUNK_HEIGHT)]
-			for x in range(CHUNK_WIDTH )]
+		self.lightmap = np.zeros((CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH), dtype=np.int8)
+		
+		self.skylightmap = np.zeros((CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH), dtype=np.int8)
+		
 
 		self.subchunks = {}
 		
@@ -55,7 +51,7 @@ class Chunk:
 		self.vao = gl.GLuint(0)
 		gl.glGenVertexArrays(1, self.vao)
 		gl.glBindVertexArray(self.vao)
-
+		
 		self.vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.vbo)
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
@@ -76,6 +72,19 @@ class Chunk:
 	def __del__(self):
 		gl.glDeleteBuffers(1, self.vbo)
 		gl.glDeleteVertexArrays(1, self.vao)
+
+	def get_block_light(self, position):
+		return self.lightmap[tuple(position)]
+
+	def set_block_light(self, position, value):
+		self.lightmap[tuple(position)] = value
+
+	def get_sky_light(self, position):
+		return self.skylightmap[tuple(position)]
+
+	def set_sky_light(self, position, value):
+		self.skylightmap[tuple(position)] = value
+	
 	
 	def update_subchunk_meshes(self):
 		for subchunk in self.subchunks.values():
