@@ -21,10 +21,7 @@ class Chunk:
 			self.chunk_position[1] * CHUNK_HEIGHT,
 			self.chunk_position[2] * CHUNK_LENGTH)
 		
-		self.blocks = [[[0
-			for z in range(CHUNK_LENGTH)]
-			for y in range(CHUNK_HEIGHT)]
-			for x in range(CHUNK_WIDTH )]
+		self.blocks = np.zeros((CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH), dtype=np.int32)
 
 		self.lightmap = np.zeros((CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH), dtype=np.int8)
 		
