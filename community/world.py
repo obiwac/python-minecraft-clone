@@ -157,6 +157,7 @@ class World:
 		
 		logging.info("Lighting chunks")
 		for world_chunk in self.chunks.values():
+			continue
 			self.init_skylight(world_chunk)
 
 		logging.info("Generating chunks")
@@ -409,14 +410,14 @@ class World:
 				self.chunks[chunk_position].update_at_position(position)
 				self.chunks[chunk_position].update_mesh()
 		
-		if lx == chunk.CHUNK_WIDTH - 1: try_update_chunk_at_position(glm.vec3(cx + 1, cy, cz), (x + 1, y, z))
-		if lx == 0: try_update_chunk_at_position(glm.vec3(cx - 1, cy, cz), (x - 1, y, z))
+		if lx == chunk.CHUNK_WIDTH - 1: try_update_chunk_at_position(glm.ivec3(cx + 1, cy, cz), (x + 1, y, z))
+		if lx == 0: try_update_chunk_at_position(glm.ivec3(cx - 1, cy, cz), (x - 1, y, z))
 
-		if ly == chunk.CHUNK_HEIGHT - 1: try_update_chunk_at_position(glm.vec3(cx, cy + 1, cz), (x, y + 1, z))
-		if ly == 0: try_update_chunk_at_position(glm.vec3(cx, cy - 1, cz), (x, y - 1, z))
+		if ly == chunk.CHUNK_HEIGHT - 1: try_update_chunk_at_position(glm.ivec3(cx, cy + 1, cz), (x, y + 1, z))
+		if ly == 0: try_update_chunk_at_position(glm.ivec3(cx, cy - 1, cz), (x, y - 1, z))
 
-		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.vec3(cx, cy, cz + 1), (x, y, z + 1))
-		if lz == 0: try_update_chunk_at_position(glm.vec3(cx, cy, cz - 1), (x, y, z - 1))
+		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
+		if lz == 0: try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))
 	
 	
 	

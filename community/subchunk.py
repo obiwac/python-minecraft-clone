@@ -1,6 +1,7 @@
 import options
 import random
 from util import DIRECTIONS
+import numpy as np
 
 SUBCHUNK_WIDTH  = 4
 SUBCHUNK_HEIGHT = 4
@@ -26,7 +27,10 @@ class Subchunk:
 		# mesh variables
 
 		self.mesh = []
+		self.mesh_array = None
+	
 		self.translucent_mesh = []
+		self.translucent_mesh_array = None
 
 	def get_shading_values(self, block_type, face, pos, npos):
 		raw_shading_values = block_type.shading_values[face]
@@ -103,3 +107,6 @@ class Subchunk:
 						else:
 							for i in range(len(block_type.vertex_positions)):
 								self.add_face(i, pos, block_type)
+
+		self.mesh_array = np.array(self.mesh, dtype=np.float32)
+		self.translucent_mesh_array = np.array(self.translucent_mesh, dtype=np.float32)
