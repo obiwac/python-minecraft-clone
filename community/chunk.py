@@ -21,7 +21,7 @@ class Chunk:
 			self.chunk_position[1] * CHUNK_HEIGHT,
 			self.chunk_position[2] * CHUNK_LENGTH)
 		
-		self.blocks = np.zeros((CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH), dtype=np.uint16)
+		self.blocks = np.zeros((CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH), dtype=np.uint8) # Numpy is really slow there
 
 		self.lightmap = np.zeros((CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH), dtype=np.uint8)
 		
@@ -55,14 +55,21 @@ class Chunk:
 		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 8), None, gl.GL_DYNAMIC_DRAW)
 
 		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, 
-				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 0)
+				gl.GL_FALSE, 8 * ctypes.sizeof(gl.GLfloat), 0)
 		gl.glEnableVertexAttribArray(0)
 		gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, 
-				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 3 * ctypes.sizeof(gl.GLfloat))
+				gl.GL_FALSE, 8 * ctypes.sizeof(gl.GLfloat), 3 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(1)
 		gl.glVertexAttribPointer(2, 1, gl.GL_FLOAT, 
-				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 5 * ctypes.sizeof(gl.GLfloat))
+				gl.GL_FALSE, 8 * ctypes.sizeof(gl.GLfloat), 5 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(2)
+		gl.glVertexAttribPointer(3, 1, gl.GL_FLOAT, 
+				gl.GL_FALSE, 8 * ctypes.sizeof(gl.GLfloat), 6 * ctypes.sizeof(gl.GLfloat))
+		gl.glEnableVertexAttribArray(3)
+		gl.glVertexAttribPointer(4, 1, gl.GL_FLOAT, 
+				gl.GL_FALSE, 8 * ctypes.sizeof(gl.GLfloat), 7 * ctypes.sizeof(gl.GLfloat))
+		gl.glEnableVertexAttribArray(4)
+
 
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
 
@@ -71,16 +78,20 @@ class Chunk:
 		gl.glDeleteVertexArrays(1, self.vao)
 
 	def get_block_light(self, position):
-		return self.lightmap[tuple(position)]
+		x, y, z = position
+		return self.lightmap[x][y][z]
 
 	def set_block_light(self, position, value):
-		self.lightmap[tuple(position)] = value
+		x, y, z = position
+		self.lightmap[x][y][z] = value
 
 	def get_sky_light(self, position):
-		return self.skylightmap[tuple(position)]
+		x, y, z = position
+		return self.skylightmap[x][y][z]
 
 	def set_sky_light(self, position, value):
-		self.skylightmap[tuple(position)] = value
+		x, y, z = position
+		self.skylightmap[x][y][z] = value
 	
 	
 	def update_subchunk_meshes(self):
@@ -123,8 +134,8 @@ class Chunk:
 		# send the full mesh data to the GPU and free the memory used client-side (we don't need it anymore)
 		# don't forget to save the length of 'self.mesh_indices' before freeing
 
-		self.mesh_quad_count = len(self.mesh) // 24 # 24 = 6 (attributes of a vertex) * 4 (number of vertices per quad)
-		self.translucent_quad_count = len(self.translucent_mesh) // 24
+		self.mesh_quad_count = len(self.mesh) // 32 # 32 = 8 (attributes of a vertex) * 4 (number of vertices per quad)
+		self.translucent_quad_count = len(self.translucent_mesh) // 32
 
 		self.send_mesh_data_to_gpu()
 

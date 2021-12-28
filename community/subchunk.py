@@ -32,24 +32,20 @@ class Subchunk:
 		self.translucent_mesh = []
 		self.translucent_mesh_array = None
 
-	def get_shading_values(self, block_type, face, pos, npos):
-		raw_shading_values = block_type.shading_values[face]
+	def get_light(self, pos, npos):
 		if not npos:
-			light_level = max(self.world.get_light(pos), self.world.get_skylight(pos))
+			light_levels = (self.world.get_light(pos), self.world.get_skylight(pos))
 		else:
-			light_level = max(self.world.get_light(npos), self.world.get_skylight(npos))
-		if block_type.translucent:
-			raw_light_multiplier = min((6 + light_level)/16, 1)
-		else:
-			raw_light_multiplier = min(0.8 ** (15 - light_level) * (1 + options.BRIGHTNESS), 1)
-		
-		return [raw_light_multiplier * shading_value for shading_value in raw_shading_values]
+			light_levels = (self.world.get_light(npos), self.world.get_skylight(npos))
+		return light_levels
 	
 	def add_face(self, face, pos, block_type, npos=None):
 		x, y, z = pos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
-		shading_values = self.get_shading_values(block_type, face, pos, npos)
+		shading_values = block_type.shading_values[face]
+		blocklight, skylight = self.get_light(pos, npos)
+
 
 		if block_type.model.translucent:
 			mesh = self.translucent_mesh
@@ -65,6 +61,9 @@ class Subchunk:
 			mesh.append(tex_index)
 
 			mesh.append(shading_values[i])
+
+			mesh.append(blocklight)
+			mesh.append(skylight)
 
 	def can_render_face(self, block_type, block_number, position):
 		return not (self.world.is_opaque_block(position)
@@ -108,5 +107,5 @@ class Subchunk:
 							for i in range(len(block_type.vertex_positions)):
 								self.add_face(i, pos, block_type)
 
-		self.mesh_array = np.array(self.mesh, dtype=np.float32)
-		self.translucent_mesh_array = np.array(self.translucent_mesh, dtype=np.float32)
+		self.mesh_array = np.array(self.mesh, dtype=np.float)
+		self.translucent_mesh_array = np.array(self.translucent_mesh, dtype=np.float)

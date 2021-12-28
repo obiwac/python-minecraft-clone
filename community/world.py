@@ -50,10 +50,15 @@ def get_local_position(position):
 
 
 class World:
-	def __init__(self, camera, texture_manager):
+	def __init__(self, shader, camera, texture_manager):
+		self.shader = shader
 		self.camera = camera
 		self.texture_manager = texture_manager
 		self.block_types = [None]
+
+		self.shader_daylight_location = shader.find_uniform(b"u_Daylight")
+		self.daylight = 1000
+		self.incrementer = -1
 
 		# Compat
 		self.get_chunk_position = get_chunk_position
@@ -214,7 +219,7 @@ class World:
 						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
 				)
 
-				self.skylight_increase_queue.put_nowait((pos, 15))
+				self.skylight_increase_queue.put_nowait((pos, 16))
 
 		self.propagate_skylight_increase(False)
 
@@ -232,7 +237,7 @@ class World:
 				local_pos = lx, ly, lz = get_local_position(neighbour_pos)
 
 				if not self.is_opaque_block(neighbour_pos) and chunk.get_sky_light(local_pos) + 2 <= light_level:
-					chunk.set_sky_light(local_pos, light_level)
+					chunk.set_sky_light(local_pos, light_level - 1)
 					if not dy:
 						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level - 1))
 					else:
@@ -418,7 +423,8 @@ class World:
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))
 	
-	
+	def speed_daytime(self):
+		self.incrementer *= 2
 	
 	def can_render_chunk(self, chunk_position, pl_c_pos):
 		rx, ry, rz = (chunk_position[0] - pl_c_pos[0]) \
@@ -465,6 +471,10 @@ class World:
 	draw_translucent = draw_translucent_fancy if options.TRANSLUCENT_BLENDING else draw_translucent_fast
 	
 	def draw(self):
+		daylight_multiplier = self.daylight / 10000
+		gl.glClearColor(0.4 * daylight_multiplier, 0.7 * daylight_multiplier, daylight_multiplier, 1.0)
+		gl.glUniform1f(self.shader_daylight_location, daylight_multiplier)
+
 		player_floored_pos = tuple(self.camera.position)
 		player_chunk_pos = self.get_chunk_position(player_floored_pos)
 
@@ -472,9 +482,16 @@ class World:
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
 				render_chunk.draw()
 
+		gl.glUniform1f(self.shader_daylight_location, 0.75 + daylight_multiplier / 4)
 		self.draw_translucent(player_chunk_pos)
 
 	def update(self):
+		self.daylight += self.incrementer
+		if self.daylight < 0:
+			self.incrementer = 1
+		elif self.daylight >= 10000:
+			self.incrementer = -1
+
 		if self.chunk_update_queue.qsize():
 			pending_chunk, sx, sy, sz = self.chunk_update_queue.get_nowait()
 			pending_chunk.subchunks[(sx, sy, sz)].update_mesh()

@@ -12,6 +12,7 @@ class Controller:
 		RANDOM = 0
 		SAVE = 1
 		ESCAPE = 2
+		SPEED_TIME = 3
 
 	class MoveMode:
 		LEFT = 0
@@ -47,6 +48,8 @@ class Controller:
 		elif mode == self.MiscMode.ESCAPE:
 			self.game.mouse_captured = False
 			self.game.set_exclusive_mouse(False)
+		elif mode == self.MiscMode.SPEED_TIME:
+			self.game.world.speed_daytime()
 
 	def update_move(self, axis):
 		self.game.camera.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))

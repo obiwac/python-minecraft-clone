@@ -52,7 +52,7 @@ class Window(pyglet.window.Window):
 
 		# create world
 
-		self.world = world.World(self.camera, self.texture_manager)
+		self.world = world.World(self.shader, self.camera, self.texture_manager)
 
 		# misc stuff
 
@@ -125,7 +125,6 @@ class Window(pyglet.window.Window):
 	def on_draw(self):
 		self.camera.update_matrices()
 
-		gl.glClearColor(0.4, 0.7, 1.0, 1.0)
 		self.clear()
 
 		self.world.draw()
