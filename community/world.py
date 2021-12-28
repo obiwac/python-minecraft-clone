@@ -57,7 +57,7 @@ class World:
 		self.block_types = [None]
 
 		self.shader_daylight_location = shader.find_uniform(b"u_Daylight")
-		self.daylight = 1000
+		self.daylight = 10000
 		self.incrementer = -1
 
 		# Compat

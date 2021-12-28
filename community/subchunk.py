@@ -2,6 +2,7 @@ import options
 import random
 from util import DIRECTIONS
 import numpy as np
+import glm
 
 SUBCHUNK_WIDTH  = 4
 SUBCHUNK_HEIGHT = 4
@@ -39,8 +40,8 @@ class Subchunk:
 			light_levels = (self.world.get_light(npos), self.world.get_skylight(npos))
 		return light_levels
 	
-	def add_face(self, face, pos, block_type, npos=None):
-		x, y, z = pos
+	def add_face(self, face, pos, lpos, block_type, npos=None):
+		lx, ly, lz = lpos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
 		shading_values = block_type.shading_values[face]
@@ -53,17 +54,15 @@ class Subchunk:
 			mesh = self.mesh
 		
 		for i in range(4):
-			mesh.append(vertex_positions[i * 3 + 0] + x)
-			mesh.append(vertex_positions[i * 3 + 1] + y)
-			mesh.append(vertex_positions[i * 3 + 2] + z)
+			mesh.append(vertex_positions[i * 3 + 0] + lx)
+			mesh.append(vertex_positions[i * 3 + 1] + ly)
+			mesh.append(vertex_positions[i * 3 + 2] + lz)
 
-			mesh.append(i)
-			mesh.append(tex_index)
+			mesh.append(tex_index * 4 + i)
 
 			mesh.append(shading_values[i])
 
-			mesh.append(blocklight)
-			mesh.append(skylight)
+			mesh.append(skylight * 16 + blocklight)
 
 	def can_render_face(self, block_type, block_number, position):
 		return not (self.world.is_opaque_block(position)
@@ -83,10 +82,12 @@ class Subchunk:
 
 					block_number = self.parent.blocks[parent_lx][parent_ly][parent_lz]
 
+					parent_lpos = glm.ivec3(parent_lx, parent_ly, parent_lz)
+
 					if block_number:
 						block_type = self.world.block_types[block_number]
 
-						x, y, z = pos = (
+						x, y, z = pos = glm.ivec3(
 							self.position[0] + local_x,
 							self.position[1] + local_y,
 							self.position[2] + local_z)
@@ -98,14 +99,13 @@ class Subchunk:
 
 						if block_type.is_cube:
 							for face, direction in enumerate(DIRECTIONS):
-								dx, dy, dz = direction
-								npos = (x + dx, y + dy, z + dz)
+								npos = pos + direction
 								if self.can_render_face(block_type, block_number, npos):
-									self.add_face(face, pos, block_type, npos)
+									self.add_face(face, pos, parent_lpos, block_type, npos)
 														
 						else:
 							for i in range(len(block_type.vertex_positions)):
-								self.add_face(i, pos, block_type)
+								self.add_face(i, pos, parent_lpos, block_type)
 
 		self.mesh_array = np.array(self.mesh, dtype=np.float)
 		self.translucent_mesh_array = np.array(self.translucent_mesh, dtype=np.float)
