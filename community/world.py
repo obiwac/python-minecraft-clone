@@ -5,7 +5,7 @@ import math
 import logging
 import glm
 
-from functools import cache
+
 
 from collections import deque
 
@@ -57,8 +57,9 @@ class World:
 		self.block_types = [None]
 
 		self.shader_daylight_location = shader.find_uniform(b"u_Daylight")
-		self.daylight = 10000
-		self.incrementer = -1
+		self.daylight = 1800
+		self.incrementer = 0
+		self.time = 0
 
 		# Compat
 		self.get_chunk_position = get_chunk_position
@@ -174,6 +175,16 @@ class World:
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
 
+	def push_light_update(self, light_update, chunk, local_pos):
+		lx, ly, lz = local_pos
+		if light_update:
+			sx = lx // subchunk.SUBCHUNK_WIDTH
+			sy = ly // subchunk.SUBCHUNK_HEIGHT
+			sz = lz // subchunk.SUBCHUNK_LENGTH
+
+			if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
+				self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
+
 	def increase_light(self, world_pos, newlight, light_update=True):
 		chunk = self.chunks[get_chunk_position(world_pos)]
 		local_pos = get_local_position(world_pos)
@@ -193,20 +204,14 @@ class World:
 
 				chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
 				if not chunk: continue
-				local_pos = lx, ly, lz = get_local_position(neighbour_pos)
+				local_pos = get_local_position(neighbour_pos)
 
 				if not self.is_opaque_block(neighbour_pos) and chunk.get_block_light(local_pos) + 2 <= light_level:
 					chunk.set_block_light(local_pos, light_level - 1)
 
 					self.light_increase_queue.put_nowait((neighbour_pos, light_level - 1))
 
-					if light_update:
-						sx = lx // subchunk.SUBCHUNK_WIDTH
-						sy = ly // subchunk.SUBCHUNK_HEIGHT
-						sz = lz // subchunk.SUBCHUNK_LENGTH
-						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
-							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
-
+					self.push_light_update(light_update, chunk, local_pos)
 
 	def init_skylight(self, pending_chunk):
 		for lx in range(chunk.CHUNK_WIDTH):
@@ -234,7 +239,7 @@ class World:
 				neighbour_pos = pos + direction
 				chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
 				if not chunk: continue
-				local_pos = lx, ly, lz = get_local_position(neighbour_pos)
+				local_pos = get_local_position(neighbour_pos)
 
 				if not self.is_opaque_block(neighbour_pos) and chunk.get_sky_light(local_pos) + 2 <= light_level:
 					chunk.set_sky_light(local_pos, light_level - 1)
@@ -242,13 +247,8 @@ class World:
 						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level - 1))
 					else:
 						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level))
-					if light_update:
-						sx = lx // subchunk.SUBCHUNK_WIDTH
-						sy = ly // subchunk.SUBCHUNK_HEIGHT
-						sz = lz // subchunk.SUBCHUNK_LENGTH
 
-						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
-							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
+					self.push_light_update(light_update, chunk, local_pos)
 
 	def decrease_light(self, world_pos):
 		chunk = self.chunks[get_chunk_position(world_pos)]
@@ -269,7 +269,7 @@ class World:
 
 				chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
 				if not chunk: continue
-				local_pos = nlx, nly, nlz = get_local_position(neighbour_pos)
+				local_pos = get_local_position(neighbour_pos)
 
 				if not self.is_opaque_block(neighbour_pos):
 					neighbour_level = chunk.get_block_light(local_pos)
@@ -281,12 +281,7 @@ class World:
 					elif neighbour_level >= light_level:
 						self.light_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
-					if light_update:
-						sx = nlx // subchunk.SUBCHUNK_WIDTH
-						sy = nly // subchunk.SUBCHUNK_HEIGHT
-						sz = nlz // subchunk.SUBCHUNK_LENGTH
-						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
-							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
+					self.push_light_update(light_update, chunk, local_pos)
 	
 	def decrease_skylight(self, world_pos, light_update=True):
 		chunk = self.chunks[get_chunk_position(world_pos)]
@@ -308,24 +303,19 @@ class World:
 
 				chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
 				if not chunk: continue
-				local_pos = nlx, nly, nlz = get_local_position(neighbour_pos)
+				local_pos = get_local_position(neighbour_pos)
 				
 				if not self.is_opaque_block(neighbour_pos):
 					neighbour_level = chunk.get_sky_light(local_pos)
 					if not neighbour_level: continue
 
-					if neighbour_level < light_level or dy == -1:
+					if neighbour_level < light_level or (dy == -1 and neighbour_level == 15):
 						chunk.set_sky_light(local_pos, 0)
 						self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
-					if light_update:
-						sx = nlx // subchunk.SUBCHUNK_WIDTH
-						sy = nly // subchunk.SUBCHUNK_HEIGHT
-						sz = nlz // subchunk.SUBCHUNK_LENGTH
-						if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
-							self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
+					self.push_light_update(light_update, chunk, local_pos)
 
 	def get_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
@@ -422,9 +412,15 @@ class World:
 
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))
+
+	def update_time(self, delta_time):
+		self.time += 1
 	
 	def speed_daytime(self):
-		self.incrementer *= 2
+		if self.daylight <= 0:
+			self.incrementer = 1
+		if self.daylight >= 1800:
+			self.incrementer = -1
 	
 	def can_render_chunk(self, chunk_position, pl_c_pos):
 		rx, ry, rz = (chunk_position[0] - pl_c_pos[0]) \
@@ -471,7 +467,7 @@ class World:
 	draw_translucent = draw_translucent_fancy if options.TRANSLUCENT_BLENDING else draw_translucent_fast
 	
 	def draw(self):
-		daylight_multiplier = self.daylight / 10000
+		daylight_multiplier = self.daylight / 1800
 		gl.glClearColor(0.4 * daylight_multiplier, 0.7 * daylight_multiplier, daylight_multiplier, 1.0)
 		gl.glUniform1f(self.shader_daylight_location, daylight_multiplier)
 
@@ -485,13 +481,22 @@ class World:
 		gl.glUniform1f(self.shader_daylight_location, 0.75 + daylight_multiplier / 4)
 		self.draw_translucent(player_chunk_pos)
 
-	def update(self):
-		self.daylight += self.incrementer
-		if self.daylight < 0:
+	def tick(self):
+		if self.incrementer == -1:
+			if self.daylight < 0:
+				self.incrementer = 0
+		elif self.incrementer == 1:
+			if self.daylight >= 1800:
+				self.incrementer = 0
+
+		if self.time % 600 == 0:
 			self.incrementer = 1
-		elif self.daylight >= 10000:
+		elif self.time % 600 == 300:
 			self.incrementer = -1
 
+		self.daylight += self.incrementer
+
+	def update(self):
 		if self.chunk_update_queue.qsize():
 			pending_chunk, sx, sy, sz = self.chunk_update_queue.get_nowait()
 			pending_chunk.subchunks[(sx, sy, sz)].update_mesh()

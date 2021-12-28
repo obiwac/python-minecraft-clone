@@ -39,12 +39,6 @@ class Window(pyglet.window.Window):
 		logging.info("Creating Texture Array")
 		self.texture_manager = texture_manager.TextureManager(16, 16, 256)
 
-		# pyglet stuff
-
-		pyglet.clock.schedule(self.update)
-		self.mouse_captured = False
-
-
 		# camera stuff
 
 		logging.info("Setting up camera scene")
@@ -53,6 +47,13 @@ class Window(pyglet.window.Window):
 		# create world
 
 		self.world = world.World(self.shader, self.camera, self.texture_manager)
+
+		# pyglet stuff
+
+		pyglet.clock.schedule(self.update)
+		pyglet.clock.schedule_interval(self.tick, 1 / 60)
+		pyglet.clock.schedule_interval(self.world.update_time, 1.0)
+		self.mouse_captured = False
 
 		# misc stuff
 
@@ -101,14 +102,7 @@ class Window(pyglet.window.Window):
 
 		pyglet.app.exit() # Closes the game
 
-
-	def update(self, delta_time):
-		if pyglet.clock.get_fps() < 20:
-			logging.warning(f"Warning: framerate dropping below 20 fps ({pyglet.clock.get_fps()} fps)")
-
-		if not self.mouse_captured:
-			self.camera.input = [0, 0, 0]
-
+	def tick(self, delta_time):
 		if not self.player.source and len(self.music) > 0:
 			if not self.player.standby:
 				self.player.standby = True
@@ -117,6 +111,15 @@ class Window(pyglet.window.Window):
 				self.player.standby = False
 				self.player.queue(random.choice(self.music))
 				self.player.play()
+				
+		self.world.tick()
+
+	def update(self, delta_time):
+		if pyglet.clock.get_fps() < 20:
+			logging.warning(f"Warning: framerate dropping below 20 fps ({pyglet.clock.get_fps()} fps)")
+
+		if not self.mouse_captured:
+			self.camera.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
