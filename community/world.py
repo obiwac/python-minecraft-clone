@@ -239,7 +239,7 @@ class World:
 				local_pos = get_local_position(neighbour_pos)
 
 				if not self.is_opaque_block(neighbour_pos) and chunk.get_sky_light(local_pos) + 2 <= light_level:
-					chunk.set_sky_light(local_pos, light_level)
+					chunk.set_sky_light(local_pos, light_level - 1)
 					if direction.y == -1:
 						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level))
 					else:
@@ -277,7 +277,7 @@ class World:
 						chunk.set_block_light(local_pos, 0)
 						self.light_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
 					elif neighbour_level >= light_level:
-						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level))
+						self.light_increase_queue.put_nowait((neighbour_pos, light_level))
 
 					self.push_light_update(light_update, chunk, local_pos)
 	
@@ -308,8 +308,9 @@ class World:
 
 					if direction.y == -1 and neighbour_level <= light_level:
 						chunk.set_sky_light(local_pos, 0)
-						self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
-
+						self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level + 1))
+					elif direction.y == 1 and neighbour_level > light_level:
+						self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level + 1))
 					else:
 						if neighbour_level < light_level:
 							chunk.set_sky_light(local_pos, 0)
