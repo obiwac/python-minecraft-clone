@@ -310,12 +310,14 @@ class World:
 						chunk.set_sky_light(local_pos, 0)
 						self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level + 1))
 					elif direction.y == 1 and neighbour_level > light_level:
+						chunk.set_sky_light(local_pos, neighbour_level)
 						self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level + 1))
 					else:
 						if neighbour_level < light_level:
 							chunk.set_sky_light(local_pos, 0)
 							self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
 						elif neighbour_level >= light_level:
+							chunk.set_sky_light(local_pos, neighbour_level - 1)
 							self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
 					self.push_light_update(light_update, chunk, local_pos)
