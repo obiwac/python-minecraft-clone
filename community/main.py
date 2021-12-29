@@ -52,7 +52,7 @@ class Window(pyglet.window.Window):
 
 		pyglet.clock.schedule(self.update)
 		pyglet.clock.schedule_interval(self.tick, 1 / 60)
-		pyglet.clock.schedule_interval(self.world.update_time, 1.0)
+		pyglet.clock.schedule_interval(self.world.update_time, 1)
 		self.mouse_captured = False
 
 		# misc stuff

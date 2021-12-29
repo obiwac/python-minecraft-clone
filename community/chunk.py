@@ -31,6 +31,8 @@ class Chunk:
 		self.skylightmap = [[[0 for z in range(CHUNK_LENGTH)]
 							for y in range(CHUNK_HEIGHT)]
 							for x in range(CHUNK_WIDTH)]
+
+		
 		
 
 		self.subchunks = {}
@@ -94,6 +96,7 @@ class Chunk:
 	def set_sky_light(self, position, value):
 		x, y, z = position
 		self.skylightmap[x][y][z] = value
+
 	
 	
 	def update_subchunk_meshes(self):
