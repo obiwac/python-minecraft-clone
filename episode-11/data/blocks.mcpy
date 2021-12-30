@@ -83,7 +83,7 @@
 77: name "Stone Button", model models.button, texture.all stone
 78: name "Snow", model models.snow, texture.all snow
 # ditto as for mob spawners (52)
-79: name "Ice", model models.glass, texture.all ice
+79: name "Ice", model models.tinted_glass, texture.all ice
 80: name "Snow Block", texture.all snow
 81: name "Cactus", model models.cactus, texture.top cactus_top, texture.bottom cactus_bottom, texture.sides cactus_side
 82: name "Clay", texture.all clay

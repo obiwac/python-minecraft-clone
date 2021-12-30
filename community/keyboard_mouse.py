@@ -53,6 +53,7 @@ class Keyboard_Mouse(controller.Controller):
 		elif key == pyglet.window.key.G: self.misc(self.MiscMode.RANDOM)
 		elif key == pyglet.window.key.O: self.misc(self.MiscMode.SAVE)
 		elif key == pyglet.window.key.ESCAPE: self.misc(self.MiscMode.ESCAPE)
+		elif key == pyglet.window.key.F6: self.misc(self.MiscMode.SPEED_TIME)
 
 	def on_key_release(self, key, modifiers):
 		if not self.game.mouse_captured:

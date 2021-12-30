@@ -2,7 +2,7 @@
 # this would avoid the problems this solution has
 
 translucent = True
-transparent = True
+transparent = 1
 is_cube = True
 glass = True
 
@@ -23,6 +23,7 @@ tex_coords = [
 	[0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
 	[0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
 ]
+
 
 shading_values = [
 	[0.6, 0.6, 0.6, 0.6],

@@ -1,4 +1,5 @@
 import ctypes
+import numpy as np
 
 import pyglet.gl as gl
 
@@ -11,6 +12,7 @@ CHUNK_LENGTH = 16
 class Chunk:
 	def __init__(self, world, chunk_position):
 		self.world = world
+		self.shader_chunk_offset_location = self.world.shader.find_uniform(b"u_ChunkPosition")
 		
 		self.modified = False
 		self.chunk_position = chunk_position
@@ -20,20 +22,21 @@ class Chunk:
 			self.chunk_position[1] * CHUNK_HEIGHT,
 			self.chunk_position[2] * CHUNK_LENGTH)
 		
-		self.blocks = [[[0
-			for z in range(CHUNK_LENGTH)]
-			for y in range(CHUNK_HEIGHT)]
-			for x in range(CHUNK_WIDTH )]
+		self.blocks = [[[0 for z in range(CHUNK_LENGTH)]
+							for y in range(CHUNK_HEIGHT)]
+							for x in range(CHUNK_WIDTH)]
+		# Numpy is really slow there
 
-		self.lightmap = [[[0
-			for z in range(CHUNK_LENGTH)]
-			for y in range(CHUNK_HEIGHT)]
-			for x in range(CHUNK_WIDTH )]
+		self.lightmap = [[[0 for z in range(CHUNK_LENGTH)]
+							for y in range(CHUNK_HEIGHT)]
+							for x in range(CHUNK_WIDTH)]
+		
+		self.skylightmap = [[[0 for z in range(CHUNK_LENGTH)]
+							for y in range(CHUNK_HEIGHT)]
+							for x in range(CHUNK_WIDTH)]
 
-		self.skylightmap = [[[0
-			for z in range(CHUNK_LENGTH)]
-			for y in range(CHUNK_HEIGHT)]
-			for x in range(CHUNK_WIDTH )]
+		
+		
 
 		self.subchunks = {}
 		
@@ -44,8 +47,8 @@ class Chunk:
 
 		# mesh variables
 
-		self.mesh = []
-		self.translucent_mesh = []
+		self.mesh = None
+		self.translucent_mesh = None
 
 		self.mesh_quad_count = 0
 		self.translucent_quad_count = 0
@@ -55,7 +58,7 @@ class Chunk:
 		self.vao = gl.GLuint(0)
 		gl.glGenVertexArrays(1, self.vao)
 		gl.glBindVertexArray(self.vao)
-
+		
 		self.vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.vbo)
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
@@ -64,18 +67,40 @@ class Chunk:
 		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, 
 				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 0)
 		gl.glEnableVertexAttribArray(0)
-		gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, 
+		gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, 
 				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 3 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(1)
 		gl.glVertexAttribPointer(2, 1, gl.GL_FLOAT, 
-				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 5 * ctypes.sizeof(gl.GLfloat))
+				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 4 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(2)
+		gl.glVertexAttribPointer(3, 1, gl.GL_FLOAT, 
+				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 5 * ctypes.sizeof(gl.GLfloat))
+		gl.glEnableVertexAttribArray(3)
+
 
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, self.vbo)
 		gl.glDeleteVertexArrays(1, self.vao)
+
+	def get_block_light(self, position):
+		x, y, z = position
+		return self.lightmap[x][y][z]
+
+	def set_block_light(self, position, value):
+		x, y, z = position
+		self.lightmap[x][y][z] = value
+
+	def get_sky_light(self, position):
+		x, y, z = position
+		return self.skylightmap[x][y][z]
+
+	def set_sky_light(self, position, value):
+		x, y, z = position
+		self.skylightmap[x][y][z] = value
+
+	
 	
 	def update_subchunk_meshes(self):
 		for subchunk in self.subchunks.values():
@@ -111,11 +136,9 @@ class Chunk:
 
 	def update_mesh(self):
 		# combine all the small subchunk meshes into one big chunk mesh
+		self.mesh = np.hstack(tuple(subchunk.mesh_array for subchunk in self.subchunks.values()))
+		self.translucent_mesh = np.hstack(tuple(subchunk.translucent_mesh_array for subchunk in self.subchunks.values()))
 
-		for subchunk in self.subchunks.values():
-			self.mesh.extend(subchunk.mesh)
-			self.translucent_mesh.extend(subchunk.translucent_mesh)
-		
 		# send the full mesh data to the GPU and free the memory used client-side (we don't need it anymore)
 		# don't forget to save the length of 'self.mesh_indices' before freeing
 
@@ -123,9 +146,7 @@ class Chunk:
 		self.translucent_quad_count = len(self.translucent_mesh) // 24
 
 		self.send_mesh_data_to_gpu()
-	
-		self.mesh = []
-		self.translucent_mesh = []
+
 	
 	def send_mesh_data_to_gpu(self): # pass mesh data to gpu
 		if not self.mesh_quad_count:
@@ -134,6 +155,12 @@ class Chunk:
 		gl.glBindVertexArray(self.vao)
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+		gl.glBufferData(gl.GL_ARRAY_BUFFER, 
+			ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 8), 
+			None, 
+			gl.GL_DYNAMIC_DRAW
+		)
+		
 		gl.glBufferSubData(
 			gl.GL_ARRAY_BUFFER,
 			0,
@@ -153,6 +180,7 @@ class Chunk:
 			return
 		
 		gl.glBindVertexArray(self.vao)
+		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glDrawElementsBaseVertex(
 			gl.GL_TRIANGLES,
@@ -166,6 +194,7 @@ class Chunk:
 			return
 		
 		gl.glBindVertexArray(self.vao)
+		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glDrawElementsBaseVertex(
 			gl.GL_TRIANGLES,
