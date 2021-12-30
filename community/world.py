@@ -240,8 +240,8 @@ class World:
 
 				if not self.is_opaque_block(neighbour_pos) and chunk.get_sky_light(local_pos) + 2 <= light_level:
 					chunk.set_sky_light(local_pos, light_level - 1)
-					if direction.y == -1:
-						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level))
+					if direction.y == -1 and light_level == 16:
+						self.skylight_increase_queue.put_nowait((neighbour_pos, 16))
 					else:
 						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level - 1))
 
@@ -277,7 +277,7 @@ class World:
 						chunk.set_block_light(local_pos, 0)
 						self.light_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
 					elif neighbour_level >= light_level:
-						self.light_increase_queue.put_nowait((neighbour_pos, light_level))
+						self.light_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
 					self.push_light_update(light_update, chunk, local_pos)
 	
@@ -306,18 +306,16 @@ class World:
 					neighbour_level = chunk.get_sky_light(local_pos)
 					if not neighbour_level: continue
 
-					if direction.y == -1 and neighbour_level <= light_level:
+					if direction.y == -1:
 						chunk.set_sky_light(local_pos, 0)
-						self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level + 1))
-					elif direction.y == 1 and neighbour_level > light_level:
-						chunk.set_sky_light(local_pos, neighbour_level)
-						self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level + 1))
+						self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
+					elif direction.y == 1 and neighbour_level == 15:
+						self.skylight_increase_queue.put_nowait((neighbour_pos, 16))
 					else:
 						if neighbour_level < light_level:
 							chunk.set_sky_light(local_pos, 0)
 							self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
 						elif neighbour_level >= light_level:
-							chunk.set_sky_light(local_pos, neighbour_level - 1)
 							self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
 					self.push_light_update(light_update, chunk, local_pos)
