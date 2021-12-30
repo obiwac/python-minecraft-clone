@@ -238,13 +238,16 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
-				if not self.is_opaque_block(neighbour_pos) and chunk.get_sky_light(local_pos) < light_level:
+				transparency = self.get_transparency(neighbour_pos)
+
+				if transparency and chunk.get_sky_light(local_pos) < light_level:
+					newlight = light_level - (2 - transparency)
 					if direction.y == -1:
-						chunk.set_sky_light(local_pos, light_level)
-						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level))
+						chunk.set_sky_light(local_pos, newlight)
+						self.skylight_increase_queue.put_nowait((neighbour_pos, newlight))
 					elif chunk.get_sky_light(local_pos) + 2 <= light_level:
-						chunk.set_sky_light(local_pos, light_level - 1)
-						self.skylight_increase_queue.put_nowait((neighbour_pos, light_level - 1))
+						chunk.set_sky_light(local_pos, newlight - 1)
+						self.skylight_increase_queue.put_nowait((neighbour_pos, newlight - 1))
 
 					self.push_light_update(light_update, chunk, local_pos)
 			
@@ -303,7 +306,7 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 				
-				if not self.is_opaque_block(neighbour_pos):
+				if self.get_transparency(neighbour_pos):
 					neighbour_level = chunk.get_sky_light(local_pos)
 					if not neighbour_level: continue
 
@@ -354,6 +357,14 @@ class World:
 
 		block_number = self.chunks[chunk_position].blocks[lx][ly][lz]
 		return block_number
+
+	def get_transparency(self, position):
+		block_type = self.block_types[self.get_block_number(position)]
+
+		if not block_type:
+			return 2
+		
+		return block_type.transparent
 
 	def is_opaque_block(self, position):
 		# get block type and check if it's opaque or not
