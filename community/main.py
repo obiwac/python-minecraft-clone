@@ -148,7 +148,7 @@ class Game:
 		self.config = gl.Config(double_buffer = True,
 				major_version = 3, minor_version = 3,
 				depth_size = 16)
-		self.window = Window(config = self.config, width = 854, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
+		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
 
 	def run(self): 
 		pyglet.app.run()

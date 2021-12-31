@@ -175,15 +175,10 @@ class World:
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
 
-	def push_light_update(self, light_update, chunk, local_pos):
-		lx, ly, lz = local_pos
-		if light_update:
-			sx = lx // subchunk.SUBCHUNK_WIDTH
-			sy = ly // subchunk.SUBCHUNK_HEIGHT
-			sz = lz // subchunk.SUBCHUNK_LENGTH
-
-			if (chunk, sx, sy, sz) not in self.chunk_update_queue.queue:
-				self.chunk_update_queue.put_nowait((chunk, sx, sy, sz))
+	def push_light_update(self, light_update, chunk, pos):
+		x, y, z = pos
+		if light_update and (chunk, x, y, z) not in self.chunk_update_queue.queue:
+			self.chunk_update_queue.put_nowait((chunk, x, y, z))
 
 	def increase_light(self, world_pos, newlight, light_update=True):
 		chunk = self.chunks[get_chunk_position(world_pos)]
@@ -211,7 +206,7 @@ class World:
 
 					self.light_increase_queue.put_nowait((neighbour_pos, light_level - 1))
 
-					self.push_light_update(light_update, chunk, local_pos)
+					self.push_light_update(light_update, chunk, neighbour_pos)
 
 	def init_skylight(self, pending_chunk):
 		for lx in range(chunk.CHUNK_WIDTH):
@@ -249,7 +244,7 @@ class World:
 						chunk.set_sky_light(local_pos, newlight - 1)
 						self.skylight_increase_queue.put_nowait((neighbour_pos, newlight - 1))
 
-					self.push_light_update(light_update, chunk, local_pos)
+					self.push_light_update(light_update, chunk, neighbour_pos)
 			
 
 	def decrease_light(self, world_pos):
@@ -287,7 +282,7 @@ class World:
 					elif neighbour_level >= light_level:
 						self.light_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
-					self.push_light_update(light_update, chunk, local_pos)
+					self.push_light_update(light_update, chunk, neighbour_pos)
 	
 	def decrease_skylight(self, world_pos, light_update=True):
 		chunk = self.chunks[get_chunk_position(world_pos)]
@@ -326,7 +321,7 @@ class World:
 						elif neighbour_level >= light_level:
 							self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level - (2 - transparency)))
 
-					self.push_light_update(light_update, chunk, local_pos)
+					self.push_light_update(light_update, chunk, neighbour_pos)
 
 	def get_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
@@ -338,7 +333,7 @@ class World:
 	def get_skylight(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
 		if not chunk:
-			return 0
+			return 15
 		local_position = self.get_local_position(position)
 		return chunk.get_sky_light(local_position)
 
@@ -517,9 +512,10 @@ class World:
 
 	def update(self):
 		if self.chunk_update_queue.qsize():
-			pending_chunk, sx, sy, sz = self.chunk_update_queue.get_nowait()
-			pending_chunk.subchunks[(sx, sy, sz)].update_mesh()
+			pending_chunk, x, y, z = self.chunk_update_queue.get_nowait()
+			pending_chunk.update_at_position((x, y, z))
 			pending_chunk.update_mesh()
+			
 				
 		
 	
