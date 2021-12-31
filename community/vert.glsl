@@ -37,7 +37,7 @@ void main(void) {
 	v_Light = vec3(
 		min(max(skylightMultiplier * u_Daylight, blocklightMultiplier * 2), 1.0), 
 		min(max(skylightMultiplier * u_Daylight, blocklightMultiplier * 1.5), 1.0), 
-		min(max(blocklightMultiplier, skylightMultiplier * (1.0 - u_Daylight)), 1.0)
+		min(max(blocklightMultiplier, skylightMultiplier * (2.0 - u_Daylight)), 1.0)
 	) * a_Shading; 
 
 	gl_Position = u_ModelViewProjMatrix * vec4(v_Position, 1.0);

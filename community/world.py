@@ -499,7 +499,7 @@ class World:
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
 				render_chunk.draw()
 
-		gl.glUniform1f(self.shader_daylight_location, 0.5 + daylight_multiplier / 4)
+		gl.glUniform1f(self.shader_daylight_location, max(0.5 + daylight_multiplier / 4, 1))
 		self.draw_translucent(player_chunk_pos)
 
 	def tick(self):
