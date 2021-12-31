@@ -306,7 +306,7 @@ class World:
 				local_pos = get_local_position(neighbour_pos)
 
 				transparency = self.get_transparency(neighbour_pos)
-				
+
 				if self.get_transparency(neighbour_pos):
 					neighbour_level = chunk.get_sky_light(local_pos)
 					if not neighbour_level: continue
@@ -319,9 +319,16 @@ class World:
 							chunk.set_sky_light(local_pos, 0)
 							self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
 						elif neighbour_level >= light_level:
-							self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level - (2 - transparency)))
+							self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
 					self.push_light_update(light_update, chunk, neighbour_pos)
+
+	def get_raw_light(self, position):
+		chunk = self.chunks.get(get_chunk_position(position), None)
+		if not chunk:
+			return 0
+		local_position = self.get_local_position(position)
+		return chunk.get_raw_light(local_position)
 
 	def get_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
@@ -400,7 +407,7 @@ class World:
 			if number in self.light_blocks:
 				self.increase_light(position, 15)
 
-			elif not self.block_types[number].transparent:
+			elif self.block_types[number].transparent != 2:
 				self.decrease_light(position)
 				self.decrease_skylight(position)
 		
