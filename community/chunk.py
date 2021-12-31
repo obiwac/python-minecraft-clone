@@ -31,13 +31,6 @@ class Chunk:
 							for y in range(CHUNK_HEIGHT)]
 							for x in range(CHUNK_WIDTH)]
 		
-		self.skylightmap = [[[0 for z in range(CHUNK_LENGTH)]
-							for y in range(CHUNK_HEIGHT)]
-							for x in range(CHUNK_WIDTH)]
-
-		
-		
-
 		self.subchunks = {}
 		
 		for x in range(int(CHUNK_WIDTH / subchunk.SUBCHUNK_WIDTH)):
@@ -86,19 +79,23 @@ class Chunk:
 
 	def get_block_light(self, position):
 		x, y, z = position
-		return self.lightmap[x][y][z]
+		return self.lightmap[x][y][z] & 0xF
 
 	def set_block_light(self, position, value):
 		x, y, z = position
-		self.lightmap[x][y][z] = value
+		self.lightmap[x][y][z] = (self.lightmap[x][y][z] & 0xF0) | value
 
 	def get_sky_light(self, position):
 		x, y, z = position
-		return self.skylightmap[x][y][z]
+		return (self.lightmap[x][y][z] >> 4) & 0xF
 
 	def set_sky_light(self, position, value):
 		x, y, z = position
-		self.skylightmap[x][y][z] = value
+		self.lightmap[x][y][z] = (self.lightmap[x][y][z] & 0xF) | (value << 4)
+
+	def get_raw_light(self, position):
+		x, y, z = position
+		return self.lightmap[x][y][z]
 
 	
 	

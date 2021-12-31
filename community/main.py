@@ -18,7 +18,7 @@ import texture_manager
 
 import world
 
-import hit
+import options
 import time
 
 import joystick
@@ -69,7 +69,7 @@ class Window(pyglet.window.Window):
 
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
-		gl.glBlendFunc(gl.GL_SRC_COLOR, gl.GL_ONE_MINUS_SRC_COLOR)
+		gl.glBlendFunc(*options.BLENDFUNC)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
@@ -146,9 +146,9 @@ class Window(pyglet.window.Window):
 class Game:
 	def __init__(self):
 		self.config = gl.Config(double_buffer = True,
-				major_version = 4, minor_version = 6,
+				major_version = 3, minor_version = 3,
 				depth_size = 16)
-		self.window = Window(config = self.config, width = 854, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
+		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
 
 	def run(self): 
 		pyglet.app.run()

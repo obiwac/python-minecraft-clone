@@ -35,9 +35,9 @@ class Subchunk:
 
 	def get_light(self, pos, npos):
 		if not npos:
-			light_levels = (self.world.get_light(pos), self.world.get_skylight(pos))
+			light_levels = self.world.get_raw_light(pos)
 		else:
-			light_levels = (self.world.get_light(npos), self.world.get_skylight(npos))
+			light_levels = self.world.get_raw_light(npos)
 		return light_levels
 	
 	def add_face(self, face, pos, lpos, block_type, npos=None):
@@ -45,7 +45,7 @@ class Subchunk:
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
 		shading_values = block_type.shading_values[face]
-		blocklight, skylight = self.get_light(pos, npos)
+		light = self.get_light(pos, npos)
 
 
 		if block_type.model.translucent:
@@ -62,7 +62,7 @@ class Subchunk:
 
 			mesh.append(shading_values[i])
 
-			mesh.append(skylight * 16 + blocklight)
+			mesh.append(light)
 
 	def can_render_face(self, block_type, block_number, position):
 		return not (self.world.is_opaque_block(position)

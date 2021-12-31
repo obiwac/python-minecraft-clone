@@ -30,6 +30,6 @@ void main(void) {
 						u_ChunkPosition.y * CHUNK_LENGTH + a_LocalPosition.z);
 	v_TexCoords = vec3(texture_UV[int(a_TextureFetcher) % 4], int(a_TextureFetcher) / 4);
 	v_Shading = a_Shading;
-	v_Light = max(int(a_Light) % 16, int(a_Light) / 16 * u_Daylight); // First one is Blocklight, Second one is Skylight
+	v_Light = max(int(a_Light) & 15, (int(a_Light) >> 4) * u_Daylight); // First one is Blocklight, Second one is Skylight
 	gl_Position = u_ModelViewProjMatrix * vec4(v_Position, 1.0);
 }
