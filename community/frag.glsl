@@ -17,5 +17,5 @@ void main(void) {
 	}
 	float lightMultiplier = v_Shading * pow(0.8, (15.0 - v_Light));
     
-	fragColor = textureColor * lightMultiplier;
+	fragColor = textureColor * vec4(lightMultiplier, lightMultiplier, lightMultiplier, 1.0);
 }

@@ -326,7 +326,7 @@ class World:
 	def get_raw_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
 		if not chunk:
-			return 0
+			return 16 << 4
 		local_position = self.get_local_position(position)
 		return chunk.get_raw_light(local_position)
 
