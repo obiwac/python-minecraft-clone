@@ -31,7 +31,10 @@ class Window(pyglet.window.Window):
 		# create shader
 
 		logging.info("Compiling Shaders")
-		self.shader = shader.Shader("vert.glsl", "frag.glsl")
+		if not options.COLORED_LIGHTING:
+			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
+		else:
+			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
 		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
 		self.shader.use()
 

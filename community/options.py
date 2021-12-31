@@ -17,3 +17,5 @@ BLENDFUNC = (gl.GL_SRC_COLOR, gl.GL_ONE_MINUS_SRC_COLOR) # Possible options:
                                                          # OR
                                                          # (gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA):
                                                          # Alpha blending, used by Minecraft Classic and 1.13 +
+
+COLORED_LIGHTING = False
