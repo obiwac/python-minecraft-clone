@@ -18,7 +18,7 @@ import texture_manager
 
 import world
 
-import hit
+import options
 import time
 
 import joystick
@@ -69,7 +69,7 @@ class Window(pyglet.window.Window):
 
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
-		gl.glBlendFunc(gl.GL_SRC_COLOR, gl.GL_ONE_MINUS_SRC_COLOR)
+		gl.glBlendFunc(*options.BLENDFUNC)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
