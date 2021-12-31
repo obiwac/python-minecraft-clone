@@ -14,8 +14,7 @@ layout(location = 3) in float a_Light;
 
 out vec3 v_Position;
 out vec3 v_TexCoords;
-out float v_Shading;
-out float v_Light;
+out vec3 v_Light;
 
 const vec2 texture_UV[4] = vec2[4](
 	vec2(0.0, 1.0),
@@ -29,7 +28,17 @@ void main(void) {
 						a_LocalPosition.y, 
 						u_ChunkPosition.y * CHUNK_LENGTH + a_LocalPosition.z);
 	v_TexCoords = vec3(texture_UV[int(a_TextureFetcher) & 3], int(a_TextureFetcher) >> 2);
-	v_Shading = a_Shading;
-	v_Light = max(int(a_Light) & 15, (int(a_Light) >> 4) * u_Daylight); // First one is Blocklight, Second one is Skylight
+
+	float blocklightMultiplier = pow(0.8, 15.0 - (int(a_Light) & 15));
+	float skylightMultiplier = pow(0.8, 15.0 - (int(a_Light) >> 4) * u_Daylight);
+
+
+
+	v_Light = vec3(
+		min(max(skylightMultiplier * u_Daylight, blocklightMultiplier * 2), 1.0), 
+		min(max(skylightMultiplier * u_Daylight, blocklightMultiplier * 1.5), 1.0), 
+		min(max(blocklightMultiplier, skylightMultiplier * (1.0 - u_Daylight)), 1.0)
+	) * a_Shading; 
+
 	gl_Position = u_ModelViewProjMatrix * vec4(v_Position, 1.0);
 }

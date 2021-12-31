@@ -6,8 +6,7 @@ uniform sampler2DArray u_TextureArraySampler;
 
 in vec3 v_Position;
 in vec3 v_TexCoords;
-in float v_Shading;
-in float v_Light;
+in vec3 v_Light;
 
 
 void main(void) {
@@ -15,7 +14,7 @@ void main(void) {
 	if (textureColor.a < 0.5) { // discard if texel's alpha component is 0 (texel is transparent)
 		discard;
 	}
-	float lightMultiplier = v_Shading * pow(0.8, (15.0 - v_Light));
+	
     
-	fragColor = textureColor * vec4(lightMultiplier, lightMultiplier, lightMultiplier, 1.0);
+	fragColor = textureColor * vec4(v_Light, 1.0);
 }
