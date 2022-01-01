@@ -4,7 +4,7 @@ import pyglet.gl as gl
 
 TRANSLUCENT_BLENDING = 1
 MIPMAP_TYPE = gl.GL_NEAREST # Possible filters: 
-                            # Nearest filter (GL_NEAREST)
+                            # No filter (GL_NEAREST)
                             # Linear filter (GL_LINEAR),
                             # Nearest mipmap (GL_NEAREST_MIPMAP_NEAREST),
                             # Linear mipmap (GL_NEAREST_MIPMAP_LINEAR)

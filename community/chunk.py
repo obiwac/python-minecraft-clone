@@ -52,7 +52,7 @@ class Chunk:
 		self.vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.vbo)
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 8), None, gl.GL_DYNAMIC_DRAW)
+		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 6), None, gl.GL_DYNAMIC_DRAW)
 
 		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, 
 				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 0)
