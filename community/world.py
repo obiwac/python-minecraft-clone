@@ -175,10 +175,16 @@ class World:
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
 
-	def push_light_update(self, light_update, chunk, pos):
-		x, y, z = pos
-		if light_update and (chunk, x, y, z) not in self.chunk_update_queue.queue:
-			self.chunk_update_queue.put_nowait((chunk, x, y, z))
+	def push_light_update(self, light_update, chunk, lpos):
+		if not light_update:
+			return
+		lx, ly, lz = lpos
+		subchunk_pos = (lx // subchunk.SUBCHUNK_WIDTH,
+						ly // subchunk.SUBCHUNK_HEIGHT,
+						lz // subchunk.SUBCHUNK_LENGTH
+		)
+		if (chunk, *subchunk_pos) not in self.chunk_update_queue.queue:
+			self.chunk_update_queue.put_nowait((chunk, *subchunk_pos))
 
 	def increase_light(self, world_pos, newlight, light_update=True):
 		chunk = self.chunks[get_chunk_position(world_pos)]
@@ -201,12 +207,13 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
+				self.push_light_update(light_update, chunk, local_pos)
+
 				if not self.is_opaque_block(neighbour_pos) and chunk.get_block_light(local_pos) + 2 <= light_level:
 					chunk.set_block_light(local_pos, light_level - 1)
 
 					self.light_increase_queue.put_nowait((neighbour_pos, light_level - 1))
 
-					self.push_light_update(light_update, chunk, neighbour_pos)
 
 	def init_skylight(self, pending_chunk):
 		for lx in range(chunk.CHUNK_WIDTH):
@@ -233,6 +240,8 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
+				self.push_light_update(light_update, chunk, local_pos)
+
 				transparency = self.get_transparency(neighbour_pos)
 
 				if transparency and chunk.get_sky_light(local_pos) < light_level:
@@ -243,8 +252,6 @@ class World:
 					elif chunk.get_sky_light(local_pos) + 2 <= light_level:
 						chunk.set_sky_light(local_pos, newlight - 1)
 						self.skylight_increase_queue.put_nowait((neighbour_pos, newlight - 1))
-
-					self.push_light_update(light_update, chunk, neighbour_pos)
 			
 
 	def decrease_light(self, world_pos):
@@ -268,6 +275,8 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
+				self.push_light_update(light_update, chunk, local_pos)
+
 				if self.get_block_number(neighbour_pos) in self.light_blocks:
 					self.light_increase_queue.put_nowait((neighbour_pos, 15))
 					continue
@@ -282,7 +291,6 @@ class World:
 					elif neighbour_level >= light_level:
 						self.light_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
-					self.push_light_update(light_update, chunk, neighbour_pos)
 	
 	def decrease_skylight(self, world_pos, light_update=True):
 		chunk = self.chunks[get_chunk_position(world_pos)]
@@ -305,6 +313,8 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
+				self.push_light_update(light_update, chunk, local_pos)
+
 				transparency = self.get_transparency(neighbour_pos)
 
 				if self.get_transparency(neighbour_pos):
@@ -321,7 +331,6 @@ class World:
 						elif neighbour_level >= light_level:
 							self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
-					self.push_light_update(light_update, chunk, neighbour_pos)
 
 	def get_raw_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
@@ -499,10 +508,9 @@ class World:
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
 				render_chunk.draw()
 
-		gl.glUniform1f(self.shader_daylight_location, 0.75 + daylight_multiplier / 4)
 		self.draw_translucent(player_chunk_pos)
 
-	def tick(self):
+	def update_daylight(self):
 		if self.incrementer == -1:
 			if self.daylight < 0:
 				self.incrementer = 0
@@ -517,11 +525,20 @@ class World:
 
 		self.daylight += self.incrementer
 
-	def update(self):
+	def tick(self):
+		self.update_daylight()
+
+	def process_chunk_updates(self):
 		if self.chunk_update_queue.qsize():
-			pending_chunk, x, y, z = self.chunk_update_queue.get_nowait()
-			pending_chunk.update_at_position((x, y, z))
+			pending_chunk, sx, sy, sz = self.chunk_update_queue.get_nowait()
+			pending_subchunk = pending_chunk.subchunks.get((sx, sy, sz), None)
+			if not pending_subchunk:
+				return
+			pending_subchunk.update_mesh()
 			pending_chunk.update_mesh()
+			
+	def update(self):
+		self.process_chunk_updates()
 			
 				
 		
