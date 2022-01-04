@@ -26,7 +26,9 @@ class Chunk:
 							for y in range(CHUNK_HEIGHT)]
 							for x in range(CHUNK_WIDTH)]
 		# Numpy is really slow there
-		self.lightmap = np.zeros((CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH), dtype=np.uint8)
+		self.lightmap = [[[0 for z in range(CHUNK_LENGTH)]
+							for y in range(CHUNK_HEIGHT)]
+							for x in range(CHUNK_WIDTH)]
 		
 		self.subchunks = {}
 		

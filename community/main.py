@@ -135,8 +135,6 @@ class Window(pyglet.window.Window):
 
 		self.world.draw()
 
-		gl.glFinish()
-
 	# input functions
 
 	def on_resize(self, width, height):
