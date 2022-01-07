@@ -5,6 +5,8 @@ import pyglet.gl as gl
 
 import subchunk 
 
+import options
+
 CHUNK_WIDTH = 16
 CHUNK_HEIGHT = 128
 CHUNK_LENGTH = 16
@@ -73,6 +75,7 @@ class Chunk:
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
 
 	def __del__(self):
+		gl.glDeleteQueries(1, self.occlusion_query)
 		gl.glDeleteBuffers(1, self.vbo)
 		gl.glDeleteVertexArrays(1, self.vao)
 
@@ -170,20 +173,19 @@ class Chunk:
 			(gl.GLfloat * len(self.translucent_mesh)) (*self.translucent_mesh)
 		)
 
-
 	def draw(self):
 		if not self.mesh_quad_count:
 			return
-		
+
 		gl.glBindVertexArray(self.vao)
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
-		gl.glDrawElementsBaseVertex(
+		gl.glDrawElements(
 			gl.GL_TRIANGLES,
 			self.mesh_quad_count * 6,
 			gl.GL_UNSIGNED_INT,
 			None,
-			0)
+		)
 
 	def draw_translucent(self):
 		if not self.translucent_quad_count:
@@ -199,3 +201,4 @@ class Chunk:
 			None,
 			self.mesh_quad_count * 4
 		)
+		

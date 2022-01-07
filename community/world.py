@@ -207,10 +207,10 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
-				self.push_light_update(light_update, chunk, local_pos)
-
 				if not self.is_opaque_block(neighbour_pos) and chunk.get_block_light(local_pos) + 2 <= light_level:
 					chunk.set_block_light(local_pos, light_level - 1)
+
+					self.push_light_update(light_update, chunk, local_pos)
 
 					self.light_increase_queue.put_nowait((neighbour_pos, light_level - 1))
 
@@ -240,12 +240,13 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
-				self.push_light_update(light_update, chunk, local_pos)
-
 				transparency = self.get_transparency(neighbour_pos)
 
 				if transparency and chunk.get_sky_light(local_pos) < light_level:
 					newlight = light_level - (2 - transparency)
+
+					self.push_light_update(light_update, chunk, local_pos)
+
 					if direction.y == -1:
 						chunk.set_sky_light(local_pos, newlight)
 						self.skylight_increase_queue.put_nowait((neighbour_pos, newlight))
@@ -275,8 +276,6 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
-				self.push_light_update(light_update, chunk, local_pos)
-
 				if self.get_block_number(neighbour_pos) in self.light_blocks:
 					self.light_increase_queue.put_nowait((neighbour_pos, 15))
 					continue
@@ -287,6 +286,7 @@ class World:
 
 					if neighbour_level < light_level:
 						chunk.set_block_light(local_pos, 0)
+						self.push_light_update(light_update, chunk, local_pos)
 						self.light_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.light_increase_queue.put_nowait((neighbour_pos, neighbour_level))
@@ -313,23 +313,16 @@ class World:
 				if not chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
-				self.push_light_update(light_update, chunk, local_pos)
-
-				transparency = self.get_transparency(neighbour_pos)
-
 				if self.get_transparency(neighbour_pos):
 					neighbour_level = chunk.get_sky_light(local_pos)
 					if not neighbour_level: continue
 
-					if direction.y == -1:
+					if direction.y == -1 or neighbour_level < light_level:
 						chunk.set_sky_light(local_pos, 0)
+						self.push_light_update(light_update, chunk, local_pos)
 						self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
-					else:
-						if neighbour_level < light_level:
-							chunk.set_sky_light(local_pos, 0)
-							self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
-						elif neighbour_level >= light_level:
-							self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
+					elif neighbour_level >= light_level:
+						self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
 
 	def get_raw_light(self, position):
@@ -464,8 +457,8 @@ class World:
 		return rx >= -1 and ry >= -1 and rz >= -1 
 	
 	def draw_translucent_fast(self, player_chunk_pos):
-		gl.glDisable(gl.GL_CULL_FACE)
 		gl.glEnable(gl.GL_BLEND)
+		gl.glDisable(gl.GL_CULL_FACE)
 		gl.glDepthMask(gl.GL_FALSE)
 
 		for chunk_position, render_chunk in self.chunks.items():
@@ -473,8 +466,9 @@ class World:
 				render_chunk.draw_translucent()
 
 		gl.glDepthMask(gl.GL_TRUE)
-		gl.glDisable(gl.GL_BLEND)
 		gl.glEnable(gl.GL_CULL_FACE)
+		gl.glDisable(gl.GL_BLEND)
+		
 		
 	def draw_translucent_fancy(self, player_chunk_pos):
 		gl.glDepthMask(gl.GL_FALSE)
@@ -494,7 +488,7 @@ class World:
 		gl.glDisable(gl.GL_BLEND)
 		gl.glDepthMask(gl.GL_TRUE)
 
-	draw_translucent = draw_translucent_fancy if options.TRANSLUCENT_BLENDING else draw_translucent_fast
+	draw_translucent = draw_translucent_fancy if options.FANCY_TRANSLUCENCY else draw_translucent_fast
 	
 	def draw(self):
 		daylight_multiplier = self.daylight / 1800

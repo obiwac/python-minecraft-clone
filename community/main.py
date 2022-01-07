@@ -11,7 +11,6 @@ pyglet.options["search_local_libs"] = True
 pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent")
 
 import pyglet.gl as gl
-
 import shader
 import camera
 import texture_manager
@@ -24,9 +23,15 @@ import time
 import joystick
 import keyboard_mouse
 
+
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
+
+		print(gl.gl_info.get_version())
+		self.fps_display = pyglet.window.FPSDisplay(self)
+		self.fps_display.label.color = (255, 255, 255, 255)
+		self.fps_display.label.y = self.height - 30
 		
 		# create shader
 
@@ -72,7 +77,7 @@ class Window(pyglet.window.Window):
 
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
-		gl.glBlendFunc(*options.BLENDFUNC)
+		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
@@ -114,7 +119,7 @@ class Window(pyglet.window.Window):
 				self.player.standby = False
 				self.player.queue(random.choice(self.music))
 				self.player.play()
-				
+		
 		self.world.tick()
 
 	def update(self, delta_time):
@@ -127,13 +132,19 @@ class Window(pyglet.window.Window):
 		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
 		self.world.update()
+		
 	
 	def on_draw(self):
+		self.shader.use()
 		self.camera.update_matrices()
-
+		
 		self.clear()
 
 		self.world.draw()
+
+		gl.glUseProgram(0)
+		gl.glBindVertexArray(0)
+		self.fps_display.draw()
 
 	# input functions
 
@@ -143,12 +154,13 @@ class Window(pyglet.window.Window):
 
 		self.camera.width = width
 		self.camera.height = height
+		self.fps_display.label.y = self.height - 40
 
 class Game:
 	def __init__(self):
 		self.config = gl.Config(double_buffer = True,
 				major_version = 3, minor_version = 3,
-				depth_size = 16)
+				depth_size = 16, forward_compatibe = True)
 		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
 
 	def run(self): 
