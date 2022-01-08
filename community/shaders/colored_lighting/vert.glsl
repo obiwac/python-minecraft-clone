@@ -33,9 +33,9 @@ void main(void) {
 	float skylightMultiplier = pow(0.8, 15.0 - (int(a_Light) >> 4));
 
 	v_Light = vec3(
-		clamp(skylightMultiplier * u_Daylight, blocklightMultiplier * 1.5, 1.0), 
-		clamp(skylightMultiplier * u_Daylight, blocklightMultiplier * 1.25, 1.0), 
-		clamp(blocklightMultiplier, skylightMultiplier * (2.0 - pow(u_Daylight, 2)), 1.0)
+		clamp(blocklightMultiplier * 1.5, skylightMultiplier * u_Daylight, 1.0), 
+		clamp(blocklightMultiplier * 1.25, skylightMultiplier * u_Daylight, 1.0), 
+		clamp(skylightMultiplier * (2.0 - pow(u_Daylight, 2)), blocklightMultiplier, 1.0)
 	) * a_Shading; 
 
 	gl_Position = u_ModelViewProjMatrix * vec4(v_Position, 1.0);
