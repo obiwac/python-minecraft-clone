@@ -381,7 +381,7 @@ class World:
 		# air counts as a transparent block, so test for that too
 		
 		block_type = self.block_types[self.get_block_number(position)]
-
+		
 		if not block_type:
 			return False
 		

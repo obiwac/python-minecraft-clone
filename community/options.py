@@ -2,7 +2,7 @@
 import pyglet.gl as gl
 
 
-FANCY_TRANSLUCENCY = 0
+FANCY_TRANSLUCENCY = 1
 MIPMAP_TYPE = gl.GL_NEAREST # Possible filters: 
                             # No filter (GL_NEAREST)
                             # Linear filter (GL_LINEAR),
