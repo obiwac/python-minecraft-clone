@@ -393,6 +393,10 @@ class World:
 		
 		return not block_type.transparent
 
+	def create_chunk(self, chunk_position):
+		self.chunks[chunk_position] = chunk.Chunk(self, chunk_position)
+		self.init_skylight(self.chunks[chunk_position])
+
 	def set_block(self, position, number): # set number to 0 (air) to remove block
 		x, y, z = position
 		chunk_position = get_chunk_position(position)
@@ -401,7 +405,8 @@ class World:
 			if number == 0:
 				return # no point in creating a whole new chunk if we're not gonna be adding anything
 
-			self.chunks[chunk_position] = chunk.Chunk(self, chunk_position)
+			self.create_chunk(chunk_position)
+
 		
 		if self.get_block_number(position) == number: # no point updating mesh if the block is the same
 			return
