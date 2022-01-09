@@ -13,3 +13,4 @@ MIPMAP_TYPE = gl.GL_NEAREST # Possible filters:
                             
 
 COLORED_LIGHTING = False
+FOV = 70

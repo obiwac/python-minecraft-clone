@@ -2,20 +2,22 @@ import random
 import camera
 import hit
 
+from enum import IntEnum
+
 class Controller:
-	class InteractMode:
+	class InteractMode(IntEnum):
 		PLACE = 0
 		BREAK = 1
 		PICK = 2
 
-	class MiscMode:
+	class MiscMode(IntEnum):
 		RANDOM = 0
 		SAVE = 1
 		ESCAPE = 2
 		SPEED_TIME = 3
 		FULLSCREEN = 4
 
-	class MoveMode:
+	class MoveMode(IntEnum):
 		LEFT = 0
 		RIGHT = 1
 		DOWN = 2
@@ -23,7 +25,7 @@ class Controller:
 		BACKWARD = 4
 		FORWARD = 5
 
-	class ModifierMode:
+	class ModifierMode(IntEnum):
 		SPRINT = 0
 
 	def __init__(self, game):

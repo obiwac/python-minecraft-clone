@@ -1,5 +1,6 @@
 import math
 import glm
+import options
 
 WALKING_SPEED = 7
 SPRINTING_SPEED = 21
@@ -45,7 +46,7 @@ class Camera:
 		# create projection matrix
 		
 		self.p_matrix = glm.perspective(
-			glm.radians(90 + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED)),
+			glm.radians(options.FOV + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED)),
 			float(self.width) / self.height, 0.1, 500)
 
 		# create modelview matrix
