@@ -158,6 +158,7 @@ class World:
 		self.skylight_increase_queue = Queue()
 		self.skylight_decrease_queue = Queue()
 		self.chunk_update_queue = Queue() 
+		self.chunk_building_queue = Queue()
 
 		self.save.load()
 		
@@ -168,12 +169,14 @@ class World:
 		logging.info("Generating chunks")
 		for world_chunk in self.chunks.values():
 			world_chunk.update_subchunk_meshes()
-			world_chunk.update_mesh()
+			self.chunk_building_queue.put_nowait(world_chunk)
 
 		del indices
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
+
+	################ LIGHTING ENGINE ################
 
 	def push_light_update(self, light_update, chunk, lpos):
 		if not light_update:
@@ -324,11 +327,12 @@ class World:
 					elif neighbour_level >= light_level:
 						self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
 
+	# Getter and setters
 
 	def get_raw_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
 		if not chunk:
-			return 16 << 4
+			return 15 << 4
 		local_position = self.get_local_position(position)
 		return chunk.get_raw_light(local_position)
 
@@ -355,6 +359,8 @@ class World:
 		chunk = self.chunks.get(get_chunk_position(position), None)
 		local_position = get_local_position(position)
 		chunk.set_sky_light(local_position, light)
+
+	#################################################
 
 
 	def get_block_number(self, position):
@@ -435,9 +441,7 @@ class World:
 
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))
-
-	def update_time(self, delta_time):
-		self.time += 1
+	
 	
 	def speed_daytime(self):
 		if self.daylight <= 0:
@@ -519,20 +523,35 @@ class World:
 
 		self.daylight += self.incrementer
 
-	def tick(self):
-		self.update_daylight()
-
 	def process_chunk_updates(self):
 		if self.chunk_update_queue.qsize():
 			pending_chunk, sx, sy, sz = self.chunk_update_queue.get_nowait()
+
 			pending_subchunk = pending_chunk.subchunks.get((sx, sy, sz), None)
-			if not pending_subchunk:
-				return
-			pending_subchunk.update_mesh()
+			if pending_subchunk:
+				pending_subchunk.update_mesh()
+
+			for direction in DIRECTIONS:
+				pending_subchunk = pending_chunk.subchunks.get((sx + direction.x, sy + direction.y, sz + direction.y), None)
+
+				if not pending_subchunk:
+					continue
+				pending_subchunk.update_mesh()
+
+			if pending_chunk not in self.chunk_building_queue.queue:
+				self.chunk_building_queue.put_nowait(pending_chunk)
+
+	def build_pending_chunks(self):
+		if self.chunk_building_queue.qsize():
+			pending_chunk = self.chunk_building_queue.get_nowait()
 			pending_chunk.update_mesh()
-			
-	def update(self):
+
+	def tick(self, delta_time):
+		self.time += delta_time
+		self.update_daylight()
+		self.build_pending_chunks()
 		self.process_chunk_updates()
+		
 			
 				
 		

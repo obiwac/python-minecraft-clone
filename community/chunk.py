@@ -41,8 +41,8 @@ class Chunk:
 
 		# mesh variables
 
-		self.mesh = None
-		self.translucent_mesh = None
+		self.mesh = []
+		self.translucent_mesh = []
 
 		self.mesh_quad_count = 0
 		self.translucent_quad_count = 0
@@ -134,8 +134,10 @@ class Chunk:
 
 	def update_mesh(self):
 		# combine all the small subchunk meshes into one big chunk mesh
-		self.mesh = np.hstack(tuple(subchunk.mesh_array for subchunk in self.subchunks.values()))
-		self.translucent_mesh = np.hstack(tuple(subchunk.translucent_mesh_array for subchunk in self.subchunks.values()))
+		
+		for subchunk in self.subchunks.values():
+			self.mesh += subchunk.mesh
+			self.translucent_mesh += subchunk.translucent_mesh
 
 		# send the full mesh data to the GPU and free the memory used client-side (we don't need it anymore)
 		# don't forget to save the length of 'self.mesh_indices' before freeing
@@ -144,6 +146,10 @@ class Chunk:
 		self.translucent_quad_count = len(self.translucent_mesh) // 24
 
 		self.send_mesh_data_to_gpu()
+
+		self.mesh = []
+		self.translucent_mesh = []
+
 
 	
 	def send_mesh_data_to_gpu(self): # pass mesh data to gpu

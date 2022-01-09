@@ -1,5 +1,4 @@
 import math
-import matrix
 import glm
 
 WALKING_SPEED = 7

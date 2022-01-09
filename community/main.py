@@ -29,6 +29,9 @@ class Window(pyglet.window.Window):
 		super().__init__(**args)
 
 		print(gl.gl_info.get_version())
+
+		# FPS display
+
 		self.fps_display = pyglet.window.FPSDisplay(self)
 		self.fps_display.label.color = (255, 255, 255, 255)
 		self.fps_display.label.y = self.height - 30
@@ -60,7 +63,6 @@ class Window(pyglet.window.Window):
 
 		pyglet.clock.schedule(self.update)
 		pyglet.clock.schedule_interval(self.tick, 1 / 60)
-		pyglet.clock.schedule_interval(self.world.update_time, 1)
 		self.mouse_captured = False
 
 		# misc stuff
@@ -103,6 +105,9 @@ class Window(pyglet.window.Window):
 			self.player.standby = True
 
 		self.player.next_time = 0
+		
+	def toggle_fullscreen(self):
+		self.set_fullscreen(not self.fullscreen)
 
 	def on_close(self):
 		logging.info("Deleting player")
@@ -120,18 +125,14 @@ class Window(pyglet.window.Window):
 				self.player.queue(random.choice(self.music))
 				self.player.play()
 		
-		self.world.tick()
+		self.world.tick(delta_time)
 
 	def update(self, delta_time):
-		if pyglet.clock.get_fps() < 20:
-			logging.warning(f"Warning: framerate dropping below 20 fps ({pyglet.clock.get_fps()} fps)")
-
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
-		self.world.update()
 		
 	
 	def on_draw(self):
@@ -142,7 +143,8 @@ class Window(pyglet.window.Window):
 
 		self.world.draw()
 
-		gl.glUseProgram(0)
+		# Clear GL global state
+		gl.glUseProgram(0) 
 		gl.glBindVertexArray(0)
 		self.fps_display.draw()
 
@@ -154,7 +156,7 @@ class Window(pyglet.window.Window):
 
 		self.camera.width = width
 		self.camera.height = height
-		self.fps_display.label.y = self.height - 40
+		self.fps_display.label.y = self.height - 30
 
 class Game:
 	def __init__(self):
