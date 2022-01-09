@@ -11,7 +11,6 @@ pyglet.options["search_local_libs"] = True
 pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent")
 
 import pyglet.gl as gl
-
 import shader
 import camera
 import texture_manager
@@ -24,14 +23,26 @@ import time
 import joystick
 import keyboard_mouse
 
+
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
+
+		print(gl.gl_info.get_version())
+
+		# FPS display
+
+		self.fps_display = pyglet.window.FPSDisplay(self)
+		self.fps_display.label.color = (255, 255, 255, 255)
+		self.fps_display.label.y = self.height - 30
 		
 		# create shader
 
 		logging.info("Compiling Shaders")
-		self.shader = shader.Shader("vert.glsl", "frag.glsl")
+		if not options.COLORED_LIGHTING:
+			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
+		else:
+			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
 		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
 		self.shader.use()
 
@@ -52,7 +63,6 @@ class Window(pyglet.window.Window):
 
 		pyglet.clock.schedule(self.update)
 		pyglet.clock.schedule_interval(self.tick, 1 / 60)
-		pyglet.clock.schedule_interval(self.world.update_time, 1)
 		self.mouse_captured = False
 
 		# misc stuff
@@ -69,7 +79,7 @@ class Window(pyglet.window.Window):
 
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
-		gl.glBlendFunc(*options.BLENDFUNC)
+		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
@@ -95,6 +105,9 @@ class Window(pyglet.window.Window):
 			self.player.standby = True
 
 		self.player.next_time = 0
+		
+	def toggle_fullscreen(self):
+		self.set_fullscreen(not self.fullscreen)
 
 	def on_close(self):
 		logging.info("Deleting player")
@@ -111,28 +124,29 @@ class Window(pyglet.window.Window):
 				self.player.standby = False
 				self.player.queue(random.choice(self.music))
 				self.player.play()
-				
-		self.world.tick()
+		
+		self.world.tick(delta_time)
 
 	def update(self, delta_time):
-		if pyglet.clock.get_fps() < 20:
-			logging.warning(f"Warning: framerate dropping below 20 fps ({pyglet.clock.get_fps()} fps)")
-
 		if not self.mouse_captured:
 			self.camera.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
 		self.camera.update_camera(delta_time)
-		self.world.update()
+		
 	
 	def on_draw(self):
+		self.shader.use()
 		self.camera.update_matrices()
-
+		
 		self.clear()
 
 		self.world.draw()
 
-		gl.glFinish()
+		# Clear GL global state
+		gl.glUseProgram(0) 
+		gl.glBindVertexArray(0)
+		self.fps_display.draw()
 
 	# input functions
 
@@ -142,12 +156,13 @@ class Window(pyglet.window.Window):
 
 		self.camera.width = width
 		self.camera.height = height
+		self.fps_display.label.y = self.height - 30
 
 class Game:
 	def __init__(self):
 		self.config = gl.Config(double_buffer = True,
 				major_version = 3, minor_version = 3,
-				depth_size = 16)
+				depth_size = 16, forward_compatibe = True)
 		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
 
 	def run(self): 

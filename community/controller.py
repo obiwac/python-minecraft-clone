@@ -2,19 +2,22 @@ import random
 import camera
 import hit
 
+from enum import IntEnum
+
 class Controller:
-	class InteractMode:
+	class InteractMode(IntEnum):
 		PLACE = 0
 		BREAK = 1
 		PICK = 2
 
-	class MiscMode:
+	class MiscMode(IntEnum):
 		RANDOM = 0
 		SAVE = 1
 		ESCAPE = 2
 		SPEED_TIME = 3
+		FULLSCREEN = 4
 
-	class MoveMode:
+	class MoveMode(IntEnum):
 		LEFT = 0
 		RIGHT = 1
 		DOWN = 2
@@ -22,7 +25,7 @@ class Controller:
 		BACKWARD = 4
 		FORWARD = 5
 
-	class ModifierMode:
+	class ModifierMode(IntEnum):
 		SPRINT = 0
 
 	def __init__(self, game):
@@ -50,6 +53,8 @@ class Controller:
 			self.game.set_exclusive_mouse(False)
 		elif mode == self.MiscMode.SPEED_TIME:
 			self.game.world.speed_daytime()
+		elif mode == self.MiscMode.FULLSCREEN:
+			self.game.toggle_fullscreen()
 
 	def update_move(self, axis):
 		self.game.camera.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))

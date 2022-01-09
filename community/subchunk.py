@@ -1,5 +1,3 @@
-import options
-import random
 from util import DIRECTIONS
 import numpy as np
 import glm
@@ -54,15 +52,13 @@ class Subchunk:
 			mesh = self.mesh
 		
 		for i in range(4):
-			mesh.append(vertex_positions[i * 3 + 0] + lx)
-			mesh.append(vertex_positions[i * 3 + 1] + ly)
-			mesh.append(vertex_positions[i * 3 + 2] + lz)
-
-			mesh.append(tex_index * 4 + i)
-
-			mesh.append(shading_values[i])
-
-			mesh.append(light)
+			mesh += [vertex_positions[i * 3 + 0] + lx, 
+					 vertex_positions[i * 3 + 1] + ly, 
+					 vertex_positions[i * 3 + 2] + lz,
+					 tex_index * 4 + i,
+					 shading_values[i],
+					 light]
+					 
 
 	def can_render_face(self, block_type, block_number, position):
 		return not (self.world.is_opaque_block(position)
@@ -107,5 +103,3 @@ class Subchunk:
 							for i in range(len(block_type.vertex_positions)):
 								self.add_face(i, pos, parent_lpos, block_type)
 
-		self.mesh_array = np.array(self.mesh, dtype=np.float)
-		self.translucent_mesh_array = np.array(self.translucent_mesh, dtype=np.float)
