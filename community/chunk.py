@@ -185,12 +185,11 @@ class Chunk:
 		gl.glBindVertexArray(self.vao)
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
-		gl.glDrawElementsBaseVertex(
+		gl.glDrawElements(
 			gl.GL_TRIANGLES,
 			self.mesh_quad_count * 6,
 			gl.GL_UNSIGNED_INT,
 			None,
-			0
 		)
 
 	def draw_translucent(self):
