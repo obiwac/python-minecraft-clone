@@ -30,9 +30,9 @@ class Window(pyglet.window.Window):
 		super().__init__(**args)
 
 		if options.INDIRECT_RENDERING and not gl.gl_info.have_version(4):
-			raise RuntimeError("""Indirect Rendering enabled ! 
-			This feature is only supported on OpenGL 4.0+, but you're driver doesnt seem to support it, 
-			so please disable it in options.py""")
+			raise RuntimeError("""Indirect Rendering is not supported on your hardware
+			This feature is only supported on OpenGL 4.0+, but your driver doesnt seem to support it, 
+			Please disable "INDIRECT_RENDERING" in options.py""")
 
 		print(f"OpenGL Version: {gl.gl_info.get_version()}")
 	
