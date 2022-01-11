@@ -1,3 +1,4 @@
+import sys
 import logging
 import random
 import time
@@ -6,7 +7,7 @@ import os
 import pyglet
 
 pyglet.options["shadow_window"] = False
-pyglet.options["debug_gl"] = False
+pyglet.options["debug_gl"] = True
 pyglet.options["search_local_libs"] = True
 pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent")
 
@@ -28,8 +29,13 @@ class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
 
-		print(gl.gl_info.get_version())
+		if options.INDIRECT_RENDERING and not gl.gl_info.have_version(4):
+			raise RuntimeError("""Indirect Rendering enabled ! 
+			This feature is only supported on OpenGL 4.0+, but you're driver doesnt seem to support it, 
+			so please disable it in options.py""")
 
+		print(f"OpenGL Version: {gl.gl_info.get_version()}")
+	
 		# FPS display
 
 		self.fps_display = pyglet.window.FPSDisplay(self)
