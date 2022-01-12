@@ -198,12 +198,6 @@ class Chunk:
 		]
 
 		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
-		gl.glBufferData(
-			gl.GL_DRAW_INDIRECT_BUFFER, 
-			ctypes.sizeof(gl.GLuint * len(self.draw_commands)),
-			None,
-			gl.GL_DYNAMIC_DRAW
-		)	
 		gl.glBufferSubData(
 			gl.GL_DRAW_INDIRECT_BUFFER,
 			0,

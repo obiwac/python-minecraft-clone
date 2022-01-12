@@ -465,7 +465,7 @@ class World:
 				(chunk_position[2] - pl_c_pos[2]) \
 					* math.sin(self.camera.rotation[0]) \
 					* math.cos(self.camera.rotation[1])
-		return rx >= -1 and ry >= -1 and rz >= -1 
+		return rx >= -2 and ry >= -2 and rz >= -2 
 	
 	def draw_translucent_fast(self, player_chunk_pos):
 		gl.glEnable(gl.GL_BLEND)
