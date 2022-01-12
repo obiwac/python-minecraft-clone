@@ -198,12 +198,18 @@ class Chunk:
 		]
 
 		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
-		gl.glBufferSubData(
+		gl.glBufferData(
 			gl.GL_DRAW_INDIRECT_BUFFER, 
+			ctypes.sizeof(gl.GLuint * len(self.draw_commands)),
+			None,
+			gl.GL_DYNAMIC_DRAW
+		)	
+		gl.glBufferSubData(
+			gl.GL_DRAW_INDIRECT_BUFFER,
 			0,
 			ctypes.sizeof(gl.GLuint * len(self.draw_commands)),
-			(gl.GLuint * len(self.draw_commands)) (*self.draw_commands),
-		)	
+			(gl.GLuint * len(self.draw_commands)) (*self.draw_commands)
+		)
 
 	def draw_direct(self):
 		if not self.mesh_quad_count:
@@ -224,6 +230,8 @@ class Chunk:
 		gl.glBindVertexArray(self.vao)
 		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+
+		gl.glMemoryBarrier(gl.GL_COMMAND_BARRIER_BIT)
 
 		gl.glDrawElementsIndirect(
 			gl.GL_TRIANGLES,
@@ -255,6 +263,8 @@ class Chunk:
 		gl.glBindVertexArray(self.vao)
 		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+
+		gl.glMemoryBarrier(gl.GL_COMMAND_BARRIER_BIT)
 
 		gl.glDrawElementsIndirect(
 			gl.GL_TRIANGLES,

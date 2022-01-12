@@ -14,4 +14,4 @@ MIPMAP_TYPE = gl.GL_NEAREST # Possible filters:
 
 COLORED_LIGHTING = False
 FOV = 90
-INDIRECT_RENDERING = True # Requires OpenGL 4.0+. Disable if having issues.
+INDIRECT_RENDERING = True # Requires OpenGL 4.2+. Disable if having issues.
