@@ -6,7 +6,7 @@ import logging
 import glm
 
 
-
+from functools import cmp_to_key
 from collections import deque
 
 import pyglet.gl as gl
@@ -16,6 +16,7 @@ import models
 import save
 import options
 from util import DIRECTIONS
+from collections import OrderedDict
 
 class Queue:
 	def __init__(self):
@@ -150,6 +151,7 @@ class World:
 		self.save = save.Save(self)
 
 		self.chunks = {}
+		self.sorted_chunks = []
 
 		# light update queue
 
@@ -463,7 +465,7 @@ class World:
 				(chunk_position[2] - pl_c_pos[2]) \
 					* math.sin(self.camera.rotation[0]) \
 					* math.cos(self.camera.rotation[1])
-		return rx >= -1 and ry >= -1 and rz >= -1 
+		return rx >= -2 and ry >= -2 and rz >= -2 
 	
 	def draw_translucent_fast(self, player_chunk_pos):
 		gl.glEnable(gl.GL_BLEND)
@@ -477,22 +479,25 @@ class World:
 		gl.glDepthMask(gl.GL_TRUE)
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glDisable(gl.GL_BLEND)
-		
+
+	def sort_chunks(self, player_chunk_pos):
+		sorted_keys = sorted(self.chunks, key = cmp_to_key(lambda a, b: math.dist(player_chunk_pos, b) - math.dist(player_chunk_pos, a)))
+		self.sorted_chunks = [self.chunks[key] for key in sorted_keys]
 		
 	def draw_translucent_fancy(self, player_chunk_pos):
+		self.sort_chunks(player_chunk_pos)
+
 		gl.glDepthMask(gl.GL_FALSE)
 		gl.glFrontFace(gl.GL_CW)
 		gl.glEnable(gl.GL_BLEND)
 
-		for chunk_position, render_chunk in self.chunks.items():
-			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				render_chunk.draw_translucent()
+		for render_chunk in self.sorted_chunks:
+			render_chunk.draw_translucent()
 		
 		gl.glFrontFace(gl.GL_CCW)
 		
-		for chunk_position, render_chunk in self.chunks.items():
-			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				render_chunk.draw_translucent()
+		for render_chunk in self.sorted_chunks:
+			render_chunk.draw_translucent()
 
 		gl.glDisable(gl.GL_BLEND)
 		gl.glDepthMask(gl.GL_TRUE)

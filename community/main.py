@@ -1,3 +1,4 @@
+import sys
 import logging
 import random
 import time
@@ -6,7 +7,7 @@ import os
 import pyglet
 
 pyglet.options["shadow_window"] = False
-pyglet.options["debug_gl"] = False
+pyglet.options["debug_gl"] = True
 pyglet.options["search_local_libs"] = True
 pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent")
 
@@ -28,8 +29,13 @@ class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
 
-		print(gl.gl_info.get_version())
+		if options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
+			raise RuntimeError("""Indirect Rendering is not supported on your hardware
+			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
+			Please disable "INDIRECT_RENDERING" in options.py""")
 
+		print(f"OpenGL Version: {gl.gl_info.get_version()}")
+	
 		# FPS display
 
 		self.fps_display = pyglet.window.FPSDisplay(self)
@@ -162,7 +168,7 @@ class Game:
 	def __init__(self):
 		self.config = gl.Config(double_buffer = True,
 				major_version = 3, minor_version = 3,
-				depth_size = 16, forward_compatibe = True)
+				depth_size = 16, forward_compatible = True)
 		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
 
 	def run(self): 
