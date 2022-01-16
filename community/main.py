@@ -98,7 +98,10 @@ class Window(pyglet.window.Window):
 
 		# music stuff
 		logging.info("Loading audio")
-		self.music = [pyglet.media.load(os.path.join("audio/music", file)) for file in os.listdir("audio/music") if os.path.isfile(os.path.join("audio/music", file))]
+		try:
+			self.music = [pyglet.media.load(os.path.join("audio/music", file)) for file in os.listdir("audio/music") if os.path.isfile(os.path.join("audio/music", file))]
+		except:
+			self.music = []
 
 		self.player = pyglet.media.Player()
 		self.player.volume = 0.5
