@@ -166,7 +166,8 @@ class Window(pyglet.window.Window):
 
 		self.camera.width = width
 		self.camera.height = height
-		self.fps_display.label.y = self.height - 30
+		if options.FPS_DISPLAY:
+			self.fps_display.label.y = self.height - 30
 
 class Game:
 	def __init__(self):
