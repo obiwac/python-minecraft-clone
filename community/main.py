@@ -37,10 +37,10 @@ class Window(pyglet.window.Window):
 		print(f"OpenGL Version: {gl.gl_info.get_version()}")
 	
 		# FPS display
-
-		self.fps_display = pyglet.window.FPSDisplay(self)
-		self.fps_display.label.color = (255, 255, 255, 255)
-		self.fps_display.label.y = self.height - 30
+		if options.FPS_DISPLAY:
+			self.fps_display = pyglet.window.FPSDisplay(self)
+			self.fps_display.label.color = (255, 255, 255, 255)
+			self.fps_display.label.y = self.height - 30
 		
 		# create shader
 
