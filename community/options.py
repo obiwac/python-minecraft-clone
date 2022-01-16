@@ -16,3 +16,4 @@ COLORED_LIGHTING = False
 FOV = 90
 INDIRECT_RENDERING = True # Requires OpenGL 4.2+. Disable if having issues.
 SMOOTH_LIGHTING = False 
+FPS_DISPLAY = False # May break

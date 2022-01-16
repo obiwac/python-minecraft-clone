@@ -150,9 +150,10 @@ class Window(pyglet.window.Window):
 		self.world.draw()
 
 		# Clear GL global state
-		gl.glUseProgram(0) 
-		gl.glBindVertexArray(0)
-		self.fps_display.draw()
+		if options.FPS_DISPLAY:
+			gl.glUseProgram(0) 
+			gl.glBindVertexArray(0)
+			self.fps_display.draw()
 
 	# input functions
 
