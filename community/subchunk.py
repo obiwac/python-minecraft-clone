@@ -37,17 +37,20 @@ class Subchunk:
 			light_levels = self.world.get_light(pos)
 		else:
 			light_levels = self.world.get_light(npos)
-		return light_levels
+		return [light_levels] * 4
 
 	def get_sky_light(self, face, pos, npos):
 		if not npos:
-			light_levels = self.world.get_sky_light(pos)
+			light_levels = self.world.get_skylight(pos)
 		else:
-			light_levels = self.world.get_sky_light(npos)
-		return light_levels
+			light_levels = self.world.get_skylight(npos)
+		return [light_levels] * 4
 
 	def get_vertex_ao(self, light, light2, light3, corner):
-		return (light + light2 + light3 + corner) / 4
+		if not (light2 or light3):
+			ambient = (light2 + light3) / 2
+		ambient = (light2 + light3 + corner) / 3
+		return (light + ambient) / 2
 
 	def get_baked_face_light(self, light, light1, light2, light3,
 										  light4,		  light5,
@@ -128,7 +131,7 @@ class Subchunk:
 		
 		nlights = (self.world.get_skylight(neighbour_pos) for neighbour_pos in neighbours)
 
-		return self.get_baked_face_light(self.world.get_light(npos), *nlights)
+		return self.get_baked_face_light(self.world.get_skylight(npos), *nlights)
 
 	get_light = get_baked_light if options.SMOOTH_LIGHTING else get_block_light
 	get_skylight = get_baked_skylight if options.SMOOTH_LIGHTING else get_sky_light

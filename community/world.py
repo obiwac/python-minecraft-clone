@@ -166,7 +166,6 @@ class World:
 		
 		logging.info("Lighting chunks")
 		for world_chunk in self.chunks.values():
-			continue
 			self.init_skylight(world_chunk)
 
 		logging.info("Generating chunks")

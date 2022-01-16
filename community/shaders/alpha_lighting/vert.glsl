@@ -32,7 +32,7 @@ void main(void) {
 	v_TexCoords = vec3(texture_UV[int(a_TextureFetcher) & 3], int(a_TextureFetcher) >> 2);
 
 	float blocklightMultiplier = pow(0.8, 15.0 - a_Light);
-	float skylightMultiplier = pow(0.8, 15.0 - a_Skylight);
+	float skylightMultiplier = pow(0.8, 15.0 - a_Skylight * u_Daylight);
 
 
 
