@@ -47,10 +47,10 @@ class Subchunk:
 		return [light_levels] * 4
 
 	def get_vertex_ao(self, light, light2, light3, corner):
-		if not (light2 or light3):
-			ambient = (light2 + light3) / 2
-		ambient = (light2 + light3 + corner) / 3
-		return (light + ambient) / 2
+		ambient1 = glm.mix(light, light2, 1/2)
+		ambient2 = glm.mix(light, light3, 1/2)
+		ambient3 = glm.mix(light, corner, 1/2)
+		return (ambient1, ambient2, ambient3) / 3
 
 	def get_baked_face_light(self, light, light1, light2, light3,
 										  light4,		  light5,
