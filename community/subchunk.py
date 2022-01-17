@@ -32,14 +32,14 @@ class Subchunk:
 		self.translucent_mesh = []
 		self.translucent_mesh_array = None
 
-	def get_block_light(self, face, pos, npos):
+	def get_block_light(self, block, face, pos, npos):
 		if not npos:
 			light_levels = self.world.get_light(pos)
 		else:
 			light_levels = self.world.get_light(npos)
 		return [light_levels] * 4
 
-	def get_sky_light(self, face, pos, npos):
+	def get_sky_light(self, block, face, pos, npos):
 		if not npos:
 			light_levels = self.world.get_skylight(pos)
 		else:
@@ -50,7 +50,9 @@ class Subchunk:
 		ambient1 = glm.mix(light, light2, 1/2)
 		ambient2 = glm.mix(light, light3, 1/2)
 		ambient3 = glm.mix(light, corner, 1/2)
-		return (ambient1, ambient2, ambient3) / 3
+		if not light and not light2:
+			return (ambient1 + ambient2) / 2
+		return (ambient1 + ambient2 + ambient3) / 3
 
 	def get_baked_face_light(self, light, light1, light2, light3,
 										  light4,		  light5,
@@ -65,25 +67,15 @@ class Subchunk:
 		match face:
 			case 0: # EAST
 				neighbours = [
-					npos + UP + SOUTH,
-					npos + UP,
-					npos + UP + NORTH,
-					npos + SOUTH,
-					npos + NORTH,
-					npos + DOWN + SOUTH,
-					npos + DOWN,
-					npos + DOWN + NORTH
+					npos + UP + SOUTH, npos + UP, npos + UP + NORTH,
+					npos + SOUTH,				  npos + NORTH,
+					npos + DOWN + SOUTH, npos + DOWN, npos + DOWN + NORTH
 				]
 			case 1: # WEST
 				neighbours = [
-					npos + UP + NORTH,
-					npos + UP,
-					npos + UP + SOUTH,
-					npos + NORTH,
-					npos + SOUTH,
-					npos + DOWN + NORTH,
-					npos + DOWN,
-					npos + DOWN + SOUTH
+					npos + UP + NORTH, npos + UP, npos + UP + SOUTH,
+					npos + NORTH,                 npos + SOUTH,
+					npos + DOWN + NORTH, npos + DOWN, npos + DOWN + SOUTH
 				]
 			case 2: # UP
 				neighbours = [
@@ -113,8 +105,8 @@ class Subchunk:
 
 
 
-	def get_baked_light(self, face, pos, npos):
-		if not npos:
+	def get_baked_light(self, block, face, pos, npos):
+		if not npos or block in self.world.light_blocks:
 			return [self.world.get_light(pos)] * 4
 
 		neighbours = self.get_neighbour_voxels(npos, face)
@@ -123,8 +115,8 @@ class Subchunk:
 
 		return self.get_baked_face_light(self.world.get_light(npos), *nlights)
 
-	def get_baked_skylight(self, face, pos, npos):
-		if not npos:
+	def get_baked_skylight(self, block, face, pos, npos):
+		if not npos or block in self.world.light_blocks:
 			return [self.world.get_skylight(pos)] * 4
 
 		neighbours = self.get_neighbour_voxels(npos, face)
@@ -136,13 +128,13 @@ class Subchunk:
 	get_light = get_baked_light if options.SMOOTH_LIGHTING else get_block_light
 	get_skylight = get_baked_skylight if options.SMOOTH_LIGHTING else get_sky_light
 
-	def add_face(self, face, pos, lpos, block_type, npos=None):
+	def add_face(self, face, pos, lpos, block, block_type, npos=None):
 		lx, ly, lz = lpos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
 		shading_values = block_type.shading_values[face]
-		baked_lights = self.get_light(face, pos, npos)
-		baked_skylights = self.get_skylight(face, pos, npos)
+		baked_lights = self.get_light(block, face, pos, npos)
+		baked_skylights = self.get_skylight(block, face, pos, npos)
 
 		if block_type.model.translucent:
 			mesh = self.translucent_mesh
@@ -196,9 +188,9 @@ class Subchunk:
 							for face, direction in enumerate(DIRECTIONS):
 								npos = pos + direction
 								if self.can_render_face(block_type, block_number, npos):
-									self.add_face(face, pos, parent_lpos, block_type, npos)
+									self.add_face(face, pos, parent_lpos, block_number, block_type, npos)
 														
 						else:
 							for i in range(len(block_type.vertex_positions)):
-								self.add_face(i, pos, parent_lpos, block_type)
+								self.add_face(i, pos, parent_lpos, block_number, block_type)
 

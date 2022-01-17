@@ -129,9 +129,9 @@ class World:
 			indices.append(4 * nquad + 0)
 			indices.append(4 * nquad + 1)
 			indices.append(4 * nquad + 2)
-			indices.append(4 * nquad + 0)
 			indices.append(4 * nquad + 2)
 			indices.append(4 * nquad + 3)
+			indices.append(4 * nquad + 0)
 
 
 		self.ibo = gl.GLuint(0)
