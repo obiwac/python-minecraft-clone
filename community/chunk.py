@@ -115,7 +115,30 @@ class Chunk:
 		x, y, z = position
 		return self.lightmap[x][y][z]
 
-	
+	def get_block_number(self, position):
+		lx, ly, lz = position
+
+		block_number = self.blocks[lx][ly][lz]
+		return block_number
+
+	def get_transparency(self, position):
+		block_type = self.world.block_types[self.get_block_number(position)]
+
+		if not block_type:
+			return 2
+		
+		return block_type.transparent
+
+	def is_opaque_block(self, position):
+		# get block type and check if it's opaque or not
+		# air counts as a transparent block, so test for that too
+		
+		block_type = self.world.block_types[self.get_block_number(position)]
+		
+		if not block_type:
+			return False
+		
+		return not block_type.transparent
 	
 	def update_subchunk_meshes(self):
 		for subchunk in self.subchunks.values():

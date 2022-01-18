@@ -20,6 +20,12 @@ def smooth(a, b, c, d):
 		d = max(d, min_val)
 	return (a + b + c + d) / 4
 
+@cache
+def ao(s1, s2, c):
+	if s1 and s2:
+		return 0.25
+	return 1 - (s1 + s2 + c) / 4
+
 class Subchunk:
 	def __init__(self, parent, subchunk_position):
 		self.parent = parent
@@ -59,18 +65,13 @@ class Subchunk:
 			light_levels = self.world.get_skylight(npos)
 		return [light_levels] * 4
 
-	def get_vertex_ao(self, s1, s2, c):
-		if s1 and s2:
-			return 0.25
-		return 1 - (s1 + s2 + c) / 4
-
 	def get_face_ao(self, s1, s2, s3,
 						  s4,     s5,
 						  s6, s7, s8):
-		vertex1 = self.get_vertex_ao(s2, s4, s1)
-		vertex2 = self.get_vertex_ao(s4, s7, s6)
-		vertex3 = self.get_vertex_ao(s5, s7, s8)
-		vertex4 = self.get_vertex_ao(s2, s5, s3)
+		vertex1 = ao(s2, s4, s1)
+		vertex2 = ao(s4, s7, s6)
+		vertex3 = ao(s5, s7, s8)
+		vertex4 = ao(s2, s5, s3)
 		return (vertex1, vertex2, vertex3, vertex4)
 
 	def get_smooth_face_light(self, light, light1, light2, light3,
