@@ -6,11 +6,11 @@ WALKING_SPEED = 7
 SPRINTING_SPEED = 21
 
 class Player(entity.Entity):
-	def __init__(self, shader, width, height):
-		super().__init__()
+	def __init__(self, world, shader, width, height):
+		super().__init__(world)
 
-		self.width = width
-		self.height = height
+		self.view_width = width
+		self.view_height = height
 
 		# create matrices
 
@@ -24,14 +24,13 @@ class Player(entity.Entity):
 
 		# camera variables
 
+		self.eyelevel = 1.6
 		self.input = [0, 0, 0]
 
 		self.target_speed = WALKING_SPEED
 		self.speed = self.target_speed
 
 	def update(self, delta_time):
-		super().update(delta_time)
-
 		# process input
 
 		self.speed += (self.target_speed - self.speed) * delta_time * 20
@@ -44,6 +43,10 @@ class Player(entity.Entity):
 
 			self.position[0] += math.cos(angle) * multiplier
 			self.position[2] += math.sin(angle) * multiplier
+
+		# process physics & collisions &c
+
+		super().update(delta_time)
 	
 	def update_matrices(self):
 		# create projection matrix
@@ -52,13 +55,13 @@ class Player(entity.Entity):
 		
 		self.p_matrix.perspective(
 			90 + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED),
-			float(self.width) / self.height, 0.1, 500)
+			float(self.view_width) / self.view_height, 0.1, 500)
 
 		# create modelview matrix
 
 		self.mv_matrix.load_identity()
 		self.mv_matrix.rotate_2d(self.rotation[0] + math.tau / 4, self.rotation[1])
-		self.mv_matrix.translate(-self.position[0], -self.position[1], -self.position[2])
+		self.mv_matrix.translate(-self.position[0], -self.position[1] - self.eyelevel, -self.position[2])
 
 		# modelviewprojection matrix
 

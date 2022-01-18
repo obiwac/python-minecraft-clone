@@ -36,12 +36,12 @@ class Window(pyglet.window.Window):
 
 		# pyglet stuff
 
-		pyglet.clock.schedule_interval(self.update, 1.0 / 10000)
+		pyglet.clock.schedule_interval(self.update, 1.0 / 60)
 		self.mouse_captured = False
 
 		# player stuff
 
-		self.player = player.Player(self.shader, self.width, self.height)
+		self.player = player.Player(self.world, self.shader, self.width, self.height)
 
 		# misc stuff
 
@@ -81,8 +81,8 @@ class Window(pyglet.window.Window):
 		print(f"Resize {width} * {height}")
 		gl.glViewport(0, 0, width, height)
 
-		self.player.width = width
-		self.player.height = height
+		self.player.view_width = width
+		self.player.view_height = height
 
 	def on_mouse_press(self, x, y, button, modifiers):
 		if not self.mouse_captured:
@@ -98,7 +98,10 @@ class Window(pyglet.window.Window):
 			elif button == pyglet.window.mouse.LEFT: self.world.set_block(next_block, 0)
 			elif button == pyglet.window.mouse.MIDDLE: self.holding = self.world.get_block_number(next_block)
 		
-		hit_ray = hit.Hit_ray(self.world, self.player.rotation, self.player.position)
+		x, y, z = self.player.position
+		y += self.player.eyelevel
+
+		hit_ray = hit.Hit_ray(self.world, self.player.rotation, (x, y, z))
 
 		while hit_ray.distance < hit.HIT_RANGE:
 			if hit_ray.step(hit_callback):
