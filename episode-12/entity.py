@@ -44,8 +44,14 @@ class Entity:
 	def ground(self):
 		self.velocity[1] = 0
 
+	def teleport(self, pos):
+		self.position = list(pos)
+		self.prev_pos = list(self.position) # to prevent collisions
+		self.velocity = (0, 0, 0)
+
 	def jump(self):
 		# obviously, we can't initiate a jump while in mid-air
+		# TODO this isn't technically correct, as we could have 0 velocity, whilst not being grounded
 
 		if self.velocity[1]:
 			return
@@ -108,6 +114,8 @@ class Entity:
 			self.position[0] -= vx * abs(normal[0])
 			self.position[1] -= vy * abs(normal[1])
 			self.position[2] -= vz * abs(normal[2])
+
+			# TODO cancel the velocity in any case where we collide on an axis
 
 			if normal[1] == 1:
 				self.ground()

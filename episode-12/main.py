@@ -16,6 +16,7 @@ import player
 import block_type
 import texture_manager
 
+import chunk
 import world
 
 import hit
@@ -141,6 +142,39 @@ class Window(pyglet.window.Window):
 
 		elif key == pyglet.window.key.O:
 			self.world.save.save()
+
+		elif key == pyglet.window.key.R:
+			# how large is the world?
+
+			max_y = 0
+
+			max_x, max_z = (0, 0)
+			min_x, min_z = (0, 0)
+
+			for pos in self.world.chunks:
+				x, y, z = pos
+
+				max_y = max(max_y, (y + 1) * chunk.CHUNK_HEIGHT)
+
+				max_x = max(max_x, (x + 1) * chunk.CHUNK_WIDTH)
+				min_x = min(min_x,  x      * chunk.CHUNK_WIDTH)
+
+				max_z = max(max_z, (z + 1) * chunk.CHUNK_LENGTH)
+				min_z = min(min_z,  z      * chunk.CHUNK_LENGTH)
+
+			# get random X & Z coordinates to teleport the player to
+
+			x = random.randint(min_x, max_x)
+			z = random.randint(min_z, max_z)
+
+			# find height at which to teleport to, by finding the first non-air block from the top of the world
+
+			for y in range(chunk.CHUNK_HEIGHT - 1,  -1, -1):
+				if not self.world.get_block_number((x, y, z)):
+					continue
+
+				self.player.teleport((x, y + 1, z))
+				break
 
 		elif key == pyglet.window.key.ESCAPE:
 			self.mouse_captured = False
