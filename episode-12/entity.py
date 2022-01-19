@@ -14,14 +14,16 @@ class Entity:
 
 		self.height = 1.8
 		self.width = 0.6
-		self.jump_height = 1.25
+		self.jump_height = 1.5 # higher than in Minecraft, feels better
 		self.flying = False
 
 		self.collider = collider.Collider()
-		self.velocity = (0, 0, 0)
+		self.velocity = [0, 0, 0]
 
 		self.set_position((0, 80, 0))
 		self.prev_pos = list(self.position)
+
+		self.grounded = False
 
 		# input variables
 
@@ -43,17 +45,17 @@ class Entity:
 
 	def ground(self):
 		self.velocity[1] = 0
+		self.grounded = True
 
 	def teleport(self, pos):
 		self.position = list(pos)
 		self.prev_pos = list(self.position) # to prevent collisions
-		self.velocity = (0, 0, 0)
+		self.velocity = [0, 0, 0]
 
 	def jump(self):
 		# obviously, we can't initiate a jump while in mid-air
-		# TODO this isn't technically correct, as we could have 0 velocity, whilst not being grounded
 
-		if self.velocity[1]:
+		if not self.grounded:
 			return
 
 		self.velocity[1] = math.sqrt(2 * self.jump_height * -GRAVITY[1])
@@ -66,7 +68,23 @@ class Entity:
 		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, acceleration)]
 		self.set_position([p + v * delta_time for p, v in zip(self.position, self.velocity)])
 
+		# friction & drag
+
+		if self.grounded:
+			self.velocity[0] -= self.velocity[0] * delta_time * 20
+			self.velocity[2] -= self.velocity[2] * delta_time * 20
+
+		else:
+			# Minecraft takes 2% off of current velocity every 20th of a second
+			k = (1 - 0.02) ** 20
+
+			self.velocity[0] -= self.velocity[0] * k * delta_time
+			self.velocity[1] -= self.velocity[1] * k * delta_time
+			self.velocity[2] -= self.velocity[2] * k * delta_time
+
 		# compute collisions
+
+		self.grounded = False
 
 		for _ in range(3):
 			vx, vy, vz = (a - b for a, b in zip(self.position, self.prev_pos))
