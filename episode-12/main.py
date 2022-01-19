@@ -132,6 +132,10 @@ class Window(pyglet.window.Window):
 		elif key == pyglet.window.key.LSHIFT: self.player.input[1] -= 1
 		elif key == pyglet.window.key.LCTRL : self.player.target_speed = player.SPRINTING_SPEED
 
+		elif key == pyglet.window.key.F:
+			self.player.velocity = (0, 0, 0)
+			self.player.flying = not self.player.flying
+
 		elif key == pyglet.window.key.G:
 			self.holding = random.randint(1, len(self.world.block_types) - 1)
 

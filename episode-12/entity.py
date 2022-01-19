@@ -2,6 +2,8 @@ import math
 import collider
 
 WALKING_SPEED = 7
+
+FLYING = (0, 0, 0)
 GRAVITY = (0, -32, 0)
 
 class Entity:
@@ -13,11 +15,10 @@ class Entity:
 		self.height = 1.8
 		self.width = 0.6
 		self.jump_height = 1.25
+		self.flying = False
 
 		self.collider = collider.Collider()
-
-		self.acceleration = GRAVITY
-		self.set_velocity((0, 0, 0))
+		self.velocity = (0, 0, 0)
 
 		self.set_position((0, 80, 0))
 		self.prev_pos = list(self.position)
@@ -26,9 +27,6 @@ class Entity:
 
 		self.rotation = [-math.tau / 4, 0]
 		self.speed = WALKING_SPEED
-
-	def set_velocity(self, velocity): # TODO useful?
-		self.velocity = velocity
 
 	def set_position(self, position):
 		self.position = list(position)
@@ -57,7 +55,9 @@ class Entity:
 	def update(self, delta_time):
 		# process physics
 
-		self.set_velocity([v + a * delta_time for v, a in zip(self.velocity, self.acceleration)])
+		acceleration = (GRAVITY, FLYING)[self.flying]
+
+		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, acceleration)]
 		self.set_position([p + v * delta_time for p, v in zip(self.position, self.velocity)])
 
 		# compute collisions

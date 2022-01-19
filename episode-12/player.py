@@ -27,8 +27,6 @@ class Player(entity.Entity):
 		self.eyelevel = self.height - 0.2
 		self.input = [0, 0, 0]
 
-		self.flying = False
-
 		self.target_speed = WALKING_SPEED
 		self.speed = self.target_speed
 
