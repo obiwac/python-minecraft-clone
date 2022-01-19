@@ -1,12 +1,30 @@
-import options
-import random
-from util import DIRECTIONS
+from hashlib import sha3_512
+from util import *
 import numpy as np
 import glm
+import options
+from functools import cache, reduce
 
 SUBCHUNK_WIDTH  = 4
 SUBCHUNK_HEIGHT = 4
 SUBCHUNK_LENGTH = 4
+
+@cache
+def smooth(a, b, c, d):
+	if not a or not b or not c or not d:
+		l = (a, *filter(lambda x: x, (b, c, d)))
+		min_val = min(l)
+		a = max(a, min_val)
+		b = max(b, min_val)
+		c = max(c, min_val)
+		d = max(d, min_val)
+	return (a + b + c + d) / 4
+
+@cache
+def ao(s1, s2, c):
+	if s1 and s2:
+		return 0.25
+	return 1 - (s1 + s2 + c) / 4
 
 class Subchunk:
 	def __init__(self, parent, subchunk_position):
@@ -33,20 +51,124 @@ class Subchunk:
 		self.translucent_mesh = []
 		self.translucent_mesh_array = None
 
-	def get_light(self, pos, npos):
+	def get_raw_light(self, block, face, pos, npos):
 		if not npos:
-			light_levels = self.world.get_raw_light(pos)
+			light_levels = self.world.get_light(pos)
 		else:
-			light_levels = self.world.get_raw_light(npos)
-		return light_levels
-	
-	def add_face(self, face, pos, lpos, block_type, npos=None):
+			light_levels = self.world.get_light(npos)
+		return [light_levels] * 4
+
+	def get_raw_skylight(self, block, face, pos, npos):
+		if not npos:
+			light_levels = self.world.get_skylight(pos)
+		else:
+			light_levels = self.world.get_skylight(npos)
+		return [light_levels] * 4
+
+	def get_face_ao(self, s1, s2, s3,
+						  s4,     s5,
+						  s6, s7, s8):
+		vertex1 = ao(s2, s4, s1)
+		vertex2 = ao(s4, s7, s6)
+		vertex3 = ao(s5, s7, s8)
+		vertex4 = ao(s2, s5, s3)
+		return (vertex1, vertex2, vertex3, vertex4)
+
+	def get_smooth_face_light(self, light, light1, light2, light3,
+										  light4,		  light5,
+										  light6, light7, light8):
+		vertex1 = smooth(light, light2, light4, light1)
+		vertex2 = smooth(light, light4, light7, light6)
+		vertex3 = smooth(light, light5, light7, light8)
+		vertex4 = smooth(light, light2, light5, light3)
+		return (vertex1, vertex2, vertex3, vertex4)
+
+	def get_neighbour_voxels(self, npos, face):
+		match face:
+			case 0: # EAST
+				neighbours = [
+					npos + UP + SOUTH, npos + UP, npos + UP + NORTH,
+					npos + SOUTH,				  npos + NORTH,
+					npos + DOWN + SOUTH, npos + DOWN, npos + DOWN + NORTH
+				]
+			case 1: # WEST
+				neighbours = [
+					npos + UP + NORTH, npos + UP, npos + UP + SOUTH,
+					npos + NORTH,                 npos + SOUTH,
+					npos + DOWN + NORTH, npos + DOWN, npos + DOWN + SOUTH
+				]
+			case 2: # UP
+				neighbours = [
+					npos + SOUTH + EAST, npos + SOUTH, npos + SOUTH + WEST,
+					npos + EAST,					   npos + WEST,
+					npos + NORTH + EAST, npos + NORTH, npos + NORTH + WEST
+				]
+			case 3: # DOWN
+				neighbours = [
+					npos + SOUTH + WEST, npos + SOUTH, npos + SOUTH + EAST,
+					npos + WEST,                       npos + EAST,
+					npos + NORTH + WEST, npos + NORTH, npos + NORTH + EAST
+				]
+			case 4:
+				neighbours = [
+					npos + UP + WEST, npos + UP, npos + UP + EAST,
+					npos + WEST,                 npos + EAST,
+					npos + DOWN + WEST, npos + DOWN, npos + DOWN + EAST
+				]
+			case 5:
+				neighbours = [
+					npos + UP + EAST, npos + UP, npos + UP + WEST,
+					npos + EAST,                 npos + WEST,
+					npos + DOWN + EAST, npos + DOWN, npos + DOWN + WEST
+				]
+		return neighbours
+
+
+
+	def get_light_smooth(self, block, face, pos, npos):
+		if not npos or block in self.world.light_blocks:
+			return [self.world.get_light(pos)] * 4
+
+		neighbours = self.get_neighbour_voxels(npos, face)
+
+		nlights = (self.world.get_light(neighbour_pos) for neighbour_pos in neighbours)
+
+		return self.get_smooth_face_light(self.world.get_light(npos), *nlights)
+
+	def get_skylight_smooth(self, block, face, pos, npos):
+		if not npos or block in self.world.light_blocks:
+			return [self.world.get_skylight(pos)] * 4
+
+		neighbours = self.get_neighbour_voxels(npos, face)
+		
+		nlights = (self.world.get_skylight(neighbour_pos) for neighbour_pos in neighbours)
+
+		return self.get_smooth_face_light(self.world.get_skylight(npos), *nlights)
+
+	def get_ambient(self, block, block_type, face, pos, npos):
+		raw_shading = block_type.shading_values[face]
+		if not block_type.is_cube or block in self.world.light_blocks:
+			return raw_shading
+
+		neighbours = self.get_neighbour_voxels(npos, face)
+		
+		neighbour_opacity = (self.world.is_opaque_block(neighbour_pos) for neighbour_pos in neighbours)
+
+		face_ao = self.get_face_ao(*neighbour_opacity)
+		
+		return [a * b for a, b in zip(face_ao, raw_shading)]
+
+	get_shading = get_ambient if options.SMOOTH_LIGHTING else lambda self, b, block_type, face, pos, npos: block_type.shading_values[face]
+	get_light = get_light_smooth if options.SMOOTH_LIGHTING else get_raw_light
+	get_skylight = get_skylight_smooth if options.SMOOTH_LIGHTING else get_raw_skylight
+
+	def add_face(self, face, pos, lpos, block, block_type, npos=None):
 		lx, ly, lz = lpos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
-		shading_values = block_type.shading_values[face]
-		light = self.get_light(pos, npos)
-
+		shading = self.get_shading(block, block_type, face, pos, npos)
+		lights = self.get_light(block, face, pos, npos)
+		skylights = self.get_skylight(block, face, pos, npos)
 
 		if block_type.model.translucent:
 			mesh = self.translucent_mesh
@@ -54,15 +176,14 @@ class Subchunk:
 			mesh = self.mesh
 		
 		for i in range(4):
-			mesh.append(vertex_positions[i * 3 + 0] + lx)
-			mesh.append(vertex_positions[i * 3 + 1] + ly)
-			mesh.append(vertex_positions[i * 3 + 2] + lz)
-
-			mesh.append(tex_index * 4 + i)
-
-			mesh.append(shading_values[i])
-
-			mesh.append(light)
+			mesh += [vertex_positions[i * 3 + 0] + lx, 
+					 vertex_positions[i * 3 + 1] + ly, 
+					 vertex_positions[i * 3 + 2] + lz,
+					 tex_index * 4 + i,
+					 shading[i],
+					 lights[i],
+					 skylights[i]]
+					 
 
 	def can_render_face(self, block_type, block_number, position):
 		return not (self.world.is_opaque_block(position)
@@ -101,11 +222,9 @@ class Subchunk:
 							for face, direction in enumerate(DIRECTIONS):
 								npos = pos + direction
 								if self.can_render_face(block_type, block_number, npos):
-									self.add_face(face, pos, parent_lpos, block_type, npos)
+									self.add_face(face, pos, parent_lpos, block_number, block_type, npos)
 														
 						else:
 							for i in range(len(block_type.vertex_positions)):
-								self.add_face(i, pos, parent_lpos, block_type)
+								self.add_face(i, pos, parent_lpos, block_number, block_type)
 
-		self.mesh_array = np.array(self.mesh, dtype=np.float)
-		self.translucent_mesh_array = np.array(self.translucent_mesh, dtype=np.float)

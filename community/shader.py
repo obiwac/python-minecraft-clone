@@ -71,3 +71,6 @@ class Shader:
 
 	def use(self):
 		gl.glUseProgram(self.program)
+
+	def stop(self):
+		gl.glUseProgram(0)

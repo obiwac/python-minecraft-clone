@@ -1,6 +1,6 @@
 import math
-import matrix
 import glm
+import options
 
 WALKING_SPEED = 7
 SPRINTING_SPEED = 21
@@ -18,7 +18,8 @@ class Camera:
 		# shaders
 
 		self.shader = shader
-		self.shader_matrix_location = self.shader.find_uniform(b"u_ModelViewProjMatrix")
+		self.mv_matrix_location = self.shader.find_uniform(b"u_ModelViewMatrix")
+		self.p_matrix_location = self.shader.find_uniform(b"u_ProjMatrix")
 
 		# camera variables
 
@@ -46,7 +47,7 @@ class Camera:
 		# create projection matrix
 		
 		self.p_matrix = glm.perspective(
-			glm.radians(90 + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED)),
+			glm.radians(options.FOV + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED)),
 			float(self.width) / self.height, 0.1, 500)
 
 		# create modelview matrix
@@ -57,5 +58,6 @@ class Camera:
 
 		# modelviewprojection matrix
 
-		mvp_matrix = self.p_matrix * self.mv_matrix
-		self.shader.uniform_matrix(self.shader_matrix_location, mvp_matrix)
+
+		self.shader.uniform_matrix(self.mv_matrix_location, self.mv_matrix)
+		self.shader.uniform_matrix(self.p_matrix_location, self.p_matrix)
