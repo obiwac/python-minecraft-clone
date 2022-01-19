@@ -132,7 +132,7 @@ class Entity:
 			step_z = 1 if vz > 0 else -1
 
 			steps_xz = int(self.width)
-			steps_y  = int(self.height) + 3
+			steps_y  = int(self.height)
 
 			x, y, z = map(int, self.prev_pos)
 			cx, cy, cz = map(int, self.position)
@@ -140,7 +140,7 @@ class Entity:
 			potential_collisions = []
 
 			for i in range(x - step_x * (steps_xz + 2), cx + step_x * (steps_xz + 3), step_x):
-				for j in range(y - step_y * 2, cy + step_y * steps_y, step_y):
+				for j in range(y - step_y * (steps_y + 2), cy + step_y * (steps_y + 3), step_y):
 					for k in range(z - step_z * (steps_xz + 2), cz + step_z * (steps_xz + 3), step_z):
 						pos = (i, j, k)
 						num = self.world.get_block_number(pos)

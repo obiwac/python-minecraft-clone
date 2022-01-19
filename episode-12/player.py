@@ -24,7 +24,7 @@ class Player(entity.Entity):
 
 		# camera variables
 
-		self.eyelevel = 1.6
+		self.eyelevel = self.height - 0.2
 		self.input = [0, 0, 0]
 
 		self.flying = False
