@@ -230,7 +230,7 @@ class World:
 				ly -= 1
 				
 				if options.FAST_SKYLIGHT:
-					while pending_chunk.get_transparency(glm.ivec3(lx, ly, lz)) == 2:
+					while pending_chunk.get_transparency(glm.ivec3(lx, ly, lz)) == 2 and ly > 0:
 						pending_chunk.set_sky_light(glm.ivec3(lx, ly, lz), 15)
 						ly -= 1
 
