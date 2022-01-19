@@ -226,16 +226,22 @@ class World:
 			for lz in range(chunk.CHUNK_LENGTH):
 
 				ly = chunk.CHUNK_HEIGHT - 1
-
-				while pending_chunk.get_transparency(glm.ivec3(lx, ly, lz)) == 2:
-					pending_chunk.set_sky_light(glm.ivec3(lx, ly, lz), 15)
-					ly -= 1
+				
+				if options.FAST_SKYLIGHT:
+					while pending_chunk.get_transparency(glm.ivec3(lx, ly, lz)) == 2:
+						pending_chunk.set_sky_light(glm.ivec3(lx, ly, lz), 15)
+						ly -= 1
 
 				pos = glm.ivec3(chunk.CHUNK_WIDTH * chunk_pos[0] + lx,
 						ly,
 						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
 				)
-				self.skylight_increase_queue.put_nowait((pos, 15))
+
+				top_pos = glm.ivec3(chunk.CHUNK_WIDTH * chunk_pos[0] + lx,
+						chunk.CHUNK_HEIGHT - 1,
+						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
+				)
+				self.skylight_increase_queue.put_nowait((pso if options.FAST_SKYLIGHT else top_pos, 15))
 
 		self.propagate_skylight_increase(False)
 
@@ -510,7 +516,9 @@ class World:
 	
 	def draw(self):
 		daylight_multiplier = self.daylight / 1800
-		gl.glClearColor(0.4 * daylight_multiplier, 0.7 * daylight_multiplier, daylight_multiplier, 1.0)
+		gl.glClearColor(0.5 * (daylight_multiplier - 0.26), 
+				0.8 * (daylight_multiplier - 0.26), 
+				(daylight_multiplier - 0.26) * 1.36, 1.0)
 		gl.glUniform1f(self.shader_daylight_location, daylight_multiplier)
 
 		player_floored_pos = tuple(self.camera.position)
@@ -524,7 +532,7 @@ class World:
 
 	def update_daylight(self):
 		if self.incrementer == -1:
-			if self.daylight < 0:
+			if self.daylight < 480: # Moonlight of 4
 				self.incrementer = 0
 		elif self.incrementer == 1:
 			if self.daylight >= 1800:
