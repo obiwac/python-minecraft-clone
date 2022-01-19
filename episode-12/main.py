@@ -94,10 +94,10 @@ class Window(pyglet.window.Window):
 		# handle breaking/placing blocks
 
 		def hit_callback(current_block, next_block):
-			if button == pyglet.window.mouse.RIGHT: self.world.set_block(current_block, self.holding)
+			if button == pyglet.window.mouse.RIGHT: self.world.try_set_block(current_block, self.holding, self.player.collider)
 			elif button == pyglet.window.mouse.LEFT: self.world.set_block(next_block, 0)
 			elif button == pyglet.window.mouse.MIDDLE: self.holding = self.world.get_block_number(next_block)
-		
+
 		x, y, z = self.player.position
 		y += self.player.eyelevel
 

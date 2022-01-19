@@ -89,9 +89,7 @@ class Entity:
 						if not num:
 							continue
 
-						colliders = self.world.block_types[num].colliders
-
-						for collider in colliders:
+						for collider in self.world.block_types[num].colliders:
 							entry_time, normal = self.collider.collide(collider + pos, (vx, vy, vz))
 
 							if entry_time > 1:
