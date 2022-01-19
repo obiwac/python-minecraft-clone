@@ -12,6 +12,7 @@ class Block_type:
 		self.transparent = model.transparent
 		self.is_cube = model.is_cube
 		self.glass = model.glass
+		self.colliders = model.colliders
 
 		# replace data contained in numbers.py with model specific data
 
@@ -21,6 +22,7 @@ class Block_type:
 
 		def set_block_face(face, texture):
 			# make sure we don't add inexistent faces
+
 			if face > len(self.tex_coords) - 1:
 				return
 

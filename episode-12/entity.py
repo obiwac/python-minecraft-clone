@@ -3,7 +3,7 @@ import math
 import operator
 
 WALKING_SPEED = 7
-GRAVITY = (0, -18, 0) # https://www.planetminecraft.com/blog/minecraft-gravitational-analysis/
+GRAVITY = (0, -32, 0)
 
 class Box:
 	def __init__(self, pos1 = (None,) * 3, pos2 = (None,) * 3):
@@ -140,21 +140,25 @@ class Entity:
 				for j in range(int(y) - step_y * 2, int(cy) + step_y * 4, step_y):
 					for k in range(int(z) - step_z * 2, int(cz) + step_z * 3, step_z):
 						pos = (i, j, k)
-						
-						if not self.world.get_block_number(pos):
+						num = self.world.get_block_number(pos)
+
+						if not num:
 							continue
 
-						block = Box(
-							(x - 0.5 for x in pos),
-							(x + 0.5 for x in pos)
-						)
+						colliders = self.world.block_types[num].colliders
 
-						entry_time, normal = self.collide(self.box, block, (vx, vy, vz))
+						for collider in colliders:
+							collider = Box(
+								(x + y for x, y in zip(collider[0], pos)),
+								(x + y for x, y in zip(collider[1], pos))
+							)
 
-						if entry_time > 1:
-							continue
+							entry_time, normal = self.collide(self.box, collider, (vx, vy, vz))
 
-						potential_collisions.append((entry_time, normal))
+							if entry_time > 1:
+								continue
+
+							potential_collisions.append((entry_time, normal))
 
 			# get first collision
 

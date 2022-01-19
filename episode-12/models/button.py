@@ -2,6 +2,8 @@ transparent = True
 is_cube = False
 glass = False
 
+colliders = []
+
 vertex_positions = [
 	[ 0.5,  0.0,  0.5,   0.5, -0.5,  0.5,   0.5, -0.5, -0.5,   0.5,  0.0, -0.5], # right
 	[-0.5,  0.0, -0.5,  -0.5, -0.5, -0.5,  -0.5, -0.5,  0.5,  -0.5,  0.0,  0.5], # left
