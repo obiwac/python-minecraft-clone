@@ -43,44 +43,44 @@ class Entity:
 		self.collider.z1 = z - self.width / 2
 		self.collider.z2 = z + self.width / 2
 
-	def ground(self):
-		self.velocity[1] = 0
-		self.grounded = True
-
 	def teleport(self, pos):
 		self.position = list(pos)
 		self.prev_pos = list(self.position) # to prevent collisions
 		self.velocity = [0, 0, 0]
 
-	def jump(self):
+	def jump(self, height = None):
 		# obviously, we can't initiate a jump while in mid-air
 
 		if not self.grounded:
 			return
 
-		self.velocity[1] = math.sqrt(2 * self.jump_height * -GRAVITY[1])
+		if height is None:
+			height = self.jump_height
+
+		self.velocity[1] = math.sqrt(2 * height * -GRAVITY[1])
 
 	def update(self, delta_time):
 		# process physics
 
 		acceleration = (GRAVITY, FLYING)[self.flying]
 
-		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, acceleration)]
+		self.velocity =   [v + a * delta_time for v, a in zip(self.velocity, acceleration )]
 		self.set_position([p + v * delta_time for p, v in zip(self.position, self.velocity)])
 
 		# friction & drag
 
 		if self.grounded:
-			self.velocity[0] -= self.velocity[0] * delta_time * 20
-			self.velocity[2] -= self.velocity[2] * delta_time * 20
+			k = (1 - 0.95 * delta_time) ** 20 # takes 95% off of current velocity every 20th of a second
+
+			self.velocity[0] *= k
+			self.velocity[2] *= k
 
 		else:
-			# Minecraft takes 2% off of current velocity every 20th of a second
-			k = (1 - 0.02) ** 20
+			k = (1 - 0.02 * delta_time) ** 20 # takes 2% off of current velocity every 20th of a second
 
-			self.velocity[0] -= self.velocity[0] * k * delta_time
-			self.velocity[1] -= self.velocity[1] * k * delta_time
-			self.velocity[2] -= self.velocity[2] * k * delta_time
+			self.velocity[0] *= k
+			self.velocity[1] *= k
+			self.velocity[2] *= k
 
 		# compute collisions
 
@@ -114,7 +114,8 @@ class Entity:
 							continue
 
 						for collider in self.world.block_types[num].colliders:
-							entry_time, normal = self.collider.collide(collider + pos, (vx, vy, vz))
+							shifted = collider + pos
+							entry_time, normal = self.collider.collide(shifted, (vx, vy, vz))
 
 							if entry_time > 1:
 								continue
@@ -126,17 +127,23 @@ class Entity:
 			if not potential_collisions:
 				break
 
-			# TODO use entry_time
 			entry_time, normal = min(potential_collisions, key = lambda x: x[0])
+			entry_time = -entry_time + 0.01 # margin
 
-			self.position[0] -= vx * abs(normal[0])
-			self.position[1] -= vy * abs(normal[1])
-			self.position[2] -= vz * abs(normal[2])
-
-			# TODO cancel the velocity in any case where we collide on an axis
+			if normal[0]:
+				self.velocity[0] = 0
+				self.position[0] -= vx * entry_time
+			
+			if normal[1]:
+				self.velocity[1] = 0
+				self.position[1] -= vy * entry_time
+			
+			if normal[2]:
+				self.velocity[2] = 0
+				self.position[2] -= vz * entry_time
 
 			if normal[1] == 1:
-				self.ground()
+				self.grounded = True
 
 			self.set_position(self.position)
 
