@@ -12,6 +12,7 @@ MIPMAP_TYPE = gl.GL_NEAREST # Possible filters:
                             # Trilinear mipmap (GL_LINEAR_MIPMAP_LINEAR)
                             
 
+FAST_SKYLIGHT = True # Faster but with more glitches
 COLORED_LIGHTING = False
 FOV = 90
 INDIRECT_RENDERING = False # Requires OpenGL 4.2+. Disable if having issues.
