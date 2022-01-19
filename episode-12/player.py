@@ -27,6 +27,8 @@ class Player(entity.Entity):
 		self.eyelevel = 1.6
 		self.input = [0, 0, 0]
 
+		self.flying = False
+
 		self.target_speed = WALKING_SPEED
 		self.speed = self.target_speed
 
@@ -36,13 +38,17 @@ class Player(entity.Entity):
 		self.speed += (self.target_speed - self.speed) * delta_time * 20
 		multiplier = self.speed * delta_time
 
-		self.position[1] += self.input[1] * multiplier
+		if self.flying:
+			self.position[1] += self.input[1] * multiplier
 
 		if self.input[0] or self.input[2]:
 			angle = self.rotation[0] - math.atan2(self.input[2], self.input[0]) + math.tau / 4
 
 			self.position[0] += math.cos(angle) * multiplier
 			self.position[2] += math.sin(angle) * multiplier
+
+		if not self.flying and self.input[1] > 0:
+			self.jump()
 
 		# process physics & collisions &c
 

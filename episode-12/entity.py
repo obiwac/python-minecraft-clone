@@ -21,6 +21,7 @@ class Entity:
 
 		self.height = 1.8
 		self.width = 0.6
+		self.jump_height = 1.25
 
 		self.box = Box()
 
@@ -53,6 +54,14 @@ class Entity:
 
 	def ground(self):
 		self.velocity[1] = 0
+
+	def jump(self):
+		# obviously, we can't initiate a jump while in mid-air
+
+		if self.velocity[1]:
+			return
+
+		self.velocity[1] = math.sqrt(2 * self.jump_height * -GRAVITY[1])
 
 	def collide(self, a, b, velocity):
 		# a: the collider box, which moves
