@@ -3,7 +3,7 @@ import math
 import operator
 
 WALKING_SPEED = 7
-GRAVITY = (0, -9.81, 0)
+GRAVITY = (0, -18, 0) # https://www.planetminecraft.com/blog/minecraft-gravitational-analysis/
 
 class Box:
 	def __init__(self, pos1 = (None,) * 3, pos2 = (None,) * 3):
@@ -86,8 +86,6 @@ class Entity:
 			
 			return x / y
 
-		# TODO replace 999999 with 1
-
 		x_entry = div(b.x1 - a.x2 if vx > 0 else b.x2 - a.x1, vx, -1)
 		x_exit  = div(b.x2 - a.x1 if vx > 0 else b.x1 - a.x2, vx,  1)
 
@@ -104,19 +102,10 @@ class Entity:
 
 		# make sure we actually got a collision
 
-		# if entry > exit_ or \
-		# 	all(x > 1 for x in (x_entry, y_entry, z_entry)) or \
-		# 	all(x < 0 for x in (x_entry, y_entry, z_entry)):
-
-		# # TODO "entry == -1" necessary?
-
-		if entry > exit_ or entry <= -1:# or entry == -1:
+		if entry > exit_ or entry < -1:
 			return 1, (0,) * 3
 
 		# find normal of surface we collided with
-
-		# print(y_entry, y_exit)
-		# print(vy, entry, y_entry, b.y1 - a.y2 if vy > 0 else b.y2 - a.y1, vy)
 
 		nx = (0, -1 if vx > 0 else 1)[entry == x_entry]
 		ny = (0, -1 if vy > 0 else 1)[entry == y_entry]
@@ -132,10 +121,10 @@ class Entity:
 
 		# compute collisions
 
-		x, y, z = self.prev_pos
-
 		for _ in range(3):
+			x, y, z = self.prev_pos
 			cx, cy, cz = self.position
+			
 			vx, vy, vz = (a - b for a, b in zip(self.position, self.prev_pos))
 
 			# find all the blocks we could potentially be colliding with
@@ -146,8 +135,6 @@ class Entity:
 			step_z = 1 if vz > 0 else -1
 
 			potential_collisions = []
-
-			# TODO take into account width & height of entity here
 
 			for i in range(int(x) - step_x * 2, int(cx) + step_x * 3, step_x):
 				for j in range(int(y) - step_y * 2, int(cy) + step_y * 4, step_y):
@@ -190,4 +177,4 @@ class Entity:
 
 			self.set_position(self.position)
 
-		self.prev_pos = self.position
+		self.prev_pos = list(self.position)
