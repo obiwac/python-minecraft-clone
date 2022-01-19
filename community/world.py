@@ -51,9 +51,9 @@ def get_local_position(position):
 
 
 class World:
-	def __init__(self, shader, camera, texture_manager):
+	def __init__(self, shader, player, texture_manager):
 		self.shader = shader
-		self.camera = camera
+		self.player = player
 		self.texture_manager = texture_manager
 		self.block_types = [None]
 
@@ -462,13 +462,13 @@ class World:
 	
 	def can_render_chunk(self, chunk_position, pl_c_pos):
 		rx, ry, rz = (chunk_position[0] - pl_c_pos[0]) \
-					* math.cos(self.camera.rotation[0]) \
-					* math.cos(self.camera.rotation[1]) , \
+					* math.cos(self.player.rotation[0]) \
+					* math.cos(self.player.rotation[1]) , \
 				(chunk_position[1] - pl_c_pos[1]) \
-					* math.sin(self.camera.rotation[1]) , \
+					* math.sin(self.player.rotation[1]) , \
 				(chunk_position[2] - pl_c_pos[2]) \
-					* math.sin(self.camera.rotation[0]) \
-					* math.cos(self.camera.rotation[1])
+					* math.sin(self.player.rotation[0]) \
+					* math.cos(self.player.rotation[1])
 		return rx >= -2 and ry >= -2 and rz >= -2 
 	
 	def draw_translucent_fast(self, player_chunk_pos):
@@ -513,7 +513,7 @@ class World:
 		gl.glClearColor(0.4 * daylight_multiplier, 0.7 * daylight_multiplier, daylight_multiplier, 1.0)
 		gl.glUniform1f(self.shader_daylight_location, daylight_multiplier)
 
-		player_floored_pos = tuple(self.camera.position)
+		player_floored_pos = tuple(self.player.position)
 		player_chunk_pos = self.get_chunk_position(player_floored_pos)
 
 		for chunk_position, render_chunk in self.chunks.items():

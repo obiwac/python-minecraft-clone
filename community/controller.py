@@ -1,5 +1,5 @@
 import random
-import camera
+import player
 import hit
 
 from enum import IntEnum
@@ -37,7 +37,10 @@ class Controller:
 			elif mode == self.InteractMode.BREAK: self.game.world.set_block(next_block, 0)
 			elif mode == self.InteractMode.PICK: self.game.holding = self.game.world.get_block_number(next_block)
 
-		hit_ray = hit.Hit_ray(self.game.world, self.game.camera.rotation, self.game.camera.position)
+		x, y, z = self.game.player.position
+		y += self.game.player.eyelevel
+
+		hit_ray = hit.Hit_ray(self.game.world, self.game.player.rotation, (x, y, z))
 
 		while hit_ray.distance < hit.HIT_RANGE:
 			if hit_ray.step(hit_callback):
@@ -57,7 +60,7 @@ class Controller:
 			self.game.toggle_fullscreen()
 
 	def update_move(self, axis):
-		self.game.camera.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))
+		self.game.player.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))
 
 	def start_move(self, mode):
 		axis = int((mode if mode % 2 == 0 else mode - 1) / 2)
@@ -71,8 +74,8 @@ class Controller:
 
 	def start_modifier(self, mode):
 		if mode == self.ModifierMode.SPRINT:
-			self.game.camera.target_speed = camera.SPRINTING_SPEED
+			self.game.player.target_speed = player.SPRINTING_SPEED
 
 	def end_modifier(self, mode):
 		if mode == self.ModifierMode.SPRINT:
-			self.game.camera.target_speed = camera.WALKING_SPEED
+			self.game.player.target_speed = player.WALKING_SPEED
