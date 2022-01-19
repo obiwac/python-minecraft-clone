@@ -158,6 +158,11 @@ class World:
 		if lz == 0: try_update_chunk_at_position((cx, cy, cz - 1), (x, y, z - 1))
 
 	def try_set_block(self, position, number, collider):
+		# if we're trying to remove a block, whatever let it go through
+
+		if not number:
+			return self.set_block(position, 0)
+
 		# make sure the block doesn't intersect with the passed collider
 
 		for block_collider in self.block_types[number].colliders:
