@@ -122,9 +122,6 @@ class Entity:
 		# compute collisions
 
 		for _ in range(3):
-			x, y, z = self.prev_pos
-			cx, cy, cz = self.position
-			
 			vx, vy, vz = (a - b for a, b in zip(self.position, self.prev_pos))
 
 			# find all the blocks we could potentially be colliding with
@@ -134,11 +131,17 @@ class Entity:
 			step_y = 1 if vy > 0 else -1
 			step_z = 1 if vz > 0 else -1
 
+			steps_xz = int(self.width)
+			steps_y  = int(self.height) + 3
+
+			x, y, z = map(int, self.prev_pos)
+			cx, cy, cz = map(int, self.position)
+
 			potential_collisions = []
 
-			for i in range(int(x) - step_x * 2, int(cx) + step_x * 3, step_x):
-				for j in range(int(y) - step_y * 2, int(cy) + step_y * 4, step_y):
-					for k in range(int(z) - step_z * 2, int(cz) + step_z * 3, step_z):
+			for i in range(x - step_x * (steps_xz + 2), cx + step_x * (steps_xz + 3), step_x):
+				for j in range(y - step_y * 2, cy + step_y * steps_y, step_y):
+					for k in range(z - step_z * (steps_xz + 2), cz + step_z * (steps_xz + 3), step_z):
 						pos = (i, j, k)
 						num = self.world.get_block_number(pos)
 
