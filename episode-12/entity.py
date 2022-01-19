@@ -168,19 +168,15 @@ class Entity:
 			if not potential_collisions:
 				break
 
+			# TODO use entry_time
 			entry_time, normal = min(potential_collisions, key = lambda x: x[0])
 
-			# TODO push back based on entry time so that this is still perfect when there's a shitton of lag
+			self.position[0] -= vx * abs(normal[0])
+			self.position[1] -= vy * abs(normal[1])
+			self.position[2] -= vz * abs(normal[2])
 
-			if normal[0]:
-				self.position[0] = self.prev_pos[0]# + vx * entry_time
-
-			if normal[1]:
-				self.position[1] = self.prev_pos[1]# + vy * entry_time
+			if normal[1] == 1:
 				self.ground()
-
-			if normal[2]:
-				self.position[2] = self.prev_pos[2]# + vz * entry_time
 
 			self.set_position(self.position)
 
