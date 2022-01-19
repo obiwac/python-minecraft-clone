@@ -37,10 +37,10 @@ class Window(pyglet.window.Window):
 		print(f"OpenGL Version: {gl.gl_info.get_version()}")
 	
 		# FPS display
-
-		self.fps_display = pyglet.window.FPSDisplay(self)
-		self.fps_display.label.color = (255, 255, 255, 255)
-		self.fps_display.label.y = self.height - 30
+		if options.FPS_DISPLAY:
+			self.fps_display = pyglet.window.FPSDisplay(self)
+			self.fps_display.label.color = (255, 255, 255, 255)
+			self.fps_display.label.y = self.height - 30
 		
 		# create shader
 
@@ -98,7 +98,10 @@ class Window(pyglet.window.Window):
 
 		# music stuff
 		logging.info("Loading audio")
-		self.music = [pyglet.media.load(os.path.join("audio/music", file)) for file in os.listdir("audio/music") if os.path.isfile(os.path.join("audio/music", file))]
+		try:
+			self.music = [pyglet.media.load(os.path.join("audio/music", file)) for file in os.listdir("audio/music") if os.path.isfile(os.path.join("audio/music", file))]
+		except:
+			self.music = []
 
 		self.player = pyglet.media.Player()
 		self.player.volume = 0.5
@@ -150,9 +153,10 @@ class Window(pyglet.window.Window):
 		self.world.draw()
 
 		# Clear GL global state
-		gl.glUseProgram(0) 
-		gl.glBindVertexArray(0)
-		self.fps_display.draw()
+		if options.FPS_DISPLAY:
+			gl.glUseProgram(0) 
+			gl.glBindVertexArray(0)
+			self.fps_display.draw()
 
 	# input functions
 
@@ -162,13 +166,14 @@ class Window(pyglet.window.Window):
 
 		self.camera.width = width
 		self.camera.height = height
-		self.fps_display.label.y = self.height - 30
+		if options.FPS_DISPLAY:
+			self.fps_display.label.y = self.height - 30
 
 class Game:
 	def __init__(self):
 		self.config = gl.Config(double_buffer = True,
 				major_version = 3, minor_version = 3,
-				depth_size = 16, forward_compatible = True)
+				depth_size = 16)
 		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
 
 	def run(self): 

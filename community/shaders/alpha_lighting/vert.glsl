@@ -12,6 +12,7 @@ layout(location = 0) in vec3 a_LocalPosition;
 layout(location = 1) in float a_TextureFetcher;
 layout(location = 2) in float a_Shading;
 layout(location = 3) in float a_Light;
+layout(location = 4) in float a_Skylight;
 
 out vec3 v_Position;
 out vec3 v_TexCoords;
@@ -30,8 +31,8 @@ void main(void) {
 						u_ChunkPosition.y * CHUNK_LENGTH + a_LocalPosition.z);
 	v_TexCoords = vec3(texture_UV[int(a_TextureFetcher) & 3], int(a_TextureFetcher) >> 2);
 
-	float blocklightMultiplier = pow(0.8, 15.0 - (int(a_Light) & 15));
-	float skylightMultiplier = pow(0.8, 15.0 - (int(a_Light) >> 4) * u_Daylight);
+	float blocklightMultiplier = pow(0.8, 15.0 - a_Light);
+	float skylightMultiplier = pow(0.8, 15.0 - a_Skylight * u_Daylight);
 
 
 

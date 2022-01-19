@@ -56,20 +56,24 @@ class Chunk:
 		self.vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.vbo)
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 6), None, gl.GL_DYNAMIC_DRAW)
+		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 7), None, gl.GL_DYNAMIC_DRAW)
 
 		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, 
-				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 0)
+				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 0)
 		gl.glEnableVertexAttribArray(0)
 		gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, 
-				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 3 * ctypes.sizeof(gl.GLfloat))
+				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 3 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(1)
 		gl.glVertexAttribPointer(2, 1, gl.GL_FLOAT, 
-				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 4 * ctypes.sizeof(gl.GLfloat))
+				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 4 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(2)
 		gl.glVertexAttribPointer(3, 1, gl.GL_FLOAT, 
-				gl.GL_FALSE, 6 * ctypes.sizeof(gl.GLfloat), 5 * ctypes.sizeof(gl.GLfloat))
+				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 5 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(3)
+		gl.glVertexAttribPointer(4, 1, gl.GL_FLOAT, 
+				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 6 * ctypes.sizeof(gl.GLfloat))
+		gl.glEnableVertexAttribArray(4)
+		
 
 
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
@@ -111,7 +115,30 @@ class Chunk:
 		x, y, z = position
 		return self.lightmap[x][y][z]
 
-	
+	def get_block_number(self, position):
+		lx, ly, lz = position
+
+		block_number = self.blocks[lx][ly][lz]
+		return block_number
+
+	def get_transparency(self, position):
+		block_type = self.world.block_types[self.get_block_number(position)]
+
+		if not block_type:
+			return 2
+		
+		return block_type.transparent
+
+	def is_opaque_block(self, position):
+		# get block type and check if it's opaque or not
+		# air counts as a transparent block, so test for that too
+		
+		block_type = self.world.block_types[self.get_block_number(position)]
+		
+		if not block_type:
+			return False
+		
+		return not block_type.transparent
 	
 	def update_subchunk_meshes(self):
 		for subchunk in self.subchunks.values():
@@ -155,8 +182,8 @@ class Chunk:
 		# send the full mesh data to the GPU and free the memory used client-side (we don't need it anymore)
 		# don't forget to save the length of 'self.mesh_indices' before freeing
 
-		self.mesh_quad_count = len(self.mesh) // 24 # 24 = 6 (attributes of a vertex) * 4 (number of vertices per quad)
-		self.translucent_quad_count = len(self.translucent_mesh) // 24
+		self.mesh_quad_count = len(self.mesh) // 28 # 28 = 7 (attributes of a vertex) * 4 (number of vertices per quad)
+		self.translucent_quad_count = len(self.translucent_mesh) // 28
 
 		self.send_mesh_data_to_gpu()
 
@@ -171,7 +198,7 @@ class Chunk:
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 		gl.glBufferData(gl.GL_ARRAY_BUFFER, # Orphaning
-			ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 8), 
+			ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 7), 
 			None, 
 			gl.GL_DYNAMIC_DRAW
 		)

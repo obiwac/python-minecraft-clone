@@ -129,9 +129,9 @@ class World:
 			indices.append(4 * nquad + 0)
 			indices.append(4 * nquad + 1)
 			indices.append(4 * nquad + 2)
-			indices.append(4 * nquad + 0)
 			indices.append(4 * nquad + 2)
 			indices.append(4 * nquad + 3)
+			indices.append(4 * nquad + 0)
 
 
 		self.ibo = gl.GLuint(0)
@@ -221,16 +221,20 @@ class World:
 
 
 	def init_skylight(self, pending_chunk):
+		chunk_pos = pending_chunk.chunk_position
 		for lx in range(chunk.CHUNK_WIDTH):
 			for lz in range(chunk.CHUNK_LENGTH):
-				pending_chunk.set_sky_light(glm.ivec3(lx, chunk.CHUNK_HEIGHT-1, lz), 15)
 
-				chunk_pos = pending_chunk.chunk_position
+				ly = chunk.CHUNK_HEIGHT - 1
+
+				while pending_chunk.get_transparency(glm.ivec3(lx, ly, lz)) == 2:
+					pending_chunk.set_sky_light(glm.ivec3(lx, ly, lz), 15)
+					ly -= 1
+
 				pos = glm.ivec3(chunk.CHUNK_WIDTH * chunk_pos[0] + lx,
-						chunk.CHUNK_HEIGHT - 1,
+						ly,
 						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
 				)
-
 				self.skylight_increase_queue.put_nowait((pos, 15))
 
 		self.propagate_skylight_increase(False)
