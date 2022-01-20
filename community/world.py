@@ -16,9 +16,7 @@ import models
 import save
 import options
 from util import DIRECTIONS
-from numba import jit
 
-@jit
 def get_chunk_position(position):
 	x, y, z = position
 
@@ -27,7 +25,7 @@ def get_chunk_position(position):
 		(y // chunk.CHUNK_HEIGHT),
 		(z // chunk.CHUNK_LENGTH))
 
-@jit
+
 def get_local_position(position):
 	x, y, z = position
 	
