@@ -16,22 +16,9 @@ import models
 import save
 import options
 from util import DIRECTIONS
-from collections import OrderedDict
+from numba import jit
 
-class Queue:
-	def __init__(self):
-		self.queue = deque()
-	
-	def put_nowait(self, item):
-		self.queue.append(item)
-
-	def get_nowait(self):
-		return self.queue.popleft()
-	
-	def qsize(self):
-		return len(self.queue)
-
-
+@jit
 def get_chunk_position(position):
 	x, y, z = position
 
@@ -40,7 +27,7 @@ def get_chunk_position(position):
 		(y // chunk.CHUNK_HEIGHT),
 		(z // chunk.CHUNK_LENGTH))
 
-
+@jit
 def get_local_position(position):
 	x, y, z = position
 	
@@ -155,12 +142,12 @@ class World:
 
 		# light update queue
 
-		self.light_increase_queue = Queue() # Node: World Position, light
-		self.light_decrease_queue = Queue() # Node: World position, light
-		self.skylight_increase_queue = Queue()
-		self.skylight_decrease_queue = Queue()
-		self.chunk_update_queue = Queue() 
-		self.chunk_building_queue = Queue()
+		self.light_increase_queue = deque() # Node: World Position, light
+		self.light_decrease_queue = deque() # Node: World position, light
+		self.skylight_increase_queue = deque()
+		self.skylight_decrease_queue = deque()
+		self.chunk_update_queue = deque() 
+		self.chunk_building_queue = deque()
 
 		self.save.load()
 		
@@ -171,7 +158,7 @@ class World:
 		logging.info("Generating chunks")
 		for world_chunk in self.chunks.values():
 			world_chunk.update_subchunk_meshes()
-			self.chunk_building_queue.put_nowait(world_chunk)
+			self.chunk_building_queue.append(world_chunk)
 
 		del indices
 
@@ -188,22 +175,24 @@ class World:
 						ly // subchunk.SUBCHUNK_HEIGHT,
 						lz // subchunk.SUBCHUNK_LENGTH
 		)
-		if (chunk, *subchunk_pos) not in self.chunk_update_queue.queue:
-			self.chunk_update_queue.put_nowait((chunk, *subchunk_pos))
+		if (chunk, *subchunk_pos) not in self.chunk_update_queue:
+			self.chunk_update_queue.append((chunk, *subchunk_pos))
 
+	
 	def increase_light(self, world_pos, newlight, light_update=True):
 		chunk = self.chunks[get_chunk_position(world_pos)]
 		local_pos = get_local_position(world_pos)
 
 		chunk.set_block_light(local_pos, newlight)
 
-		self.light_increase_queue.put_nowait((world_pos, newlight))
+		self.light_increase_queue.append((world_pos, newlight))
 
 		self.propagate_increase(light_update)
 
+	
 	def propagate_increase(self, light_update):
-		while self.light_increase_queue.qsize():
-			pos, light_level = self.light_increase_queue.get_nowait()			
+		while len(self.light_increase_queue):
+			pos, light_level = self.light_increase_queue.popleft()			
 
 			for direction in DIRECTIONS:
 				neighbour_pos = pos + direction
@@ -217,8 +206,7 @@ class World:
 
 					self.push_light_update(light_update, chunk, local_pos)
 
-					self.light_increase_queue.put_nowait((neighbour_pos, light_level - 1))
-
+					self.light_increase_queue.append((neighbour_pos, light_level - 1))
 
 	def init_skylight(self, pending_chunk):
 		chunk_pos = pending_chunk.chunk_position
@@ -239,13 +227,13 @@ class World:
 						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
 				)
 
-				self.skylight_increase_queue.put_nowait((pos, 15))
+				self.skylight_increase_queue.append((pos, 15))
 
 		self.propagate_skylight_increase(False)
-
+		
 	def propagate_skylight_increase(self, light_update):
-		while self.skylight_increase_queue.qsize():
-			pos, light_level = self.skylight_increase_queue.get_nowait()
+		while len(self.skylight_increase_queue):
+			pos, light_level = self.skylight_increase_queue.popleft()
 
 			for direction in DIRECTIONS:
 				neighbour_pos = pos + direction
@@ -262,25 +250,26 @@ class World:
 
 					if direction.y == -1:
 						chunk.set_sky_light(local_pos, newlight)
-						self.skylight_increase_queue.put_nowait((neighbour_pos, newlight))
+						self.skylight_increase_queue.append((neighbour_pos, newlight))
 					elif chunk.get_sky_light(local_pos) + 2 <= light_level:
 						chunk.set_sky_light(local_pos, newlight - 1)
-						self.skylight_increase_queue.put_nowait((neighbour_pos, newlight - 1))
+						self.skylight_increase_queue.append((neighbour_pos, newlight - 1))
 			
-
+	
 	def decrease_light(self, world_pos):
 		chunk = self.chunks[get_chunk_position(world_pos)]
 		local_pos = get_local_position(world_pos)
 		old_light = chunk.get_block_light(local_pos)
 		chunk.set_block_light(local_pos, 0)
-		self.light_decrease_queue.put_nowait((world_pos, old_light))
+		self.light_decrease_queue.append((world_pos, old_light))
 		
 		self.propagate_decrease(True)
 		self.propagate_increase(True)
 
+	
 	def propagate_decrease(self, light_update):
-		while self.light_decrease_queue.qsize():
-			pos, light_level = self.light_decrease_queue.get_nowait()
+		while len(self.light_decrease_queue):
+			pos, light_level = self.light_decrease_queue.popleft()
 
 			for direction in DIRECTIONS:
 				neighbour_pos = pos + direction
@@ -290,7 +279,7 @@ class World:
 				local_pos = get_local_position(neighbour_pos)
 
 				if self.get_block_number(neighbour_pos) in self.light_blocks:
-					self.light_increase_queue.put_nowait((neighbour_pos, 15))
+					self.light_increase_queue.append((neighbour_pos, 15))
 					continue
 
 				if not self.is_opaque_block(neighbour_pos):
@@ -300,24 +289,25 @@ class World:
 					if neighbour_level < light_level:
 						chunk.set_block_light(local_pos, 0)
 						self.push_light_update(light_update, chunk, local_pos)
-						self.light_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
+						self.light_decrease_queue.append((neighbour_pos, neighbour_level))
 					elif neighbour_level >= light_level:
-						self.light_increase_queue.put_nowait((neighbour_pos, neighbour_level))
+						self.light_increase_queue.append((neighbour_pos, neighbour_level))
 
-	
+
 	def decrease_skylight(self, world_pos, light_update=True):
 		chunk = self.chunks[get_chunk_position(world_pos)]
 		local_pos = get_local_position(world_pos)
 		old_light = chunk.get_sky_light(local_pos)
 		chunk.set_sky_light(local_pos, 0)
-		self.skylight_decrease_queue.put_nowait((world_pos, old_light))
+		self.skylight_decrease_queue.append((world_pos, old_light))
 		
 		self.propagate_skylight_decrease(light_update)
 		self.propagate_skylight_increase(light_update)
 
+	
 	def propagate_skylight_decrease(self, light_update=True):
-		while self.skylight_decrease_queue.qsize():
-			pos, light_level = self.skylight_decrease_queue.get_nowait()
+		while len(self.skylight_decrease_queue):
+			pos, light_level = self.skylight_decrease_queue.popleft()
 
 			for direction in DIRECTIONS:
 				neighbour_pos = pos + direction
@@ -333,12 +323,12 @@ class World:
 					if direction.y == -1 or neighbour_level < light_level:
 						chunk.set_sky_light(local_pos, 0)
 						self.push_light_update(light_update, chunk, local_pos)
-						self.skylight_decrease_queue.put_nowait((neighbour_pos, neighbour_level))
+						self.skylight_decrease_queue.append((neighbour_pos, neighbour_level))
 					elif neighbour_level >= light_level:
-						self.skylight_increase_queue.put_nowait((neighbour_pos, neighbour_level))
+						self.skylight_increase_queue.append((neighbour_pos, neighbour_level))
 
 	# Getter and setters
-
+	
 	def get_raw_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
 		if not chunk:
@@ -346,12 +336,14 @@ class World:
 		local_position = self.get_local_position(position)
 		return chunk.get_raw_light(local_position)
 
+	
 	def get_light(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
 		if not chunk:
 			return 0
 		local_position = self.get_local_position(position)
 		return chunk.get_block_light(local_position)
+	
 	
 	def get_skylight(self, position):
 		chunk = self.chunks.get(get_chunk_position(position), None)
@@ -360,11 +352,13 @@ class World:
 		local_position = self.get_local_position(position)
 		return chunk.get_sky_light(local_position)
 
+	
 	def set_light(self, position, light):
 		chunk = self.chunks.get(get_chunk_position(position), None)
 		local_position = get_local_position(position)
 		chunk.set_block_light(local_position, light)
 
+	
 	def set_skylight(self, position, light):
 		chunk = self.chunks.get(get_chunk_position(position), None)
 		local_position = get_local_position(position)
@@ -372,7 +366,7 @@ class World:
 
 	#################################################
 
-
+	
 	def get_block_number(self, position):
 		chunk_position = get_chunk_position(position)
 
@@ -384,6 +378,7 @@ class World:
 		block_number = self.chunks[chunk_position].blocks[lx][ly][lz]
 		return block_number
 
+	
 	def get_transparency(self, position):
 		block_type = self.block_types[self.get_block_number(position)]
 
@@ -392,6 +387,7 @@ class World:
 		
 		return block_type.transparent
 
+	
 	def is_opaque_block(self, position):
 		# get block type and check if it's opaque or not
 		# air counts as a transparent block, so test for that too
@@ -402,11 +398,11 @@ class World:
 			return False
 		
 		return not block_type.transparent
-
+	
 	def create_chunk(self, chunk_position):
 		self.chunks[chunk_position] = chunk.Chunk(self, chunk_position)
 		self.init_skylight(self.chunks[chunk_position])
-
+	
 	def set_block(self, position, number): # set number to 0 (air) to remove block
 		x, y, z = position
 		chunk_position = get_chunk_position(position)
@@ -543,9 +539,10 @@ class World:
 
 		self.daylight += self.incrementer
 
+
 	def process_chunk_updates(self):
-		if self.chunk_update_queue.qsize():
-			pending_chunk, sx, sy, sz = self.chunk_update_queue.get_nowait()
+		if len(self.chunk_update_queue):
+			pending_chunk, sx, sy, sz = self.chunk_update_queue.popleft()
 
 			pending_subchunk = pending_chunk.subchunks.get((sx, sy, sz), None)
 			if pending_subchunk:
@@ -558,14 +555,16 @@ class World:
 					continue
 				pending_subchunk.update_mesh()
 
-			if pending_chunk not in self.chunk_building_queue.queue:
-				self.chunk_building_queue.put_nowait(pending_chunk)
+			if pending_chunk not in self.chunk_building_queue:
+				self.chunk_building_queue.append(pending_chunk)
 
+	
 	def build_pending_chunks(self):
-		if self.chunk_building_queue.qsize():
-			pending_chunk = self.chunk_building_queue.get_nowait()
+		if len(self.chunk_building_queue):
+			pending_chunk = self.chunk_building_queue.popleft()
 			pending_chunk.update_mesh()
 
+	
 	def tick(self, delta_time):
 		self.time += delta_time
 		self.update_daylight()
