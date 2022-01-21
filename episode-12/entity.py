@@ -1,12 +1,8 @@
 import math
 import collider
 
-WALKING_SPEED = 7
-
 FLYING = (0, 0, 0)
 GRAVITY = (0, -32, 0)
-
-remme = False
 
 class Entity:
 	def __init__(self, world):
@@ -31,7 +27,6 @@ class Entity:
 		# input variables
 
 		self.rotation = [-math.tau / 4, 0]
-		self.speed = WALKING_SPEED
 
 	def update_collider(self):
 		x, y, z = self.position
