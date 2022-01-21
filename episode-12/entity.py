@@ -14,7 +14,7 @@ class Entity:
 
 		self.height = 1.8
 		self.width = 0.6
-		self.jump_height = 1.5 # higher than in Minecraft, feels better
+		self.jump_height = 1.0#1.25
 		self.flying = False
 
 		self.collider = collider.Collider()
@@ -57,7 +57,35 @@ class Entity:
 		if height is None:
 			height = self.jump_height
 
+		# in the video, talk about how technically the drag coefficient should be divided by the mass, but that Minecraft physics don't work like that (mass doesn't affect the drag coefficient)
+
+		# dv(t)/dt = a - kv(t)
+		# supposedly: v(t) = g/k (1 - e^(-kt))
+
+		# lim k->0: v(t)
+		# lim k->0: g/k (1 - e^(-kt))
+		# = [0/0]
+
+		# a = -g
+		# dv(t)/dt = a
+		# v(t) = int a dt = -gt + v_0
+		# x(t) = int v(t) dt = -gt^2 / 2 + v_0 * t + x_0
+		# (we can assume x_0 = 0 to simplify the math)
+		# v(t) = 0 & x(t) = J
+		# isolate t in v(t) = 0 (which is easier than in x(t) = J):
+		# -gt + v_0 = 0 <=> t = v_0 / g
+		# substitute that into x(t) = J:
+		# -g / 2 * v_0^2 / g^2 + v_0 * (v_0 / g) = J
+		# -v_0^2 / (2g) + v_0^2 / g = J
+		# J * g = v_0^2 / 2
+		# v_0 = sqrt(2J * g)
+
+		# lim k->0: v(t)
+		# lim k->0: -g / ke * e^(J * k^2 / g^2)
+		# = e^0 / 0 = +/- inf => something is wrong 😄
+
 		self.velocity[1] = math.sqrt(2 * height * -GRAVITY[1])
+		# self.velocity[1] = -g / (k * math.e) * math.exp(height * k ** 2 / g)
 
 	def update(self, delta_time):
 		# process physics
@@ -76,11 +104,13 @@ class Entity:
 			self.velocity[2] *= k
 
 		else:
-			k = (1 - 0.02 * delta_time) ** 20 # takes 2% off of current velocity every 20th of a second
+			k = 0.98 ** (20 * delta_time) # takes 2% off of current velocity every 20th of a second
 
 			self.velocity[0] *= k
-			self.velocity[1] *= k
 			self.velocity[2] *= k
+
+			if self.velocity[1] < 0:
+				self.velocity[1] *= k
 
 		# compute collisions
 
