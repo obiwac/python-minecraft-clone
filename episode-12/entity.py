@@ -14,7 +14,7 @@ class Entity:
 
 		# physical variables
 
-		self.jump_height = 1.0#1.25
+		self.jump_height = 1.25
 		self.flying = False
 
 		self.velocity = [0, 0, 0]
@@ -67,7 +67,7 @@ class Entity:
 		self.grounded = False
 
 		for _ in range(3):
-			adjusted_velocity = [v * delta_time for v in self.velocity]
+			adjusted_velocity = [v * delta_time or collider.PADDING for v in self.velocity]
 			vx, vy, vz = adjusted_velocity
 
 			# find all the blocks we could potentially be colliding with
@@ -101,7 +101,7 @@ class Entity:
 							if normal is None:
 								continue
 
-							potential_collisions.append((entry_time, normal))
+							potential_collisions.append((entry_time, normal, height))
 
 			# get first collision
 

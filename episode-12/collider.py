@@ -1,4 +1,4 @@
-PADDING = 0.002
+PADDING = 0.001
 
 class Collider:
 	def __init__(self, pos1 = (None,) * 3, pos2 = (None,) * 3):
@@ -32,10 +32,6 @@ class Collider:
 		# find entry & exit times for each axis
 
 		vx, vy, vz = velocity
-
-		vx = vx or -PADDING
-		vy = vy or -PADDING
-		vz = vz or -PADDING
 
 		x_entry = (collider.x1 - self.x2 if vx > 0 else collider.x2 - self.x1) / vx
 		x_exit  = (collider.x2 - self.x1 if vx > 0 else collider.x1 - self.x2) / vx
