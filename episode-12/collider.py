@@ -1,3 +1,5 @@
+PADDING = 0.002
+
 class Collider:
 	def __init__(self, pos1 = (None,) * 3, pos2 = (None,) * 3):
 		# pos1: position of the collider vertex in the -X, -Y, -Z direction
@@ -25,27 +27,24 @@ class Collider:
 		# a: the dynamic collider, which moves
 		# b: the static collider, which stays put
 
-		if not self.intersect(collider):
-			return 1, (0,) * 3
+		no_collision = 1, None
 
 		# find entry & exit times for each axis
 
 		vx, vy, vz = velocity
 
-		def div(x, y, default):
-			if not y:
-				return default
-			
-			return x / y
+		vx = vx or -PADDING
+		vy = vy or -PADDING
+		vz = vz or -PADDING
 
-		x_entry = div(collider.x1 - self.x2 if vx > 0 else collider.x2 - self.x1, vx, -1)
-		x_exit  = div(collider.x2 - self.x1 if vx > 0 else collider.x1 - self.x2, vx,  1)
+		x_entry = (collider.x1 - self.x2 if vx > 0 else collider.x2 - self.x1) / vx
+		x_exit  = (collider.x2 - self.x1 if vx > 0 else collider.x1 - self.x2) / vx
 
-		y_entry = div(collider.y1 - self.y2 if vy > 0 else collider.y2 - self.y1, vy, -1)
-		y_exit  = div(collider.y2 - self.y1 if vy > 0 else collider.y1 - self.y2, vy,  1)
+		y_entry = (collider.y1 - self.y2 if vy > 0 else collider.y2 - self.y1) / vy
+		y_exit  = (collider.y2 - self.y1 if vy > 0 else collider.y1 - self.y2) / vy
 
-		z_entry = div(collider.z1 - self.z2 if vz > 0 else collider.z2 - self.z1, vz, -1)
-		z_exit  = div(collider.z2 - self.z1 if vz > 0 else collider.z1 - self.z2, vz,  1)
+		z_entry = (collider.z1 - self.z2 if vz > 0 else collider.z2 - self.z1) / vz
+		z_exit  = (collider.z2 - self.z1 if vz > 0 else collider.z1 - self.z2) / vz
 
 		# on which axis did we collide first?
 
@@ -54,8 +53,14 @@ class Collider:
 
 		# make sure we actually got a collision
 
-		if entry > exit_ or entry < -1:
-			return 1, (0,) * 3
+		if x_entry < 0 and y_entry < 0 and z_entry < 0:
+			return no_collision
+
+		if x_entry > 1 or y_entry > 1 or z_entry > 1:
+			return no_collision
+
+		if entry > exit_:
+			return no_collision
 
 		# find normal of surface we collided with
 

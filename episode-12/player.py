@@ -36,7 +36,7 @@ class Player(entity.Entity):
 		self.speed += (self.target_speed - self.speed) * delta_time * 20
 		multiplier = self.speed
 
-		if self.flying:
+		if self.flying and self.input[1]:
 			self.velocity[1] = self.input[1] * multiplier
 
 		if self.input[0] or self.input[2]:
