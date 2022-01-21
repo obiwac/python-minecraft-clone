@@ -101,7 +101,7 @@ class Entity:
 							if normal is None:
 								continue
 
-							potential_collisions.append((entry_time, normal, height))
+							potential_collisions.append((entry_time, normal))
 
 			# get first collision
 
