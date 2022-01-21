@@ -128,7 +128,7 @@ class Entity:
 		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, acceleration)]
 
 		if self.grounded or self.flying:
-			k = (1 - 0.95 * delta_time) ** 20 # takes 95% off of current velocity every 20th of a second
+			k = 0.05 ** (20 * delta_time) # takes 95% off of current velocity every 20th of a second
 
 			self.velocity[0] *= k
 			self.velocity[1] *= k
