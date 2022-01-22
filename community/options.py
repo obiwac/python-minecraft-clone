@@ -11,7 +11,10 @@ MIPMAP_TYPE = gl.GL_NEAREST # Possible filters:
                             # Bilinear mipmap (GL_LINEAR_MIPMAP_NEAREST)
                             # Trilinear mipmap (GL_LINEAR_MIPMAP_LINEAR)
                             
-
+MAX_PRERENDERED_FRAMES = 3 # Number of frames the CPU can skip rendering waiting the GPU to finish rendering. 
+                           # Higher values gives higher framerate but causes framerate instability and higher frame spikes
+                           # Lower values causes average lower framerate but gives smoother framerate
+                           # Recommended values are between 0 and 9
 FAST_SKYLIGHT = True # Faster but with more glitches
 COLORED_LIGHTING = False
 FOV = 90
