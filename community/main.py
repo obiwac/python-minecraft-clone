@@ -67,7 +67,7 @@ class Window(pyglet.window.Window):
 
 		# pyglet stuff
 
-		pyglet.clock.schedule(self.update)
+		pyglet.clock.schedule_interval(self.update)
 		pyglet.clock.schedule_interval(self.tick, 1 / 60)
 		self.mouse_captured = False
 
@@ -134,6 +134,7 @@ class Window(pyglet.window.Window):
 				self.media_player.queue(random.choice(self.music))
 				self.media_player.play()
 		
+		self.player.update(delta_time)
 		self.world.tick(delta_time)
 
 	def update(self, delta_time):
@@ -141,7 +142,6 @@ class Window(pyglet.window.Window):
 			self.player.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
-		self.player.update(delta_time)
 
 	def on_draw(self):
 		self.shader.use()
