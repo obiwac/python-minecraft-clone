@@ -113,6 +113,9 @@ class Window(pyglet.window.Window):
 			self.media_player.standby = True
 
 		self.media_player.next_time = 0
+
+		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+		self.ahead_frames = 0
 		
 	def toggle_fullscreen(self):
 		self.set_fullscreen(not self.fullscreen)
@@ -120,6 +123,8 @@ class Window(pyglet.window.Window):
 	def on_close(self):
 		logging.info("Deleting media player")
 		self.media_player.delete()
+
+		gl.glDeleteSync(self.fence)
 
 		pyglet.app.exit() # Closes the game
 
@@ -142,12 +147,25 @@ class Window(pyglet.window.Window):
 		self.world.tick(delta_time)
 
 	def on_draw(self):
-		self.shader.use()
-		self.player.update_matrices()
-		
 		self.clear()
 
+		result = gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 0)
+		if self.ahead_frames <= options.MAX_PRERENDERED_FRAMES \
+				and (result != gl.GL_CONDITION_SATISFIED or result != gl.GL_ALREADY_SIGNALED):
+			self.ahead_frames += 1
+		
+
+		self.ahead_frames = 0
+
+		self.shader.use()
+		self.player.update_matrices()
+
+		gl.glDeleteSync(self.fence)
+		
+
 		self.world.draw()
+
+		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
 
 		# Clear GL global state
 		if options.FPS_DISPLAY:
