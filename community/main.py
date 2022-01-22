@@ -67,8 +67,7 @@ class Window(pyglet.window.Window):
 
 		# pyglet stuff
 
-		pyglet.clock.schedule_interval(self.update)
-		pyglet.clock.schedule_interval(self.tick, 1 / 60)
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
 		self.mouse_captured = False
 
 		# misc stuff
@@ -124,7 +123,7 @@ class Window(pyglet.window.Window):
 
 		pyglet.app.exit() # Closes the game
 
-	def tick(self, delta_time):
+	def update(self, delta_time):
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
 				self.media_player.standby = True
@@ -133,15 +132,14 @@ class Window(pyglet.window.Window):
 				self.media_player.standby = False
 				self.media_player.queue(random.choice(self.music))
 				self.media_player.play()
-		
-		self.player.update(delta_time)
-		self.world.tick(delta_time)
 
-	def update(self, delta_time):
 		if not self.mouse_captured:
 			self.player.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
+		self.player.update(delta_time)
+
+		self.world.tick(delta_time)
 
 	def on_draw(self):
 		self.shader.use()
