@@ -58,8 +58,8 @@ class Player(entity.Entity):
 		super().update(delta_time)
 	
 	def update_interpolation(self, delta_time):
-		self.step -= delta_time
 		self.interpolated_position = glm.mix(glm.vec3(self.position), glm.vec3(self.old_position), self.step)
+		self.step -= delta_time
 	
 	def update_matrices(self):
 		# create projection matrix
