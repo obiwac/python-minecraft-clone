@@ -66,7 +66,7 @@ class Window(pyglet.window.Window):
 		self.world.player = self.player
 
 		# pyglet stuff
-
+		pyglet.clock.schedule(self.player.update_interpolation)
 		pyglet.clock.schedule_interval(self.update, 1 / 60)
 		self.mouse_captured = False
 
