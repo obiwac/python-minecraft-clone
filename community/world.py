@@ -189,7 +189,7 @@ class World:
 
 	
 	def propagate_increase(self, light_update):
-		while len(self.light_increase_queue):
+		while self.light_increase_queue:
 			pos, light_level = self.light_increase_queue.popleft()			
 
 			for direction in DIRECTIONS:
@@ -230,7 +230,7 @@ class World:
 		self.propagate_skylight_increase(False)
 		
 	def propagate_skylight_increase(self, light_update):
-		while len(self.skylight_increase_queue):
+		while self.skylight_increase_queue:
 			pos, light_level = self.skylight_increase_queue.popleft()
 
 			for direction in DIRECTIONS:
@@ -266,7 +266,7 @@ class World:
 
 	
 	def propagate_decrease(self, light_update):
-		while len(self.light_decrease_queue):
+		while self.light_decrease_queue:
 			pos, light_level = self.light_decrease_queue.popleft()
 
 			for direction in DIRECTIONS:
@@ -304,7 +304,7 @@ class World:
 
 	
 	def propagate_skylight_decrease(self, light_update=True):
-		while len(self.skylight_decrease_queue):
+		while self.skylight_decrease_queue:
 			pos, light_level = self.skylight_decrease_queue.popleft()
 
 			for direction in DIRECTIONS:
@@ -552,7 +552,7 @@ class World:
 
 
 	def process_chunk_updates(self):
-		if len(self.chunk_update_queue):
+		if self.chunk_update_queue:
 			pending_chunk, sx, sy, sz = self.chunk_update_queue.popleft()
 
 			pending_subchunk = pending_chunk.subchunks.get((sx, sy, sz), None)
@@ -571,7 +571,7 @@ class World:
 
 	
 	def build_pending_chunks(self):
-		if len(self.chunk_building_queue):
+		if self.chunk_building_queue:
 			pending_chunk = self.chunk_building_queue.popleft()
 			pending_chunk.update_mesh()
 
