@@ -29,10 +29,10 @@ class Keyboard_Mouse(controller.Controller):
 		if self.game.mouse_captured:
 			sensitivity = 0.004
 
-			self.game.camera.rotation[0] += delta_x * sensitivity
-			self.game.camera.rotation[1] += delta_y * sensitivity
+			self.game.player.rotation[0] += delta_x * sensitivity
+			self.game.player.rotation[1] += delta_y * sensitivity
 
-			self.game.camera.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.game.camera.rotation[1]))
+			self.game.player.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.game.player.rotation[1]))
 
 	def on_mouse_drag(self, x, y, delta_x, delta_y, buttons, modifiers):
 		self.on_mouse_motion(x, y, delta_x, delta_y)
@@ -50,8 +50,10 @@ class Keyboard_Mouse(controller.Controller):
 
 		elif key == pyglet.window.key.LCTRL : self.start_modifier(self.ModifierMode.SPRINT)
 
+		elif key == pyglet.window.key.F: self.misc(self.MiscMode.FLY)
 		elif key == pyglet.window.key.G: self.misc(self.MiscMode.RANDOM)
 		elif key == pyglet.window.key.O: self.misc(self.MiscMode.SAVE)
+		elif key == pyglet.window.key.R: self.misc(self.MiscMode.TELEPORT)
 		elif key == pyglet.window.key.ESCAPE: self.misc(self.MiscMode.ESCAPE)
 		elif key == pyglet.window.key.F6: self.misc(self.MiscMode.SPEED_TIME)
 		elif key == pyglet.window.key.F11: self.misc(self.MiscMode.FULLSCREEN)

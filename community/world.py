@@ -36,9 +36,9 @@ def get_local_position(position):
 
 
 class World:
-	def __init__(self, shader, camera, texture_manager):
+	def __init__(self, shader, player, texture_manager):
 		self.shader = shader
-		self.camera = camera
+		self.player = player
 		self.texture_manager = texture_manager
 		self.block_types = [None]
 
@@ -450,8 +450,21 @@ class World:
 
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))
-	
-	
+
+	def try_set_block(self, position, number, collider):
+		# if we're trying to remove a block, whatever let it go through
+
+		if not number:
+			return self.set_block(position, 0)
+
+		# make sure the block doesn't intersect with the passed collider
+
+		for block_collider in self.block_types[number].colliders:
+			if collider.intersect(block_collider + position):
+				return
+		
+		self.set_block(position, number)
+
 	def speed_daytime(self):
 		if self.daylight <= 0:
 			self.incrementer = 1
@@ -460,13 +473,13 @@ class World:
 	
 	def can_render_chunk(self, chunk_position, pl_c_pos):
 		rx, ry, rz = (chunk_position[0] - pl_c_pos[0]) \
-					* math.cos(self.camera.rotation[0]) \
-					* math.cos(self.camera.rotation[1]) , \
+					* math.cos(self.player.rotation[0]) \
+					* math.cos(self.player.rotation[1]) , \
 				(chunk_position[1] - pl_c_pos[1]) \
-					* math.sin(self.camera.rotation[1]) , \
+					* math.sin(self.player.rotation[1]) , \
 				(chunk_position[2] - pl_c_pos[2]) \
-					* math.sin(self.camera.rotation[0]) \
-					* math.cos(self.camera.rotation[1])
+					* math.sin(self.player.rotation[0]) \
+					* math.cos(self.player.rotation[1])
 		return rx >= -2 and ry >= -2 and rz >= -2 
 	
 	def draw_translucent_fast(self, player_chunk_pos):
@@ -513,7 +526,7 @@ class World:
 				(daylight_multiplier - 0.26) * 1.36, 1.0)
 		gl.glUniform1f(self.shader_daylight_location, daylight_multiplier)
 
-		player_floored_pos = tuple(self.camera.position)
+		player_floored_pos = tuple(self.player.position)
 		player_chunk_pos = self.get_chunk_position(player_floored_pos)
 
 		for chunk_position, render_chunk in self.chunks.items():

@@ -1,0 +1,36 @@
+{
+	"name": "mcpy_blocks",
+	"scopeName": "source.mcpy_blocks",
+	"patterns": [
+		{
+			"name": "keyword.control.mcpy_blocks",
+			"match": "\\b(name|texture|model)\\b"
+		},
+		{
+			"name": "keyword.operator.mcpy_blocks",
+			"match": "\\b(sameas)\\b"
+		},
+		{
+			"name": "constant.language.mcpy_blocks",
+			"match": "\\b(all|sides|x|y|z|top|bottom|front|back|left|right)\\b"
+		},
+		{
+			"name": "constant.numeric.mcpy_blocks",
+			"match": "\\b[0-9]+\\b"
+		},
+		{
+			"name": "comment.line.mcpy_blocks",
+			"begin": "#",
+			"end": "$"
+		},
+		{
+			"name": "string.quoted.double.mcpy_blocks",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [{
+				"name": "constant.character.escape.mcpy_blocks",
+				"match": "\\\\."
+			}]
+		}
+	]
+}

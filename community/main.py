@@ -13,7 +13,7 @@ pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent"
 
 import pyglet.gl as gl
 import shader
-import camera
+import player
 import texture_manager
 
 import world
@@ -23,7 +23,6 @@ import time
 
 import joystick
 import keyboard_mouse
-
 
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
@@ -56,19 +55,19 @@ class Window(pyglet.window.Window):
 		logging.info("Creating Texture Array")
 		self.texture_manager = texture_manager.TextureManager(16, 16, 256)
 
-		# camera stuff
-
-		logging.info("Setting up camera scene")
-		self.camera = camera.Camera(self.shader, self.width, self.height)
-
 		# create world
 
-		self.world = world.World(self.shader, self.camera, self.texture_manager)
+		self.world = world.World(self.shader, None, self.texture_manager)
+
+		# player stuff
+
+		logging.info("Setting up player & camera")
+		self.player = player.Player(self.world, self.shader, self.width, self.height)
+		self.world.player = self.player
 
 		# pyglet stuff
 
-		pyglet.clock.schedule(self.update)
-		pyglet.clock.schedule_interval(self.tick, 1 / 60)
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
 		self.mouse_captured = False
 
 		# misc stuff
@@ -103,17 +102,17 @@ class Window(pyglet.window.Window):
 		except:
 			self.music = []
 
-		self.player = pyglet.media.Player()
-		self.player.volume = 0.5
+		self.media_player = pyglet.media.Player()
+		self.media_player.volume = 0.5
 
 		if len(self.music) > 0:
-			self.player.queue(random.choice(self.music))
-			self.player.play()
-			self.player.standby = False
+			self.media_player.queue(random.choice(self.music))
+			self.media_player.play()
+			self.media_player.standby = False
 		else:
-			self.player.standby = True
+			self.media_player.standby = True
 
-		self.player.next_time = 0
+		self.media_player.next_time = 0
 
 		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
 		self.ahead_frames = 0
@@ -122,32 +121,31 @@ class Window(pyglet.window.Window):
 		self.set_fullscreen(not self.fullscreen)
 
 	def on_close(self):
-		logging.info("Deleting player")
-		self.player.delete()
+		logging.info("Deleting media player")
+		self.media_player.delete()
+
 		gl.glDeleteSync(self.fence)
 
 		pyglet.app.exit() # Closes the game
 
-	def tick(self, delta_time):
-		if not self.player.source and len(self.music) > 0:
-			if not self.player.standby:
-				self.player.standby = True
-				self.player.next_time = time.time() + random.randint(240, 360)
-			elif time.time() >= self.player.next_time:
-				self.player.standby = False
-				self.player.queue(random.choice(self.music))
-				self.player.play()
-		
-		self.world.tick(delta_time)
-
 	def update(self, delta_time):
+		if not self.media_player.source and len(self.music) > 0:
+			if not self.media_player.standby:
+				self.media_player.standby = True
+				self.media_player.next_time = time.time() + random.randint(240, 360)
+			elif time.time() >= self.media_player.next_time:
+				self.media_player.standby = False
+				self.media_player.queue(random.choice(self.music))
+				self.media_player.play()
+
 		if not self.mouse_captured:
-			self.camera.input = [0, 0, 0]
+			self.player.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
-		self.camera.update_camera(delta_time)
-		
-	
+		self.player.update(delta_time)
+
+		self.world.tick(delta_time)
+
 	def on_draw(self):
 		self.clear()
 
@@ -160,7 +158,7 @@ class Window(pyglet.window.Window):
 		self.ahead_frames = 0
 
 		self.shader.use()
-		self.camera.update_matrices()
+		self.player.update_matrices()
 
 		gl.glDeleteSync(self.fence)
 		
@@ -181,8 +179,8 @@ class Window(pyglet.window.Window):
 		logging.info(f"Resize {width} * {height}")
 		gl.glViewport(0, 0, width, height)
 
-		self.camera.width = width
-		self.camera.height = height
+		self.player.view_width = width
+		self.player.view_height = height
 		if options.FPS_DISPLAY:
 			self.fps_display.label.y = self.height - 30
 
