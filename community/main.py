@@ -160,7 +160,7 @@ class Window(pyglet.window.Window):
 
 		# Clear GL global state
 		if options.FPS_DISPLAY:
-			self.fps_display.label.text = f"{pyglet.clock.get_fps()} fps  C: {self.world.c}"
+			self.fps_display.label.text = f"{round(pyglet.clock.get_fps())} fps  C: {self.world.c}"
 			gl.glUseProgram(0) 
 			gl.glBindVertexArray(0)
 			self.fps_display.draw()
