@@ -524,9 +524,9 @@ class World:
 		player_chunk_pos = self.get_chunk_position(player_floored_pos)
 
 		for chunk_position, render_chunk in self.chunks.items():
-			self.c += 1
 			result = self.can_render_chunk(chunk_position, player_chunk_pos)
 			if result:
+				self.c += 1
 				render_chunk.draw(gl.GL_TRIANGLES)
 
 		self.draw_translucent(player_chunk_pos)
