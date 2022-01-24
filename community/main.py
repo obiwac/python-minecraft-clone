@@ -66,7 +66,7 @@ class Window(pyglet.window.Window):
 		self.world.player = self.player
 
 		# pyglet stuff
-
+		pyglet.clock.schedule(self.player.update_interpolation)
 		pyglet.clock.schedule_interval(self.update, 1 / 60)
 		self.mouse_captured = False
 
@@ -147,18 +147,19 @@ class Window(pyglet.window.Window):
 		self.world.tick(delta_time)
 
 	def on_draw(self):
-		self.clear()
+		self.shader.use()
+		self.player.update_matrices()
 
 		result = gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 0)
 		if self.ahead_frames <= options.MAX_PRERENDERED_FRAMES \
 				and (result != gl.GL_CONDITION_SATISFIED or result != gl.GL_ALREADY_SIGNALED):
 			self.ahead_frames += 1
+			return
+
+		self.clear()
 		
 
 		self.ahead_frames = 0
-
-		self.shader.use()
-		self.player.update_matrices()
 
 		gl.glDeleteSync(self.fence)
 		
@@ -172,6 +173,10 @@ class Window(pyglet.window.Window):
 			gl.glUseProgram(0) 
 			gl.glBindVertexArray(0)
 			self.fps_display.draw()
+
+	def flip(self):
+		if not self.ahead_frames:
+			super().flip()
 
 	# input functions
 
