@@ -126,8 +126,6 @@ class Window(pyglet.window.Window):
 		for fence in self.fences:
 			gl.glDeleteSync(fence)
 
-		pyglet.app.exit() # Closes the game
-
 	def update(self, delta_time):
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
@@ -162,6 +160,7 @@ class Window(pyglet.window.Window):
 
 		# Clear GL global state
 		if options.FPS_DISPLAY:
+			self.fps_display.label += f"C: {self.world.c}"
 			gl.glUseProgram(0) 
 			gl.glBindVertexArray(0)
 			self.fps_display.draw()

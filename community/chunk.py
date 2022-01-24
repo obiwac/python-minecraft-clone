@@ -232,19 +232,19 @@ class Chunk:
 			(gl.GLuint * len(self.draw_commands)) (*self.draw_commands)
 		)
 
-	def draw_direct(self):
+	def draw_direct(self, mode):
 		if not self.mesh_quad_count:
 			return
 		gl.glBindVertexArray(self.vao)
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 		gl.glDrawElements(
-			gl.GL_TRIANGLES,
+			mode,
 			self.mesh_quad_count * 6,
 			gl.GL_UNSIGNED_INT,
 			None,
 		)
 
-	def draw_indirect(self):
+	def draw_indirect(self, mode):
 		if not self.mesh_quad_count:
 			return
 
@@ -255,14 +255,14 @@ class Chunk:
 		gl.glMemoryBarrier(gl.GL_COMMAND_BARRIER_BIT)
 
 		gl.glDrawElementsIndirect(
-			gl.GL_TRIANGLES,
+			mode,
 			gl.GL_UNSIGNED_INT,
 			None,
 		)
 
 	draw = draw_indirect if options.INDIRECT_RENDERING else draw_direct
 
-	def draw_translucent_direct(self):
+	def draw_translucent_direct(self, mode):
 		if not self.mesh_quad_count:
 			return
 		
@@ -270,14 +270,14 @@ class Chunk:
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glDrawElementsBaseVertex(
-			gl.GL_TRIANGLES,
+			mode,
 			self.translucent_quad_count * 6,
 			gl.GL_UNSIGNED_INT,
 			None,
 			self.mesh_quad_count * 4
 		)
 
-	def draw_translucent_indirect(self):
+	def draw_translucent_indirect(self, mode):
 		if not self.translucent_quad_count:
 			return
 		
@@ -288,7 +288,7 @@ class Chunk:
 		gl.glMemoryBarrier(gl.GL_COMMAND_BARRIER_BIT)
 
 		gl.glDrawElementsIndirect(
-			gl.GL_TRIANGLES,
+			mode,
 			gl.GL_UNSIGNED_INT,
 			5 * ctypes.sizeof(gl.GLuint)  # offset pointer to the indirect command buffer pointing to the translucent mesh commands
 		)

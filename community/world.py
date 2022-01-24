@@ -46,6 +46,7 @@ class World:
 		self.daylight = 1800
 		self.incrementer = 0
 		self.time = 0
+		self.c = 0
 
 		# Compat
 		self.get_chunk_position = get_chunk_position
@@ -472,15 +473,7 @@ class World:
 			self.incrementer = -1
 	
 	def can_render_chunk(self, chunk_position, pl_c_pos):
-		rx, ry, rz = (chunk_position[0] - pl_c_pos[0]) \
-					* math.cos(self.player.rotation[0]) \
-					* math.cos(self.player.rotation[1]) , \
-				(chunk_position[1] - pl_c_pos[1]) \
-					* math.sin(self.player.rotation[1]) , \
-				(chunk_position[2] - pl_c_pos[2]) \
-					* math.sin(self.player.rotation[0]) \
-					* math.cos(self.player.rotation[1])
-		return rx >= -2 and ry >= -2 and rz >= -2 
+		return self.player.check_in_frustum(chunk_position)
 	
 	def draw_translucent_fast(self, player_chunk_pos):
 		gl.glEnable(gl.GL_BLEND)
@@ -489,7 +482,7 @@ class World:
 
 		for chunk_position, render_chunk in self.chunks.items():
 			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				render_chunk.draw_translucent()
+				render_chunk.draw_translucent(gl.GL_TRIANGLES)
 
 		gl.glDepthMask(gl.GL_TRUE)
 		gl.glEnable(gl.GL_CULL_FACE)
@@ -507,12 +500,12 @@ class World:
 		gl.glEnable(gl.GL_BLEND)
 
 		for render_chunk in self.sorted_chunks:
-			render_chunk.draw_translucent()
+			render_chunk.draw_translucent(gl.GL_TRIANGLES)
 		
 		gl.glFrontFace(gl.GL_CCW)
 		
 		for render_chunk in self.sorted_chunks:
-			render_chunk.draw_translucent()
+			render_chunk.draw_translucent(gl.GL_TRIANGLES)
 
 		gl.glDisable(gl.GL_BLEND)
 		gl.glDepthMask(gl.GL_TRUE)
@@ -520,6 +513,7 @@ class World:
 	draw_translucent = draw_translucent_fancy if options.FANCY_TRANSLUCENCY else draw_translucent_fast
 	
 	def draw(self):
+		self.c = 0
 		daylight_multiplier = self.daylight / 1800
 		gl.glClearColor(0.5 * (daylight_multiplier - 0.26), 
 				0.8 * (daylight_multiplier - 0.26), 
@@ -530,8 +524,10 @@ class World:
 		player_chunk_pos = self.get_chunk_position(player_floored_pos)
 
 		for chunk_position, render_chunk in self.chunks.items():
-			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				render_chunk.draw()
+			self.c += 1
+			result = self.can_render_chunk(chunk_position, player_chunk_pos)
+			if result:
+				render_chunk.draw(gl.GL_TRIANGLES)
 
 		self.draw_translucent(player_chunk_pos)
 
