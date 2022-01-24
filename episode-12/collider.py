@@ -16,12 +16,12 @@ class Collider:
 			(self.x2 + x, self.y2 + y, self.z2 + z)
 		)
 
-	def intersect(self, collider):
+	def __and__(self, collider):
 		x = min(self.x2, collider.x2) - max(self.x1, collider.x1)
 		y = min(self.y2, collider.y2) - max(self.y1, collider.y1)
 		z = min(self.z2, collider.z2) - max(self.z1, collider.z1)
 
-		return all((x > 0, y > 0, z > 0))
+		return x > 0 and y > 0 and z > 0
 	
 	def collide(self, collider, velocity):
 		# a: the dynamic collider, which moves
