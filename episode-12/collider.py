@@ -42,11 +42,6 @@ class Collider:
 		z_entry = (collider.z1 - self.z2 if vz > 0 else collider.z2 - self.z1) / vz
 		z_exit  = (collider.z2 - self.z1 if vz > 0 else collider.z1 - self.z2) / vz
 
-		# on which axis did we collide first?
-
-		entry = max(x_entry, y_entry, z_entry)
-		exit_ = min(x_exit,  y_exit,  z_exit )
-
 		# make sure we actually got a collision
 
 		if x_entry < 0 and y_entry < 0 and z_entry < 0:
@@ -54,6 +49,11 @@ class Collider:
 
 		if x_entry > 1 or y_entry > 1 or z_entry > 1:
 			return no_collision
+
+		# on which axis did we collide first?
+
+		entry = max(x_entry, y_entry, z_entry)
+		exit_ = min(x_exit,  y_exit,  z_exit )
 
 		if entry > exit_:
 			return no_collision
