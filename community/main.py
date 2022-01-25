@@ -7,7 +7,7 @@ import os
 import pyglet
 
 pyglet.options["shadow_window"] = False
-pyglet.options["debug_gl"] = True
+pyglet.options["debug_gl"] = False
 pyglet.options["search_local_libs"] = True
 pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent")
 
