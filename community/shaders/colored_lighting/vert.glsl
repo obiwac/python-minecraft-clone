@@ -4,8 +4,7 @@
 #define CHUNK_LENGTH 16
 
 uniform ivec2 u_ChunkPosition;
-uniform mat4 u_ModelViewMatrix;
-uniform mat4 u_ProjMatrix;
+uniform mat4 u_MVPMatrix;
 uniform float u_Daylight;
 
 layout(location = 0) in vec3 a_LocalPosition;
@@ -40,5 +39,5 @@ void main(void) {
 		clamp(skylightMultiplier * (2.0 - pow(u_Daylight, 2)), blocklightMultiplier, 1.0)
 	) * a_Shading; 
 
-	gl_Position = u_ProjMatrix * u_ModelViewMatrix * vec4(v_Position, 1.0);
+	gl_Position = u_MVPMatrix * vec4(v_Position, 1.0);
 }

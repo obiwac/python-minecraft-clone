@@ -20,4 +20,8 @@ FAST_SKYLIGHT = True # Faster but with more glitches
 FOV = 90
 INDIRECT_RENDERING = False # Requires OpenGL 4.2+. Disable if having issues.
 SMOOTH_LIGHTING = True 
-FPS_DISPLAY = False # May break
+FPS_DISPLAY = True # May break
+ADVANCED_OPENGL = False # Occlusion culling. Not recommended unless using NVIDIA cards. 
+                        # Might cause more slowdowns that speedups.
+                        # Do not expect any concrete framerate improvement.
+VSYNC = False
