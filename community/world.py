@@ -416,6 +416,8 @@ class World:
 		self.chunks[chunk_position].blocks[lx][ly][lz] = number
 		self.chunks[chunk_position].modified = True
 
+		self.chunks[chunk_position].update_at_position((x, y, z))
+
 		if number:
 			if number in self.light_blocks:
 				self.increase_light(position, 15)
@@ -443,7 +445,6 @@ class World:
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))
 
-		self.chunks[chunk_position].update_at_position((x, y, z))
 
 	def try_set_block(self, position, number, collider):
 		# if we're trying to remove a block, whatever let it go through
@@ -540,9 +541,9 @@ class World:
 
 
 	def process_chunk_updates(self):
-		for i in range(len(self.chunk_update_queue) // 8 + 1):
+		for i in range(options.CHUNK_UPDATES):
 			if self.chunk_update_queue:
-				chunk, subchunk = self.chunk_update_queue.pop()
+				chunk, subchunk = self.chunk_update_queue.popleft()
 				subchunk.update_mesh()
 
 				if chunk not in self.chunk_building_queue:

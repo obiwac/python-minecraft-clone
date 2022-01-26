@@ -162,6 +162,9 @@ class Chunk:
 		sy = cly // subchunk.SUBCHUNK_HEIGHT
 		sz = clz // subchunk.SUBCHUNK_LENGTH
 
+		if not (self, self.subchunks[(sx, sy, sz)]) in self.world.chunk_update_queue:
+			self.world.chunk_update_queue.append((self, self.subchunks[(sx, sy, sz)]))
+
 		def try_update_subchunk_mesh(subchunk_position):
 			if subchunk_position in self.subchunks:
 				if not (self, self.subchunks[subchunk_position]) in self.world.chunk_update_queue:
@@ -175,9 +178,6 @@ class Chunk:
 
 		if lz == subchunk.SUBCHUNK_LENGTH - 1: try_update_subchunk_mesh((sx, sy, sz + 1))
 		if lz == 0: try_update_subchunk_mesh((sx, sy, sz - 1))
-
-		if not (self, self.subchunks[(sx, sy, sz)]) in self.world.chunk_update_queue:
-			self.world.chunk_update_queue.append((self, self.subchunks[(sx, sy, sz)]))
 
 	def update_mesh(self):
 		# combine all the small subchunk meshes into one big chunk mesh

@@ -86,6 +86,11 @@ class Window(pyglet.window.Window):
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+		
+		if options.ANTIALIASING:
+			gl.glEnable(gl.GL_MULTISAMPLE)
+			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
+			gl.glSampleCoverage(0.5, gl.GL_TRUE)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
@@ -125,7 +130,7 @@ class Window(pyglet.window.Window):
 		self.media_player.delete()
 		for fence in self.fences:
 			gl.glDeleteSync(fence)
-			
+
 		pyglet.app.exit()
 
 	def update(self, delta_time):
@@ -184,7 +189,7 @@ class Game:
 	def __init__(self):
 		self.config = gl.Config(double_buffer = True,
 				major_version = 3, minor_version = 3,
-				depth_size = 16)
+				depth_size = 16, sample_buffers=bool(options.ANTIALIASING), samples=options.ANTIALIASING)
 		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = options.VSYNC)
 
 	def run(self): 
