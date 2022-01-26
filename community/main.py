@@ -37,9 +37,9 @@ class Window(pyglet.window.Window):
 		self.gl_version = gl.gl_info.get_version()
 	
 		# F3 Debug Screen
-		
+
 		self.show_f3 = False
-		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
+		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 5,
 				font_size = 15,
 				color = (255, 255, 255, 255),
 				width = self.width // 3,
