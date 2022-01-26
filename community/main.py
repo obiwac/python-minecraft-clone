@@ -138,12 +138,18 @@ class Window(pyglet.window.Window):
 
 	def update(self, delta_time):
 		if options.FPS_DISPLAY:
-			self.f3.text = f"""{round(pyglet.clock.get_fps())} FPS  
+			self.f3.text = \
+f"""
+{round(pyglet.clock.get_fps())} FPS  
 C: {len(self.world.visible_chunks)} pC: {len(self.world.chunk_update_queue)} pU: {len(self.world.chunk_building_queue)}
-{round(1 / delta_time)} TPS
-Position: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
+{round(delta_time * 1000)} ms tick (Client-side) -> {round(1 / delta_time)} TPS
+XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
+Block: {round(self.player.position[0])} {round(self.player.position[1])} {round(self.player.position[2])}
+Light: {max(self.world.get_light(self.player.position), self.world.get_skylight(self.player.position))} ({self.world.get_skylight(self.player.position)} sky, {self.world.get_light(self.player.position)} block)
 OpenGL Version: {self.gl_version}
-Python Version: {sys.version}"""
+Python Version: {sys.version}
+"""
+
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
 				self.media_player.standby = True
