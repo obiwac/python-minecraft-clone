@@ -34,13 +34,16 @@ class Window(pyglet.window.Window):
 			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
 			Please disable "INDIRECT_RENDERING" in options.py""")
 
-		print(f"OpenGL Version: {gl.gl_info.get_version()}")
+		self.gl_version = gl.gl_info.get_version()
 	
 		# FPS display
 		if options.FPS_DISPLAY:
-			self.fps_display = pyglet.window.FPSDisplay(self)
-			self.fps_display.label.color = (255, 255, 255, 255)
-			self.fps_display.label.y = self.height - 30
+			self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
+					font_size = 15,
+					color = (255, 255, 255, 255),
+					width = self.width // 3,
+					multiline = True
+			)
 		
 		# create shader
 
@@ -134,6 +137,12 @@ class Window(pyglet.window.Window):
 		pyglet.app.exit()
 
 	def update(self, delta_time):
+		if options.FPS_DISPLAY:
+			self.f3.text = f"""{round(pyglet.clock.get_fps())} FPS  C: {len(self.world.visible_chunks)}
+{round(1 / delta_time)} TPS
+Position: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
+OpenGL Version: {self.gl_version}
+Python Version: {sys.version}"""
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
 				self.media_player.standby = True
@@ -152,6 +161,7 @@ class Window(pyglet.window.Window):
 		self.world.tick(delta_time)
 
 	def on_draw(self):
+		gl.glEnable(gl.GL_DEPTH_TEST)
 		self.shader.use()
 		self.player.update_matrices()
 
@@ -168,10 +178,27 @@ class Window(pyglet.window.Window):
 
 		# Clear GL global state
 		if options.FPS_DISPLAY:
-			self.fps_display.label.text = f"{round(pyglet.clock.get_fps())} fps  C: {len(self.world.visible_chunks)}"
-			gl.glUseProgram(0) 
-			gl.glBindVertexArray(0)
-			self.fps_display.draw()
+			self.draw_f3()
+
+	def draw_f3(self):
+		gl.glDisable(gl.GL_DEPTH_TEST)
+		gl.glUseProgram(0) 
+		gl.glBindVertexArray(0)
+		gl.glMatrixMode(gl.GL_MODELVIEW)
+		gl.glPushMatrix()
+		gl.glLoadIdentity()
+
+		gl.glMatrixMode(gl.GL_PROJECTION)
+		gl.glPushMatrix()
+		gl.glLoadIdentity()
+		gl.glOrtho(0, self.width, 0, self.height, -1, 1)
+
+		self.f3.draw()
+
+		gl.glPopMatrix()
+
+		gl.glMatrixMode(gl.GL_MODELVIEW)
+		gl.glPopMatrix()
 
 
 	# input functions
@@ -183,7 +210,8 @@ class Window(pyglet.window.Window):
 		self.player.view_width = width
 		self.player.view_height = height
 		if options.FPS_DISPLAY:
-			self.fps_display.label.y = self.height - 30
+			self.f3.y = self.height - 30
+			self.f3.width = self.width // 3
 
 class Game:
 	def __init__(self):
