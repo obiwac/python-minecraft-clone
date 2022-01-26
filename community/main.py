@@ -36,14 +36,15 @@ class Window(pyglet.window.Window):
 
 		self.gl_version = gl.gl_info.get_version()
 	
-		# FPS display
-		if options.FPS_DISPLAY:
-			self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
-					font_size = 15,
-					color = (255, 255, 255, 255),
-					width = self.width // 3,
-					multiline = True
-			)
+		# F3 Debug Screen
+		
+		self.show_f3 = False
+		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
+				font_size = 15,
+				color = (255, 255, 255, 255),
+				width = self.width // 3,
+				multiline = True
+		)
 		
 		# create shader
 
@@ -123,6 +124,7 @@ class Window(pyglet.window.Window):
 
 		self.media_player.next_time = 0
 
+		# GPU command syncs
 		self.fences = deque()
 		
 	def toggle_fullscreen(self):
@@ -137,7 +139,7 @@ class Window(pyglet.window.Window):
 		pyglet.app.exit()
 
 	def update(self, delta_time):
-		if options.FPS_DISPLAY:
+		if self.show_f3:
 			self.f3.text = \
 f"""
 {round(pyglet.clock.get_fps())} FPS  
@@ -183,8 +185,8 @@ Python Version: {sys.version}
 
 		self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
 
-		# Clear GL global state
-		if options.FPS_DISPLAY:
+		# Draw the F3 Debug screen
+		if self.show_f3:
 			self.draw_f3()
 
 	def draw_f3(self):
@@ -216,9 +218,8 @@ Python Version: {sys.version}
 
 		self.player.view_width = width
 		self.player.view_height = height
-		if options.FPS_DISPLAY:
-			self.f3.y = self.height - 30
-			self.f3.width = self.width // 3
+		self.f3.y = self.height - 30
+		self.f3.width = self.width // 3
 
 class Game:
 	def __init__(self):
