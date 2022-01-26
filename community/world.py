@@ -145,7 +145,6 @@ class World:
 		self.light_decrease_queue = deque() # Node: World position, light
 		self.skylight_increase_queue = deque()
 		self.skylight_decrease_queue = deque()
-		self.chunk_update_queue = deque() 
 		self.chunk_building_queue = deque()
 
 		self.save.load()
@@ -161,6 +160,8 @@ class World:
 
 		del indices
 		self.visible_chunks = []
+
+		self.pending_chunk_update_count = 0
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
@@ -538,26 +539,20 @@ class World:
 			self.incrementer = -1
 
 		self.daylight += self.incrementer
-
-
-	def process_chunk_updates(self):
-		for i in range(options.CHUNK_UPDATES):
-			if self.chunk_update_queue:
-				chunk, subchunk = self.chunk_update_queue.popleft()
-				subchunk.update_mesh()
-
-				if chunk not in self.chunk_building_queue:
-					self.chunk_building_queue.append(chunk)
-
 	
 	def build_pending_chunks(self):
 		if self.chunk_building_queue:
 			pending_chunk = self.chunk_building_queue.popleft()
 			pending_chunk.update_mesh()
 
+	def process_chunk_updates(self):
+		for chunk in self.visible_chunks:
+			chunk.process_chunk_updates()
+
 	
 	def tick(self, delta_time):
 		self.time += delta_time
+		self.pending_chunk_update_count = sum(len(chunk.chunk_update_queue) for chunk in self.chunks.values())
 		self.update_daylight()
 		self.build_pending_chunks()
 		self.process_chunk_updates()

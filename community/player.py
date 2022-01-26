@@ -47,6 +47,7 @@ class Player(entity.Entity):
 		self.speed = self.target_speed
 
 		self.interpolated_position = self.position
+		self.rounded_position = self.position
 		self.view_ray = glm.vec3(1.0)
 
 	def update(self, delta_time):
@@ -74,6 +75,8 @@ class Player(entity.Entity):
 		# process physics & collisions &c
 
 		super().update(delta_time)
+
+		self.rounded_position = [round(i) for i in self.position]
 	
 	def update_interpolation(self, delta_time):
 		self.interpolated_position = glm.mix(glm.vec3(self.position), glm.vec3(self.old_position), self.step)

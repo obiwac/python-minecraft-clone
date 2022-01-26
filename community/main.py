@@ -141,11 +141,11 @@ class Window(pyglet.window.Window):
 			self.f3.text = \
 f"""
 {round(pyglet.clock.get_fps())} FPS  
-C: {len(self.world.visible_chunks)} pC: {len(self.world.chunk_update_queue)} pU: {len(self.world.chunk_building_queue)}
-{round(delta_time * 1000)} ms tick (Client-side) -> {round(1 / delta_time)} TPS
+C: {len(self.world.visible_chunks)} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)}
+(Client Singleplayer): {round(delta_time * 1000)} ms tick = {round(1 / delta_time)} TPS
 XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
-Block: {round(self.player.position[0])} {round(self.player.position[1])} {round(self.player.position[2])}
-Light: {max(self.world.get_light(self.player.position), self.world.get_skylight(self.player.position))} ({self.world.get_skylight(self.player.position)} sky, {self.world.get_light(self.player.position)} block)
+Block: {self.player.rounded_position[0]} {self.player.rounded_position[1]} {self.player.rounded_position[2]}
+Light: {max(self.world.get_light(self.player.rounded_position), self.world.get_skylight(self.player.rounded_position))} ({self.world.get_skylight(self.player.rounded_position)} sky, {self.world.get_light(self.player.rounded_position)} block)
 OpenGL Version: {self.gl_version}
 Python Version: {sys.version}
 """
