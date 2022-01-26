@@ -125,6 +125,8 @@ class Window(pyglet.window.Window):
 		self.media_player.delete()
 		for fence in self.fences:
 			gl.glDeleteSync(fence)
+			
+		pyglet.app.exit()
 
 	def update(self, delta_time):
 		if not self.media_player.source and len(self.music) > 0:
