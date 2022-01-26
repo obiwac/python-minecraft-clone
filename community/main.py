@@ -138,7 +138,8 @@ class Window(pyglet.window.Window):
 
 	def update(self, delta_time):
 		if options.FPS_DISPLAY:
-			self.f3.text = f"""{round(pyglet.clock.get_fps())} FPS  C: {len(self.world.visible_chunks)}
+			self.f3.text = f"""{round(pyglet.clock.get_fps())} FPS  
+C: {len(self.world.visible_chunks)} pC: {len(self.world.chunk_update_queue)} pU: {len(self.world.chunk_building_queue)}
 {round(1 / delta_time)} TPS
 Position: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
 OpenGL Version: {self.gl_version}
