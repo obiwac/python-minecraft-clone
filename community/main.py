@@ -154,13 +154,14 @@ class Window(pyglet.window.Window):
 			gl.glDeleteSync(fence)
 
 		self.clear()
+		self.world.prepare_rendering()
 		self.world.draw()
 
 		self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
 
 		# Clear GL global state
 		if options.FPS_DISPLAY:
-			self.fps_display.label.text = f"{round(pyglet.clock.get_fps())} fps  C: {self.world.c}"
+			self.fps_display.label.text = f"{round(pyglet.clock.get_fps())} fps  C: {len(self.world.visible_chunks)}"
 			gl.glUseProgram(0) 
 			gl.glBindVertexArray(0)
 			self.fps_display.draw()

@@ -4,7 +4,7 @@ import ctypes
 import math
 import logging
 import glm
-
+import threading
 
 from functools import cmp_to_key
 from collections import deque
@@ -160,22 +160,13 @@ class World:
 			self.chunk_building_queue.append(world_chunk)
 
 		del indices
+		self.visible_chunks = []
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
 
 	################ LIGHTING ENGINE ################
 
-	def push_light_update(self, light_update, chunk, lpos):
-		if not light_update:
-			return
-		lx, ly, lz = lpos
-		subchunk_pos = (lx // subchunk.SUBCHUNK_WIDTH,
-						ly // subchunk.SUBCHUNK_HEIGHT,
-						lz // subchunk.SUBCHUNK_LENGTH
-		)
-		if (chunk, *subchunk_pos) not in self.chunk_update_queue:
-			self.chunk_update_queue.append((chunk, *subchunk_pos))
 
 	
 	def increase_light(self, world_pos, newlight, light_update=True):
@@ -203,9 +194,10 @@ class World:
 				if not self.is_opaque_block(neighbour_pos) and chunk.get_block_light(local_pos) + 2 <= light_level:
 					chunk.set_block_light(local_pos, light_level - 1)
 
-					self.push_light_update(light_update, chunk, local_pos)
-
 					self.light_increase_queue.append((neighbour_pos, light_level - 1))
+
+					if light_update:
+						chunk.update_at_position(neighbour_pos)
 
 	def init_skylight(self, pending_chunk):
 		chunk_pos = pending_chunk.chunk_position
@@ -245,7 +237,8 @@ class World:
 				if transparency and chunk.get_sky_light(local_pos) < light_level:
 					newlight = light_level - (2 - transparency)
 
-					self.push_light_update(light_update, chunk, local_pos)
+					if light_update:
+						chunk.update_at_position(neighbour_pos)
 
 					if direction.y == -1:
 						chunk.set_sky_light(local_pos, newlight)
@@ -287,7 +280,8 @@ class World:
 
 					if neighbour_level < light_level:
 						chunk.set_block_light(local_pos, 0)
-						self.push_light_update(light_update, chunk, local_pos)
+						if light_update:
+							chunk.update_at_position(neighbour_pos)
 						self.light_decrease_queue.append((neighbour_pos, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.light_increase_queue.append((neighbour_pos, neighbour_level))
@@ -321,7 +315,8 @@ class World:
 
 					if direction.y == -1 or neighbour_level < light_level:
 						chunk.set_sky_light(local_pos, 0)
-						self.push_light_update(light_update, chunk, local_pos)
+						if light_update:
+							chunk.update_at_position(neighbour_pos)
 						self.skylight_decrease_queue.append((neighbour_pos, neighbour_level))
 					elif neighbour_level >= light_level:
 						self.skylight_increase_queue.append((neighbour_pos, neighbour_level))
@@ -433,15 +428,11 @@ class World:
 			self.decrease_light(position)
 			self.decrease_skylight(position)
 
-		self.chunks[chunk_position].update_at_position((x, y, z))
-		self.chunks[chunk_position].update_mesh()
-
 		cx, cy, cz = chunk_position
 
 		def try_update_chunk_at_position(chunk_position, position):
 			if chunk_position in self.chunks:
 				self.chunks[chunk_position].update_at_position(position)
-				self.chunks[chunk_position].update_mesh()
 		
 		if lx == chunk.CHUNK_WIDTH - 1: try_update_chunk_at_position(glm.ivec3(cx + 1, cy, cz), (x + 1, y, z))
 		if lx == 0: try_update_chunk_at_position(glm.ivec3(cx - 1, cy, cz), (x - 1, y, z))
@@ -451,6 +442,8 @@ class World:
 
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))
+
+		self.chunks[chunk_position].update_at_position((x, y, z))
 
 	def try_set_block(self, position, number, collider):
 		# if we're trying to remove a block, whatever let it go through
@@ -472,25 +465,27 @@ class World:
 		if self.daylight >= 1800:
 			self.incrementer = -1
 	
-	def can_render_chunk(self, chunk_position, pl_c_pos):
+	def can_render_chunk(self, chunk_position):
 		return self.player.check_in_frustum(chunk_position)
+
+	def prepare_rendering(self):
+		self.visible_chunks = [self.chunks[chunk_position]
+				for chunk_position in self.chunks if self.can_render_chunk(chunk_position)]
 	
 	def draw_translucent_fast(self, player_chunk_pos):
 		gl.glEnable(gl.GL_BLEND)
 		gl.glDisable(gl.GL_CULL_FACE)
 		gl.glDepthMask(gl.GL_FALSE)
 
-		for chunk_position, render_chunk in self.chunks.items():
-			if self.can_render_chunk(chunk_position, player_chunk_pos):
-				render_chunk.draw_translucent(gl.GL_TRIANGLES)
+		for render_chunk in self.visible_chunks:
+			render_chunk.draw_translucent(gl.GL_TRIANGLES)
 
 		gl.glDepthMask(gl.GL_TRUE)
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glDisable(gl.GL_BLEND)
 
 	def sort_chunks(self, player_chunk_pos):
-		sorted_keys = sorted(self.chunks, key = cmp_to_key(lambda a, b: math.dist(player_chunk_pos, b) - math.dist(player_chunk_pos, a)))
-		self.sorted_chunks = [self.chunks[key] for key in sorted_keys]
+		self.sorted_chunks = sorted(self.visible_chunks, key = cmp_to_key(lambda a, b: math.dist(player_chunk_pos, b.chunk_position) - math.dist(player_chunk_pos, a.chunk_position)))
 		
 	def draw_translucent_fancy(self, player_chunk_pos):
 		self.sort_chunks(player_chunk_pos)
@@ -523,11 +518,8 @@ class World:
 		player_floored_pos = tuple(self.player.position)
 		player_chunk_pos = self.get_chunk_position(player_floored_pos)
 
-		for chunk_position, render_chunk in self.chunks.items():
-			result = self.can_render_chunk(chunk_position, player_chunk_pos)
-			if result:
-				self.c += 1
-				render_chunk.draw(gl.GL_TRIANGLES)
+		for render_chunk in self.visible_chunks:
+			render_chunk.draw(gl.GL_TRIANGLES)
 
 		self.draw_translucent(player_chunk_pos)
 
@@ -548,22 +540,13 @@ class World:
 
 
 	def process_chunk_updates(self):
-		if self.chunk_update_queue:
-			pending_chunk, sx, sy, sz = self.chunk_update_queue.popleft()
+		for i in range(len(self.chunk_update_queue) // 8 + 1):
+			if self.chunk_update_queue:
+				chunk, subchunk = self.chunk_update_queue.pop()
+				subchunk.update_mesh()
 
-			pending_subchunk = pending_chunk.subchunks.get((sx, sy, sz), None)
-			if pending_subchunk:
-				pending_subchunk.update_mesh()
-
-			for direction in DIRECTIONS:
-				pending_subchunk = pending_chunk.subchunks.get((sx + direction.x, sy + direction.y, sz + direction.y), None)
-
-				if not pending_subchunk:
-					continue
-				pending_subchunk.update_mesh()
-
-			if pending_chunk not in self.chunk_building_queue:
-				self.chunk_building_queue.append(pending_chunk)
+				if chunk not in self.chunk_building_queue:
+					self.chunk_building_queue.append(chunk)
 
 	
 	def build_pending_chunks(self):
@@ -577,7 +560,6 @@ class World:
 		self.update_daylight()
 		self.build_pending_chunks()
 		self.process_chunk_updates()
-		
 			
 				
 		
