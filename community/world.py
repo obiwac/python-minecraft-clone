@@ -162,6 +162,7 @@ class World:
 		self.visible_chunks = []
 
 		self.pending_chunk_update_count = 0
+		self.chunk_update_counter = 0
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
@@ -551,6 +552,7 @@ class World:
 
 	
 	def tick(self, delta_time):
+		self.chunk_update_counter = 0
 		self.time += delta_time
 		self.pending_chunk_update_count = sum(len(chunk.chunk_update_queue) for chunk in self.chunks.values())
 		self.update_daylight()

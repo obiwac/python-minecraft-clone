@@ -1,3 +1,4 @@
+import platform
 import sys
 import logging
 import random
@@ -33,14 +34,12 @@ class Window(pyglet.window.Window):
 			raise RuntimeError("""Indirect Rendering is not supported on your hardware
 			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
 			Please disable "INDIRECT_RENDERING" in options.py""")
-
-		self.gl_version = gl.gl_info.get_version()
 	
 		# F3 Debug Screen
 
 		self.show_f3 = False
-		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 5,
-				font_size = 15,
+		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
+				font_size = 16,
 				color = (255, 255, 255, 255),
 				width = self.width // 3,
 				multiline = True
@@ -140,16 +139,25 @@ class Window(pyglet.window.Window):
 
 	def update(self, delta_time):
 		if self.show_f3:
+			player_chunk_pos = world.get_chunk_position(self.player.position)
+			player_local_pos = world.get_local_position(self.player.position)
 			self.f3.text = \
 f"""
-{round(pyglet.clock.get_fps())} FPS  
-C: {len(self.world.visible_chunks)} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)}
-(Client Singleplayer): {round(delta_time * 1000)} ms tick = {round(1 / delta_time)} TPS
+{round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates)
+C: {len(self.world.visible_chunks)} / {len(self.world.chunks)} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {len(self.world.chunks)}
+Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
+
 XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
 Block: {self.player.rounded_position[0]} {self.player.rounded_position[1]} {self.player.rounded_position[2]}
+Chunk: {player_local_pos[0]} {player_local_pos[1]} {player_local_pos[2]} in {player_chunk_pos[0]} {player_chunk_pos[1]} {player_chunk_pos[2]}
 Light: {max(self.world.get_light(self.player.rounded_position), self.world.get_skylight(self.player.rounded_position))} ({self.world.get_skylight(self.player.rounded_position)} sky, {self.world.get_light(self.player.rounded_position)} block)
-OpenGL Version: {self.gl_version}
-Python Version: {sys.version}
+
+Python: {platform.python_implementation()} {platform.python_version()}
+System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
+CPU: {platform.processor()}
+Display: {gl.gl_info.get_renderer()} 
+{gl.gl_info.get_version()}
+
 """
 
 		if not self.media_player.source and len(self.music) > 0:
@@ -218,7 +226,7 @@ Python Version: {sys.version}
 
 		self.player.view_width = width
 		self.player.view_height = height
-		self.f3.y = self.height - 30
+		self.f3.y = self.height - 10
 		self.f3.width = self.width // 3
 
 class Game:

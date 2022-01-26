@@ -185,6 +185,7 @@ class Chunk:
 			if self.chunk_update_queue:
 				subchunk = self.chunk_update_queue.popleft()
 				subchunk.update_mesh()
+				self.world.chunk_update_counter += 1
 				if not self.chunk_update_queue:
 					self.world.chunk_building_queue.append(self)
 					return
