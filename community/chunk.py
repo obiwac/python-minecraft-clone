@@ -148,7 +148,7 @@ class Chunk:
 	
 	def update_subchunk_meshes(self):
 		for subchunk in self.subchunks.values():
-			subchunk.update_mesh()
+			self.chunk_update_queue.append(subchunk)
 
 	def update_at_position(self, position):
 		x, y, z = position

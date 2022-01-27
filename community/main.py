@@ -1,5 +1,5 @@
 import platform
-import sys
+import ctypes
 import logging
 import random
 import time
@@ -137,14 +137,17 @@ class Window(pyglet.window.Window):
 
 		pyglet.app.exit()
 
-	def update(self, delta_time):
-		if self.show_f3:
-			player_chunk_pos = world.get_chunk_position(self.player.position)
-			player_local_pos = world.get_local_position(self.player.position)
-			self.f3.text = \
+	def update_f3(self, delta_time):
+		player_chunk_pos = world.get_chunk_position(self.player.position)
+		player_local_pos = world.get_local_position(self.player.position)
+		chunk_count = len(self.world.chunks)
+		visible_chunk_count = len(self.world.visible_chunks)
+		quad_count = sum(chunk.mesh_quad_count for chunk in self.world.chunks.values())
+		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
+		self.f3.text = \
 f"""
 {round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates)
-C: {len(self.world.visible_chunks)} / {len(self.world.chunks)} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {len(self.world.chunks)}
+C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
 Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
 
 XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
@@ -158,7 +161,16 @@ CPU: {platform.processor()}
 Display: {gl.gl_info.get_renderer()} 
 {gl.gl_info.get_version()}
 
+Renderer: {"OpenGL 3.3 VAOs" if not options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if options.ADVANCED_OPENGL else ""}
+Buffers: {chunk_count}
+Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
+Visible Quads: {visible_quad_count}
+Buffer Uploading: Direct (glBufferSubData)
 """
+
+	def update(self, delta_time):
+		if self.show_f3:
+			self.update_f3(delta_time)
 
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
