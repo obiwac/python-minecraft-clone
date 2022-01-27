@@ -16,7 +16,7 @@ MAX_PRERENDERED_FRAMES = 3 # Number of frames the CPU can skip rendering waiting
                            # Higher values gives higher framerate but causes framerate instability and higher frame spikes
                            # Lower values causes average lower framerate but gives smoother framerate
                            # Recommended values are between 0 and 9
-FAST_SKYLIGHT = True # Faster but with more glitches
+
 FOV = 90
 INDIRECT_RENDERING = False # Requires OpenGL 4.2+. Disable if having issues.
 SMOOTH_LIGHTING = True 

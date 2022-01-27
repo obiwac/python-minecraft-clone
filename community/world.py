@@ -156,7 +156,6 @@ class World:
 		logging.info("Generating chunks")
 		for world_chunk in self.chunks.values():
 			world_chunk.update_subchunk_meshes()
-			self.chunk_building_queue.append(world_chunk)
 
 		del indices
 		self.visible_chunks = []
@@ -203,20 +202,22 @@ class World:
 
 	def init_skylight(self, pending_chunk):
 		chunk_pos = pending_chunk.chunk_position
+		height = 0
 		for lx in range(chunk.CHUNK_WIDTH):
 			for lz in range(chunk.CHUNK_LENGTH):
+				for ly in range(chunk.CHUNK_HEIGHT-1, -1, -1):
+					if pending_chunk.blocks[lx][ly][lz]:
+						break
+				if ly > height:
+					height = ly
 
-				ly = chunk.CHUNK_HEIGHT - 1
-				pending_chunk.set_sky_light(glm.ivec3(lx, ly, lz), 15)
-				ly -= 1
-				
-				if options.FAST_SKYLIGHT:
-					while pending_chunk.get_transparency(glm.ivec3(lx, ly, lz)) == 2 and ly > 0:
-						pending_chunk.set_sky_light(glm.ivec3(lx, ly, lz), 15)
-						ly -= 1
+		for lx in range(chunk.CHUNK_WIDTH):
+			for lz in range(chunk.CHUNK_LENGTH):
+				for ly in range(chunk.CHUNK_HEIGHT - 1, height, -1):
+					pending_chunk.set_sky_light(glm.ivec3(lx, ly, lz), 15)
 
 				pos = glm.ivec3(chunk.CHUNK_WIDTH * chunk_pos[0] + lx,
-						ly + 1,
+						ly,
 						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
 				)
 
@@ -230,23 +231,26 @@ class World:
 
 			for direction in DIRECTIONS:
 				neighbour_pos = pos + direction
-				chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
-				if not chunk: continue
+				if neighbour_pos.y > chunk.CHUNK_HEIGHT:
+					continue
+
+				_chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
+				if not _chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
 				transparency = self.get_transparency(neighbour_pos)
 
-				if transparency and chunk.get_sky_light(local_pos) < light_level:
+				if transparency and _chunk.get_sky_light(local_pos) < light_level:
 					newlight = light_level - (2 - transparency)
 
 					if light_update:
-						chunk.update_at_position(neighbour_pos)
+						_chunk.update_at_position(neighbour_pos)
 
 					if direction.y == -1:
-						chunk.set_sky_light(local_pos, newlight)
+						_chunk.set_sky_light(local_pos, newlight)
 						self.skylight_increase_queue.append((neighbour_pos, newlight))
-					elif chunk.get_sky_light(local_pos) + 2 <= light_level:
-						chunk.set_sky_light(local_pos, newlight - 1)
+					elif _chunk.get_sky_light(local_pos) + 2 <= light_level:
+						_chunk.set_sky_light(local_pos, newlight - 1)
 						self.skylight_increase_queue.append((neighbour_pos, newlight - 1))
 			
 	
