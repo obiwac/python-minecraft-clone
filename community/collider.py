@@ -1,5 +1,3 @@
-PADDING = 0.001
-
 class Collider:
 	def __init__(self, pos1 = (None,) * 3, pos2 = (None,) * 3):
 		# pos1: position of the collider vertex in the -X, -Y, -Z direction
@@ -16,12 +14,12 @@ class Collider:
 			(self.x2 + x, self.y2 + y, self.z2 + z)
 		)
 
-	def intersect(self, collider):
+	def __and__(self, collider):
 		x = min(self.x2, collider.x2) - max(self.x1, collider.x1)
 		y = min(self.y2, collider.y2) - max(self.y1, collider.y1)
 		z = min(self.z2, collider.z2) - max(self.z1, collider.z1)
 
-		return all((x > 0, y > 0, z > 0))
+		return x > 0 and y > 0 and z > 0
 	
 	def collide(self, collider, velocity):
 		# a: the dynamic collider, which moves
@@ -33,19 +31,16 @@ class Collider:
 
 		vx, vy, vz = velocity
 
-		x_entry = (collider.x1 - self.x2 if vx > 0 else collider.x2 - self.x1) / vx
-		x_exit  = (collider.x2 - self.x1 if vx > 0 else collider.x1 - self.x2) / vx
+		time = lambda x, y: x / y if y else float('-' * (x > 0) + "inf")
 
-		y_entry = (collider.y1 - self.y2 if vy > 0 else collider.y2 - self.y1) / vy
-		y_exit  = (collider.y2 - self.y1 if vy > 0 else collider.y1 - self.y2) / vy
+		x_entry = time(collider.x1 - self.x2 if vx > 0 else collider.x2 - self.x1, vx)
+		x_exit  = time(collider.x2 - self.x1 if vx > 0 else collider.x1 - self.x2, vx)
 
-		z_entry = (collider.z1 - self.z2 if vz > 0 else collider.z2 - self.z1) / vz
-		z_exit  = (collider.z2 - self.z1 if vz > 0 else collider.z1 - self.z2) / vz
+		y_entry = time(collider.y1 - self.y2 if vy > 0 else collider.y2 - self.y1, vy)
+		y_exit  = time(collider.y2 - self.y1 if vy > 0 else collider.y1 - self.y2, vy)
 
-		# on which axis did we collide first?
-
-		entry = max(x_entry, y_entry, z_entry)
-		exit_ = min(x_exit,  y_exit,  z_exit )
+		z_entry = time(collider.z1 - self.z2 if vz > 0 else collider.z2 - self.z1, vz)
+		z_exit  = time(collider.z2 - self.z1 if vz > 0 else collider.z1 - self.z2, vz)
 
 		# make sure we actually got a collision
 
@@ -54,6 +49,11 @@ class Collider:
 
 		if x_entry > 1 or y_entry > 1 or z_entry > 1:
 			return no_collision
+
+		# on which axis did we collide first?
+
+		entry = max(x_entry, y_entry, z_entry)
+		exit_ = min(x_exit,  y_exit,  z_exit )
 
 		if entry > exit_:
 			return no_collision

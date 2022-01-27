@@ -457,7 +457,7 @@ class World:
 		# make sure the block doesn't intersect with the passed collider
 
 		for block_collider in self.block_types[number].colliders:
-			if collider.intersect(block_collider + position):
+			if collider & (block_collider + position):
 				return
 		
 		self.set_block(position, number)

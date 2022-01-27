@@ -68,7 +68,7 @@ class Entity:
 		self.grounded = False
 
 		for _ in range(3):
-			adjusted_velocity = [v * delta_time or collider.PADDING for v in self.velocity]
+			adjusted_velocity = [v * delta_time for v in self.velocity]
 			vx, vy, vz = adjusted_velocity
 
 			# find all the blocks we could potentially be colliding with
@@ -110,18 +110,19 @@ class Entity:
 				break
 
 			entry_time, normal = min(potential_collisions, key = lambda x: x[0])
+			entry_time -= 0.01
 
 			if normal[0]:
 				self.velocity[0] = 0
-				self.position[0] += vx * entry_time - step_x * collider.PADDING
+				self.position[0] += vx * entry_time
 			
 			if normal[1]:
 				self.velocity[1] = 0
-				self.position[1] += vy * entry_time - step_y * collider.PADDING
+				self.position[1] += vy * entry_time
 
 			if normal[2]:
 				self.velocity[2] = 0
-				self.position[2] += vz * entry_time - step_z * collider.PADDING
+				self.position[2] += vz * entry_time
 
 			if normal[1] == 1:
 				self.grounded = True
