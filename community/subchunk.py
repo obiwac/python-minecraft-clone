@@ -12,7 +12,7 @@ SUBCHUNK_LENGTH = 4
 @cache
 def smooth(a, b, c, d):
 	if not a or not b or not c or not d:
-		l = (a, *filter(lambda x: x, (b, c, d)))
+		l = (a, *(i for i in (b, c, d) if i))
 		min_val = min(l)
 		a = max(a, min_val)
 		b = max(b, min_val)

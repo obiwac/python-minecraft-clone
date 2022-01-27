@@ -145,7 +145,6 @@ class World:
 		self.light_decrease_queue = deque() # Node: World position, light
 		self.skylight_increase_queue = deque()
 		self.skylight_decrease_queue = deque()
-		self.chunk_update_queue = deque() 
 		self.chunk_building_queue = deque()
 
 		self.save.load()
@@ -161,6 +160,9 @@ class World:
 
 		del indices
 		self.visible_chunks = []
+
+		self.pending_chunk_update_count = 0
+		self.chunk_update_counter = 0
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
@@ -416,6 +418,8 @@ class World:
 		self.chunks[chunk_position].blocks[lx][ly][lz] = number
 		self.chunks[chunk_position].modified = True
 
+		self.chunks[chunk_position].update_at_position((x, y, z))
+
 		if number:
 			if number in self.light_blocks:
 				self.increase_light(position, 15)
@@ -443,7 +447,6 @@ class World:
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))
 
-		self.chunks[chunk_position].update_at_position((x, y, z))
 
 	def try_set_block(self, position, number, collider):
 		# if we're trying to remove a block, whatever let it go through
@@ -537,26 +540,21 @@ class World:
 			self.incrementer = -1
 
 		self.daylight += self.incrementer
-
-
-	def process_chunk_updates(self):
-		for i in range(len(self.chunk_update_queue) // 8 + 1):
-			if self.chunk_update_queue:
-				chunk, subchunk = self.chunk_update_queue.pop()
-				subchunk.update_mesh()
-
-				if chunk not in self.chunk_building_queue:
-					self.chunk_building_queue.append(chunk)
-
 	
 	def build_pending_chunks(self):
 		if self.chunk_building_queue:
 			pending_chunk = self.chunk_building_queue.popleft()
 			pending_chunk.update_mesh()
 
+	def process_chunk_updates(self):
+		for chunk in self.visible_chunks:
+			chunk.process_chunk_updates()
+
 	
 	def tick(self, delta_time):
+		self.chunk_update_counter = 0
 		self.time += delta_time
+		self.pending_chunk_update_count = sum(len(chunk.chunk_update_queue) for chunk in self.chunks.values())
 		self.update_daylight()
 		self.build_pending_chunks()
 		self.process_chunk_updates()

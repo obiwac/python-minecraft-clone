@@ -19,6 +19,7 @@ class Controller:
 		FULLSCREEN = 4
 		FLY = 5
 		TELEPORT = 6
+		TOGGLE_F3 = 7
 
 	class MoveMode(IntEnum):
 		LEFT = 0
@@ -95,6 +96,8 @@ class Controller:
 
 				self.game.player.teleport((x, y + 1, z))
 				break
+		elif mode == self.MiscMode.TOGGLE_F3:
+			self.game.show_f3 = not self.game.show_f3
 
 	def update_move(self, axis):
 		self.game.player.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))
