@@ -156,7 +156,6 @@ class World:
 		logging.info("Generating chunks")
 		for world_chunk in self.chunks.values():
 			world_chunk.update_subchunk_meshes()
-			self.chunk_building_queue.append(world_chunk)
 
 		del indices
 		self.visible_chunks = []
