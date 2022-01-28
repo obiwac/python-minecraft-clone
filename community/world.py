@@ -473,13 +473,20 @@ class World:
 			self.incrementer = -1
 	
 	def can_render_chunk(self, chunk_position):
-		return self.player.check_in_frustum(chunk_position)
+		return self.player.check_in_frustum(chunk_position) and math.dist(self.get_chunk_position(self.player.position), chunk_position) <= options.RENDER_DISTANCE
 
 	def prepare_rendering(self):
+		player_chunk_pos = self.get_chunk_position(self.player.position)
 		self.visible_chunks = [self.chunks[chunk_position]
 				for chunk_position in self.chunks if self.can_render_chunk(chunk_position)]
+		self.sort_chunks()
 	
-	def draw_translucent_fast(self, player_chunk_pos):
+	def sort_chunks(self):
+		player_chunk_pos = self.get_chunk_position(self.player.position)
+		self.visible_chunks.sort(key = cmp_to_key(lambda a, b: math.dist(player_chunk_pos, b.chunk_position) 
+				- math.dist(player_chunk_pos, a.chunk_position)))
+	
+	def draw_translucent_fast(self):
 		gl.glEnable(gl.GL_BLEND)
 		gl.glDisable(gl.GL_CULL_FACE)
 		gl.glDepthMask(gl.GL_FALSE)
@@ -491,22 +498,17 @@ class World:
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glDisable(gl.GL_BLEND)
 
-	def sort_chunks(self, player_chunk_pos):
-		self.sorted_chunks = sorted(self.visible_chunks, key = cmp_to_key(lambda a, b: math.dist(player_chunk_pos, b.chunk_position) - math.dist(player_chunk_pos, a.chunk_position)))
-		
-	def draw_translucent_fancy(self, player_chunk_pos):
-		self.sort_chunks(player_chunk_pos)
-
+	def draw_translucent_fancy(self):
 		gl.glDepthMask(gl.GL_FALSE)
 		gl.glFrontFace(gl.GL_CW)
 		gl.glEnable(gl.GL_BLEND)
 
-		for render_chunk in self.sorted_chunks:
+		for render_chunk in self.visible_chunks:
 			render_chunk.draw_translucent(gl.GL_TRIANGLES)
 		
 		gl.glFrontFace(gl.GL_CCW)
 		
-		for render_chunk in self.sorted_chunks:
+		for render_chunk in self.visible_chunks:
 			render_chunk.draw_translucent(gl.GL_TRIANGLES)
 
 		gl.glDisable(gl.GL_BLEND)
@@ -522,13 +524,10 @@ class World:
 				(daylight_multiplier - 0.26) * 1.36, 1.0)
 		gl.glUniform1f(self.shader_daylight_location, daylight_multiplier)
 
-		player_floored_pos = tuple(self.player.position)
-		player_chunk_pos = self.get_chunk_position(player_floored_pos)
-
 		for render_chunk in self.visible_chunks:
 			render_chunk.draw(gl.GL_TRIANGLES)
 
-		self.draw_translucent(player_chunk_pos)
+		self.draw_translucent()
 
 	def update_daylight(self):
 		if self.incrementer == -1:

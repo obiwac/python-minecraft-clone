@@ -1,7 +1,7 @@
 # FAST = 0; FANCY = 1
 import pyglet.gl as gl
 
-
+RENDER_DISTANCE = 4
 FANCY_TRANSLUCENCY = 1
 MIPMAP_TYPE = gl.GL_NEAREST # Possible filters: 
                             # No filter (GL_NEAREST)
