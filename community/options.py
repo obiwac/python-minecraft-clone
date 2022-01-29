@@ -38,7 +38,7 @@ SMOOTH_FPS = False # Legacy way to force the flushing of command buffer and forc
 # --------------------------------- Quality --------------------------------- 
 
 # Ambient Occlusion and Smooth Lighting
-SMOOTH_LIGHTING = True # Smooth Lighting smoothes the light of each vertex to achieve a linear interpolation
+SMOOTH_LIGHTING = False # Smooth Lighting smoothes the light of each vertex to achieve a linear interpolation
                        # of light on each fragment, hence creating a smoother light effect
                        # It also adds ambient occlusion, to simulate light blocked by opaqua objects
                        # Chunk updates / building will be severely affecteds by this feature

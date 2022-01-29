@@ -498,7 +498,7 @@ class World:
 			chunk.update_subchunk_meshes()
 
 	def speed_daytime(self):
-		if self.daylight <= 0:
+		if self.daylight <= 480:
 			self.incrementer = 1
 		if self.daylight >= 1800:
 			self.incrementer = -1
