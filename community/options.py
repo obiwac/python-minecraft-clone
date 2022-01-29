@@ -1,7 +1,7 @@
 # FAST = 0; FANCY = 1
 import pyglet.gl as gl
 
-RENDER_DISTANCE = 2
+RENDER_DISTANCE = 3
 FANCY_TRANSLUCENCY = 1
 MIPMAP_TYPE = gl.GL_NEAREST # Possible filters: 
                             # No filter (GL_NEAREST)
@@ -12,10 +12,15 @@ MIPMAP_TYPE = gl.GL_NEAREST # Possible filters:
                             # Trilinear mipmap (GL_LINEAR_MIPMAP_LINEAR)
                             
 COLORED_LIGHTING = True
-MAX_PRERENDERED_FRAMES = 3 # Number of frames the CPU can skip rendering waiting the GPU to finish rendering. 
+
+MAX_CPU_AHEAD_FRAMES = 3 # Number of frames the CPU can be ahead of the GPU until waiting for it to finish rendering. 
                            # Higher values gives higher framerate but causes framerate instability and higher frame spikes
                            # Lower values causes average lower framerate but gives smoother framerate
                            # Recommended values are between 0 and 9
+
+SMOOTH_FPS = False # Legacy way to force the flushing of command buffer and forces the CPU to wait for the GPU to finish rendering. 
+                   # Incompatible Max CPU Ahead Frames (it won't be effective)
+                   # Enable this to test whether its impact is better. Similar to Max CPU Ahead frames to 0
 
 FOV = 90
 INDIRECT_RENDERING = False # Requires OpenGL 4.2+. Disable if having issues.

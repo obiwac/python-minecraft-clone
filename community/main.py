@@ -203,11 +203,15 @@ Buffer Uploading: Direct (glBufferSubData)
 		self.world.prepare_rendering()
 		self.world.draw()
 
-		self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
-
 		# Draw the F3 Debug screen
 		if self.show_f3:
 			self.draw_f3()
+
+		# CPU - GPU Sync
+		if not options.SMOOTH_FPS:
+			self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+		else:
+			gl.glFinish()
 
 	def draw_f3(self):
 		gl.glDisable(gl.GL_DEPTH_TEST)
