@@ -4,7 +4,7 @@ import ctypes
 import math
 import logging
 import glm
-import threading
+import options
 
 from functools import cmp_to_key
 from collections import deque
@@ -14,7 +14,6 @@ import pyglet.gl as gl
 import block_type
 import models
 import save
-import options
 from util import DIRECTIONS
 
 def get_chunk_position(position):
@@ -36,7 +35,8 @@ def get_local_position(position):
 
 
 class World:
-	def __init__(self, shader, player, texture_manager):
+	def __init__(self, shader, player, texture_manager, options):
+		self.options = options
 		self.shader = shader
 		self.player = player
 		self.texture_manager = texture_manager
@@ -492,6 +492,11 @@ class World:
 		
 		self.set_block(position, number)
 
+	def toggle_AO(self):
+		self.options.SMOOTH_LIGHTING = not self.options.SMOOTH_LIGHTING
+		for chunk in self.chunks.values():
+			chunk.update_subchunk_meshes()
+
 	def speed_daytime(self):
 		if self.daylight <= 0:
 			self.incrementer = 1
@@ -499,7 +504,7 @@ class World:
 			self.incrementer = -1
 	
 	def can_render_chunk(self, chunk_position):
-		return self.player.check_in_frustum(chunk_position) and math.dist(self.get_chunk_position(self.player.position), chunk_position) <= options.RENDER_DISTANCE
+		return self.player.check_in_frustum(chunk_position) and math.dist(self.get_chunk_position(self.player.position), chunk_position) <= self.options.RENDER_DISTANCE
 
 	def prepare_rendering(self):
 		self.visible_chunks = [self.chunks[chunk_position]

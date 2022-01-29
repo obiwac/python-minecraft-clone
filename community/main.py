@@ -26,11 +26,31 @@ import joystick
 import keyboard_mouse
 from collections import deque
 
+class InternalConfig:
+	def __init__(self, options):
+		self.RENDER_DISTANCE = options.RENDER_DISTANCE
+		self.FOV = options.FOV
+		self.INDIRECT_RENDERING = options.INDIRECT_RENDERING
+		self.ADVANCED_OPENGL = options.ADVANCED_OPENGL
+		self.CHUNK_UPDATES = options.CHUNK_UPDATES
+		self.VSYNC = options.VSYNC
+		self.MAX_CPU_AHEAD_FRAMES = options.MAX_CPU_AHEAD_FRAMES
+		self.SMOOTH_FPS = options.SMOOTH_FPS
+		self.SMOOTH_LIGHTING = options.SMOOTH_LIGHTING
+		self.FANCY_TRANSLUCENCY = options.FANCY_TRANSLUCENCY
+		self.MIPMAP_TYPE = options.MIPMAP_TYPE
+		self.COLORED_LIGHTING = options.COLORED_LIGHTING
+		self.ANTIALIASING = options.ANTIALIASING
+
+
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
 
-		if options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
+		# Options
+		self.options = InternalConfig(options)
+
+		if self.options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
 			raise RuntimeError("""Indirect Rendering is not supported on your hardware
 			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
 			Please disable "INDIRECT_RENDERING" in options.py""")
@@ -48,7 +68,7 @@ class Window(pyglet.window.Window):
 		# create shader
 
 		logging.info("Compiling Shaders")
-		if not options.COLORED_LIGHTING:
+		if not self.options.COLORED_LIGHTING:
 			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
 		else:
 			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
@@ -61,7 +81,7 @@ class Window(pyglet.window.Window):
 
 		# create world
 
-		self.world = world.World(self.shader, None, self.texture_manager)
+		self.world = world.World(self.shader, None, self.texture_manager, self.options)
 
 		# player stuff
 
@@ -90,7 +110,7 @@ class Window(pyglet.window.Window):
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 		
-		if options.ANTIALIASING:
+		if self.options.ANTIALIASING:
 			gl.glEnable(gl.GL_MULTISAMPLE)
 			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
 			gl.glSampleCoverage(0.5, gl.GL_TRUE)
@@ -148,7 +168,7 @@ class Window(pyglet.window.Window):
 		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
 		self.f3.text = \
 f"""
-{round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates)
+{round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
 Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
 
@@ -163,7 +183,7 @@ CPU: {platform.processor()}
 Display: {gl.gl_info.get_renderer()} 
 {gl.gl_info.get_version()}
 
-Renderer: {"OpenGL 3.3 VAOs" if not options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if options.ADVANCED_OPENGL else ""}
+Renderer: {"OpenGL 3.3 VAOs" if not self.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.options.ADVANCED_OPENGL else ""}
 Buffers: {chunk_count}
 Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
 Visible Quads: {visible_quad_count}
@@ -197,7 +217,7 @@ Buffer Uploading: Direct (glBufferSubData)
 		self.shader.use()
 		self.player.update_matrices()
 
-		while len(self.fences) > options.MAX_PRERENDERED_FRAMES:
+		while len(self.fences) > self.options.MAX_CPU_AHEAD_FRAMES:
 			fence = self.fences.popleft()
 			gl.glClientWaitSync(fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 2147483647)
 			gl.glDeleteSync(fence)
@@ -211,7 +231,7 @@ Buffer Uploading: Direct (glBufferSubData)
 			self.draw_f3()
 
 		# CPU - GPU Sync
-		if not options.SMOOTH_FPS:
+		if not self.options.SMOOTH_FPS:
 			self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
 		else:
 			gl.glFinish()
