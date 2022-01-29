@@ -138,6 +138,8 @@ class Window(pyglet.window.Window):
 		pyglet.app.exit()
 
 	def update_f3(self, delta_time):
+		"""Update the F3 debug screen content"""
+
 		player_chunk_pos = world.get_chunk_position(self.player.position)
 		player_local_pos = world.get_local_position(self.player.position)
 		chunk_count = len(self.world.chunks)
@@ -169,6 +171,7 @@ Buffer Uploading: Direct (glBufferSubData)
 """
 
 	def update(self, delta_time):
+		"""Every tick"""
 		if self.show_f3:
 			self.update_f3(delta_time)
 
@@ -214,6 +217,7 @@ Buffer Uploading: Direct (glBufferSubData)
 			gl.glFinish()
 
 	def draw_f3(self):
+		"""Draws the f3 debug screen. Current uses the fixed-function pipeline since pyglet labels uses it"""
 		gl.glDisable(gl.GL_DEPTH_TEST)
 		gl.glUseProgram(0) 
 		gl.glBindVertexArray(0)

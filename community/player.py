@@ -100,6 +100,7 @@ class Player(entity.Entity):
 		Frustum.far = normalize(Frustum.far)
 		
 	def check_in_frustum(self, chunk_pos):
+		"""Frustum check of each chunk. If the chunk is not in the view frustum, it is discarded"""
 		planes = (Frustum.left, Frustum.right, Frustum.bottom, Frustum.top, Frustum.near, Frustum.far)
 		result = 2
 		center = glm.vec3(chunk_pos * glm.ivec3(chunk.CHUNK_WIDTH, 0, chunk.CHUNK_LENGTH)

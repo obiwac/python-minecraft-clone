@@ -160,6 +160,8 @@ class World:
 		del indices
 		self.visible_chunks = []
 
+		# Debug variables
+
 		self.pending_chunk_update_count = 0
 		self.chunk_update_counter = 0
 
@@ -182,6 +184,12 @@ class World:
 
 	
 	def propagate_increase(self, light_update):
+		"""Starts propagating all queued block light increases
+		This algorithm is derived from the Seed of Andromeda's tutorial
+		It uses a FIFO queue to queue the pending blocks to light
+		It then checks its 6 neighbours and propagate light to one of them if the latter's light level 
+		is lower than the former one"""
+
 		while self.light_increase_queue:
 			pos, light_level = self.light_increase_queue.popleft()			
 
@@ -201,7 +209,15 @@ class World:
 						chunk.update_at_position(neighbour_pos)
 
 	def init_skylight(self, pending_chunk):
+		""" Initializes the skylight of each chunks
+		To avoid unsufferable lag from propagating from the top of the chunks when
+		most of the heights would be air, it instead runs a simple algorithm
+		to check where the highest point of the chunk is and propagates skylight from
+		this height"""
+
 		chunk_pos = pending_chunk.chunk_position
+
+		# Retrieve the highest chunk point
 		height = 0
 		for lx in range(chunk.CHUNK_WIDTH):
 			for lz in range(chunk.CHUNK_LENGTH):
@@ -211,6 +227,7 @@ class World:
 				if ly > height:
 					height = ly
 
+		# Initialize skylight to 15 until that point and then queue a skylight propagation increase
 		for lx in range(chunk.CHUNK_WIDTH):
 			for lz in range(chunk.CHUNK_LENGTH):
 				for ly in range(chunk.CHUNK_HEIGHT - 1, height, -1):
@@ -220,12 +237,13 @@ class World:
 						ly,
 						chunk.CHUNK_LENGTH * chunk_pos[2] + lz
 				)
-
 				self.skylight_increase_queue.append((pos, 15))
 
 		self.propagate_skylight_increase(False)
 		
 	def propagate_skylight_increase(self, light_update):
+		"""Similar to the block light algorithm, but 
+		do not lower the light level in the downward direction"""
 		while self.skylight_increase_queue:
 			pos, light_level = self.skylight_increase_queue.popleft()
 
@@ -266,6 +284,12 @@ class World:
 
 	
 	def propagate_decrease(self, light_update):
+		"""Starts propagating all queued block light decreases
+		This algorithm is derived from the Seed of Andromeda's tutorial
+		It uses a FIFO queue to queue the pending blocks to unlight
+		It then checks its 6 neighbours and unlight to one of them if the latter's light level 
+		is lower than the former one"""
+
 		while self.light_decrease_queue:
 			pos, light_level = self.light_decrease_queue.popleft()
 
@@ -305,6 +329,8 @@ class World:
 
 	
 	def propagate_skylight_decrease(self, light_update=True):
+		"""Similar to the block light algorithm, but 
+		always unlight in the downward direction"""
 		while self.skylight_decrease_queue:
 			pos, light_level = self.skylight_decrease_queue.popleft()
 
