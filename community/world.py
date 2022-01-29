@@ -483,15 +483,16 @@ class World:
 	
 	def sort_chunks(self):
 		player_chunk_pos = self.get_chunk_position(self.player.position)
-		self.visible_chunks.sort(key = cmp_to_key(lambda a, b: math.dist(player_chunk_pos, b.chunk_position) 
-				- math.dist(player_chunk_pos, a.chunk_position)))
+		self.visible_chunks.sort(key = cmp_to_key(lambda a, b: math.dist(player_chunk_pos, a.chunk_position) 
+				- math.dist(player_chunk_pos, b.chunk_position)))
+		self.sorted_chunks = reversed(self.visible_chunks)
 	
 	def draw_translucent_fast(self):
 		gl.glEnable(gl.GL_BLEND)
 		gl.glDisable(gl.GL_CULL_FACE)
 		gl.glDepthMask(gl.GL_FALSE)
 
-		for render_chunk in self.visible_chunks:
+		for render_chunk in self.sorted_chunks:
 			render_chunk.draw_translucent(gl.GL_TRIANGLES)
 
 		gl.glDepthMask(gl.GL_TRUE)
@@ -503,12 +504,12 @@ class World:
 		gl.glFrontFace(gl.GL_CW)
 		gl.glEnable(gl.GL_BLEND)
 
-		for render_chunk in self.visible_chunks:
+		for render_chunk in self.sorted_chunks:
 			render_chunk.draw_translucent(gl.GL_TRIANGLES)
 		
 		gl.glFrontFace(gl.GL_CCW)
 		
-		for render_chunk in self.visible_chunks:
+		for render_chunk in self.sorted_chunks:
 			render_chunk.draw_translucent(gl.GL_TRIANGLES)
 
 		gl.glDisable(gl.GL_BLEND)
