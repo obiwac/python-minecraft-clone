@@ -51,14 +51,14 @@ class Subchunk:
 		self.translucent_mesh = []
 		self.translucent_mesh_array = None
 
-	def get_raw_light(self, block, face, pos, npos):
+	def get_raw_light(self, pos, npos):
 		if not npos:
 			light_levels = self.world.get_light(pos)
 		else:
 			light_levels = self.world.get_light(npos)
 		return [light_levels] * 4
 
-	def get_raw_skylight(self, block, face, pos, npos):
+	def get_raw_skylight(self, pos, npos):
 		if not npos:
 			light_levels = self.world.get_skylight(pos)
 		else:
@@ -145,7 +145,7 @@ class Subchunk:
 
 		return self.get_smooth_face_light(self.world.get_skylight(npos), *nlights)
 
-	def get_ambient(self, block, block_type, face, pos, npos):
+	def get_ambient(self, block, block_type, face, npos):
 		raw_shading = block_type.shading_values[face]
 		if not block_type.is_cube or block in self.world.light_blocks:
 			return raw_shading
@@ -158,15 +158,21 @@ class Subchunk:
 		
 		return [a * b for a, b in zip(face_ao, raw_shading)]
 
-	get_shading = get_ambient if options.SMOOTH_LIGHTING else lambda self, b, block_type, face, pos, npos: block_type.shading_values[face]
-	get_light = get_light_smooth if options.SMOOTH_LIGHTING else get_raw_light
-	get_skylight = get_skylight_smooth if options.SMOOTH_LIGHTING else get_raw_skylight
+	def get_shading(self, block, block_type, face, npos):
+		return self.get_ambient(block, block_type, face, npos) if self.world.options.SMOOTH_LIGHTING else block_type.shading_values[face]
+
+	def get_light(self, block, face, pos, npos):
+		return self.get_light_smooth(block, face, pos, npos) if self.world.options.SMOOTH_LIGHTING else self.get_raw_light(pos, npos)
+
+	def get_skylight(self, block, face, pos, npos):
+		return self.get_skylight_smooth(block, face, pos, npos) if self.world.options.SMOOTH_LIGHTING else self.get_raw_skylight(pos, npos)
+
 
 	def add_face(self, face, pos, lpos, block, block_type, npos=None):
 		lx, ly, lz = lpos
 		vertex_positions = block_type.vertex_positions[face]
 		tex_index = block_type.tex_indices[face]
-		shading = self.get_shading(block, block_type, face, pos, npos)
+		shading = self.get_shading(block, block_type, face, npos)
 		lights = self.get_light(block, face, pos, npos)
 		skylights = self.get_skylight(block, face, pos, npos)
 

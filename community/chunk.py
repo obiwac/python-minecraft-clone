@@ -79,7 +79,7 @@ class Chunk:
 
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
 		
-		if options.INDIRECT_RENDERING:
+		if self.world.options.INDIRECT_RENDERING:
 			self.indirect_command_buffer = gl.GLuint(0)
 			gl.glGenBuffers(1, self.indirect_command_buffer)
 			gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
@@ -147,6 +147,7 @@ class Chunk:
 		return not block_type.transparent
 	
 	def update_subchunk_meshes(self):
+		self.chunk_update_queue.clear()
 		for subchunk in self.subchunks.values():
 			self.chunk_update_queue.append(subchunk)
 
@@ -181,7 +182,7 @@ class Chunk:
 		if lz == 0: try_update_subchunk_mesh((sx, sy, sz - 1))
 
 	def process_chunk_updates(self):
-		for i in range(options.CHUNK_UPDATES):
+		for i in range(self.world.options.CHUNK_UPDATES):
 			if self.chunk_update_queue:
 				subchunk = self.chunk_update_queue.popleft()
 				subchunk.update_mesh()
@@ -233,7 +234,7 @@ class Chunk:
 			(gl.GLfloat * len(self.translucent_mesh)) (*self.translucent_mesh)
 		)
 
-		if not options.INDIRECT_RENDERING:
+		if not self.world.options.INDIRECT_RENDERING:
 			return
 		
 		self.draw_commands = [

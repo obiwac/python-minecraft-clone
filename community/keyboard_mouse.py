@@ -58,6 +58,7 @@ class Keyboard_Mouse(controller.Controller):
 		elif key == pyglet.window.key.F6: self.misc(self.MiscMode.SPEED_TIME)
 		elif key == pyglet.window.key.F11: self.misc(self.MiscMode.FULLSCREEN)
 		elif key == pyglet.window.key.F3: self.misc(self.MiscMode.TOGGLE_F3)
+		elif key == pyglet.window.key.F10: self.misc(self.MiscMode.TOGGLE_AO)
 
 	def on_key_release(self, key, modifiers):
 		if not self.game.mouse_captured:
