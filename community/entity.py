@@ -149,3 +149,7 @@ class Entity:
 
 			if self.velocity[1] < 0:
 				self.velocity[1] *= k
+
+		# make sure we can rely on the entity's collider outside of this function
+
+		self.update_collider()
