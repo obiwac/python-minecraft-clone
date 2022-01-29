@@ -476,7 +476,6 @@ class World:
 		return self.player.check_in_frustum(chunk_position) and math.dist(self.get_chunk_position(self.player.position), chunk_position) <= options.RENDER_DISTANCE
 
 	def prepare_rendering(self):
-		player_chunk_pos = self.get_chunk_position(self.player.position)
 		self.visible_chunks = [self.chunks[chunk_position]
 				for chunk_position in self.chunks if self.can_render_chunk(chunk_position)]
 		self.sort_chunks()
@@ -485,7 +484,7 @@ class World:
 		player_chunk_pos = self.get_chunk_position(self.player.position)
 		self.visible_chunks.sort(key = cmp_to_key(lambda a, b: math.dist(player_chunk_pos, a.chunk_position) 
 				- math.dist(player_chunk_pos, b.chunk_position)))
-		self.sorted_chunks = reversed(self.visible_chunks)
+		self.sorted_chunks = tuple(reversed(self.visible_chunks))
 	
 	def draw_translucent_fast(self):
 		gl.glEnable(gl.GL_BLEND)
