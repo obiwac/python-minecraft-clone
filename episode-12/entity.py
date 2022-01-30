@@ -13,20 +13,18 @@ class Entity:
 		self.jump_height = 1.25
 		self.flying = False
 
-		self.velocity = [0, 0, 0]
 		self.position = [0, 80, 0]
+		self.rotation = [-math.tau / 4, 0]
+
+		self.velocity = [0, 0, 0]
 
 		# collision variables
 
-		self.height = 1.8
 		self.width = 0.6
+		self.height = 1.8
 
 		self.collider = collider.Collider()
 		self.grounded = False
-
-		# input variables
-
-		self.rotation = [-math.tau / 4, 0]
 
 	def update_collider(self):
 		x, y, z = self.position
@@ -72,7 +70,7 @@ class Entity:
 			step_y = 1 if vy > 0 else -1
 			step_z = 1 if vz > 0 else -1
 
-			steps_xz = int(self.width)
+			steps_xz = int(self.width / 2)
 			steps_y  = int(self.height)
 
 			x, y, z = map(int, self.position)
@@ -80,9 +78,9 @@ class Entity:
 
 			potential_collisions = []
 
-			for i in range(x - step_x * (steps_xz + 2), cx + step_x * (steps_xz + 3), step_x):
-				for j in range(y - step_y * (steps_y + 2), cy + step_y * (steps_y + 3), step_y):
-					for k in range(z - step_z * (steps_xz + 2), cz + step_z * (steps_xz + 3), step_z):
+			for i in range(x - step_x * (steps_xz + 1), cx + step_x * (steps_xz + 2), step_x):
+				for j in range(y - step_y * (steps_y + 1), cy + step_y * (steps_y + 3), step_y):
+					for k in range(z - step_z * (steps_xz + 1), cz + step_z * (steps_xz + 2), step_z):
 						pos = (i, j, k)
 						num = self.world.get_block_number(pos)
 
@@ -90,7 +88,7 @@ class Entity:
 							continue
 
 						for _collider in self.world.block_types[num].colliders:
-							entry_time, normal = self.collider.collide(_collider + pos, (vx, vy, vz))
+							entry_time, normal = self.collider.collide(_collider + pos, adjusted_velocity)
 
 							if normal is None:
 								continue
@@ -103,7 +101,7 @@ class Entity:
 				break
 
 			entry_time, normal = min(potential_collisions, key = lambda x: x[0])
-			entry_time -= 0.01
+			entry_time -= 0.001
 
 			if normal[0]:
 				self.velocity[0] = 0

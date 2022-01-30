@@ -56,7 +56,7 @@ class Entity:
 		if height is None:
 			height = self.jump_height
 
-		self.velocity[1] = math.sqrt(2 * height * -GRAVITY[1])
+		self.velocity[1] = math.sqrt(2 * height * -GRAVITY_ACCEL[1])
 
 	def update(self, delta_time):
 		self.step = 1
@@ -97,7 +97,7 @@ class Entity:
 
 						for _collider in self.world.block_types[num].colliders:
 							shifted = _collider + pos
-							entry_time, normal = self.collider.collide(shifted, (vx, vy, vz))
+							entry_time, normal = self.collider.collide(shifted, adjusted_velocity)
 
 							if normal is None:
 								continue
@@ -110,7 +110,7 @@ class Entity:
 				break
 
 			entry_time, normal = min(potential_collisions, key = lambda x: x[0])
-			entry_time -= 0.01
+			entry_time -= 0.001
 
 			if normal[0]:
 				self.velocity[0] = 0

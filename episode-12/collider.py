@@ -5,7 +5,7 @@ class Collider:
 
 		self.x1, self.y1, self.z1 = pos1
 		self.x2, self.y2, self.z2 = pos2
-
+	
 	def __add__(self, pos):
 		x, y, z = pos
 
@@ -13,7 +13,7 @@ class Collider:
 			(self.x1 + x, self.y1 + y, self.z1 + z),
 			(self.x2 + x, self.y2 + y, self.z2 + z)
 		)
-
+	
 	def __and__(self, collider):
 		x = min(self.x2, collider.x2) - max(self.x1, collider.x1)
 		y = min(self.y2, collider.y2) - max(self.y1, collider.y1)
@@ -22,8 +22,8 @@ class Collider:
 		return x > 0 and y > 0 and z > 0
 	
 	def collide(self, collider, velocity):
-		# a: the dynamic collider, which moves
-		# b: the static collider, which stays put
+		# self: the dynamic collider, which moves
+		# collider: the static collider, which stays put
 
 		no_collision = 1, None
 
@@ -49,15 +49,15 @@ class Collider:
 
 		if x_entry > 1 or y_entry > 1 or z_entry > 1:
 			return no_collision
-
+		
 		# on which axis did we collide first?
 
 		entry = max(x_entry, y_entry, z_entry)
-		exit_ = min(x_exit,  y_exit,  z_exit )
+		exit_ = min(x_exit,  y_exit,  z_exit)
 
 		if entry > exit_:
 			return no_collision
-
+		
 		# find normal of surface we collided with
 
 		nx = (0, -1 if vx > 0 else 1)[entry == x_entry]

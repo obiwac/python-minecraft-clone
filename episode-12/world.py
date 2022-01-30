@@ -157,19 +157,19 @@ class World:
 		if lz == chunk.CHUNK_LENGTH - 1: try_update_chunk_at_position((cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0: try_update_chunk_at_position((cx, cy, cz - 1), (x, y, z - 1))
 
-	def try_set_block(self, position, number, collider):
+	def try_set_block(self, pos, num, collider):
 		# if we're trying to remove a block, whatever let it go through
 
-		if not number:
-			return self.set_block(position, 0)
-
+		if not num:
+			return self.set_block(pos, 0)
+		
 		# make sure the block doesn't intersect with the passed collider
 
-		for block_collider in self.block_types[number].colliders:
-			if collider & (block_collider + position):
+		for block_collider in self.block_types[num].colliders:
+			if collider & (block_collider + pos):
 				return
-
-		self.set_block(position, number)
+		
+		self.set_block(pos, num)
 
 	def draw(self):
 		for chunk_position in self.chunks:
