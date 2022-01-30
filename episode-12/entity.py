@@ -1,8 +1,8 @@
 import math
 import collider
 
-FLYING = (0, 0, 0)
-GRAVITY = (0, -32, 0)
+FLYING_ACCEL = (0, 0, 0)
+GRAVITY_ACCEL = (0, -32, 0)
 
 class Entity:
 	def __init__(self, world):
@@ -53,7 +53,7 @@ class Entity:
 		if height is None:
 			height = self.jump_height
 
-		self.velocity[1] = math.sqrt(2 * height * -GRAVITY[1])
+		self.velocity[1] = math.sqrt(2 * height * -GRAVITY_ACCEL[1])
 
 	def update(self, delta_time):
 		# compute collisions
@@ -124,7 +124,7 @@ class Entity:
 
 		# process physics (apply acceleration, friction, & drag)
 
-		acceleration = (GRAVITY, FLYING)[self.flying]
+		acceleration = (GRAVITY_ACCEL, FLYING_ACCEL)[self.flying]
 		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, acceleration)]
 
 		if self.grounded or self.flying:
