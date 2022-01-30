@@ -16,6 +16,11 @@ class Entity:
 		self.position = [0, 80, 0]
 		self.rotation = [-math.tau / 4, 0]
 
+		self.old_position = tuple(self.position)
+		self.old_rotation = tuple(self.rotation)
+
+		self.step = 1
+
 		self.velocity = [0, 0, 0]
 
 		# collision variables
@@ -54,6 +59,9 @@ class Entity:
 		self.velocity[1] = math.sqrt(2 * height * -GRAVITY_ACCEL[1])
 
 	def update(self, delta_time):
+		self.step = 1
+		self.old_position = tuple(self.position)
+
 		# compute collisions
 
 		self.update_collider()

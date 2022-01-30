@@ -53,7 +53,7 @@ class Collider:
 		# on which axis did we collide first?
 
 		entry = max(x_entry, y_entry, z_entry)
-		exit_ = min(x_exit,  y_exit,  z_exit)
+		exit_ = min(x_exit,  y_exit,  z_exit )
 
 		if entry > exit_:
 			return no_collision
