@@ -60,7 +60,7 @@ MIPMAP_TYPE = gl.GL_NEAREST # Linear filtering samples the texture in a bilinear
                             # Trilinear mipmap (GL_LINEAR_MIPMAP_LINEAR)
 
 # Colored Lighting      
-COLORED_LIGHTING = True # Uses an alternative shader program to achieve a more colored lighting
+COLORED_LIGHTING = False # Uses an alternative shader program to achieve a more colored lighting
                         # No performance impact should happen
                         # It aims to look similar to Beta 1.8+
                         # Disable for authentic Alpha - Beta look

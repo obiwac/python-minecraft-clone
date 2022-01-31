@@ -64,7 +64,13 @@ class Window(pyglet.window.Window):
 				width = self.width // 3,
 				multiline = True
 		)
-		
+		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
+System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
+CPU: {platform.processor()}
+Display: {gl.gl_info.get_renderer()} 
+{gl.gl_info.get_version()}"""
+
+		logging.info(f"System Info: {self.system_info}")
 		# create shader
 
 		logging.info("Compiling Shaders")
@@ -177,11 +183,7 @@ Block: {self.player.rounded_position[0]} {self.player.rounded_position[1]} {self
 Chunk: {player_local_pos[0]} {player_local_pos[1]} {player_local_pos[2]} in {player_chunk_pos[0]} {player_chunk_pos[1]} {player_chunk_pos[2]}
 Light: {max(self.world.get_light(self.player.rounded_position), self.world.get_skylight(self.player.rounded_position))} ({self.world.get_skylight(self.player.rounded_position)} sky, {self.world.get_light(self.player.rounded_position)} block)
 
-Python: {platform.python_implementation()} {platform.python_version()}
-System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
-CPU: {platform.processor()}
-Display: {gl.gl_info.get_renderer()} 
-{gl.gl_info.get_version()}
+{self.system_info}
 
 Renderer: {"OpenGL 3.3 VAOs" if not self.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.options.ADVANCED_OPENGL else ""}
 Buffers: {chunk_count}
