@@ -1,15 +1,12 @@
-from hashlib import sha3_512
 from util import *
-import numpy as np
 import glm
-import options
-from functools import cache, reduce
+from functools import lru_cache as cache
 
 SUBCHUNK_WIDTH  = 4
 SUBCHUNK_HEIGHT = 4
 SUBCHUNK_LENGTH = 4
 
-@cache
+@cache(maxsize=None)
 def smooth(a, b, c, d):
 	if not a or not b or not c or not d:
 		l = (a, *(i for i in (b, c, d) if i))
@@ -20,7 +17,7 @@ def smooth(a, b, c, d):
 		d = max(d, min_val)
 	return (a + b + c + d) / 4
 
-@cache
+@cache(maxsize=None)
 def ao(s1, s2, c):
 	if s1 and s2:
 		return 0.25
