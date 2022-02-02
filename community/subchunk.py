@@ -1,15 +1,12 @@
-from hashlib import sha3_512
 from util import *
-import numpy as np
 import glm
-import options
-from functools import cache, reduce
+from functools import lru_cache as cache
 
 SUBCHUNK_WIDTH  = 4
 SUBCHUNK_HEIGHT = 4
 SUBCHUNK_LENGTH = 4
 
-@cache
+@cache(maxsize=None)
 def smooth(a, b, c, d):
 	if not a or not b or not c or not d:
 		l = (a, *(i for i in (b, c, d) if i))
@@ -20,7 +17,7 @@ def smooth(a, b, c, d):
 		d = max(d, min_val)
 	return (a + b + c + d) / 4
 
-@cache
+@cache(maxsize=None)
 def ao(s1, s2, c):
 	if s1 and s2:
 		return 0.25
@@ -84,43 +81,44 @@ class Subchunk:
 		return (vertex1, vertex2, vertex3, vertex4)
 
 	def get_neighbour_voxels(self, npos, face):
-		match face:
-			case 0: # EAST
-				neighbours = [
-					npos + UP + SOUTH, npos + UP, npos + UP + NORTH,
-					npos + SOUTH,				  npos + NORTH,
-					npos + DOWN + SOUTH, npos + DOWN, npos + DOWN + NORTH
-				]
-			case 1: # WEST
-				neighbours = [
-					npos + UP + NORTH, npos + UP, npos + UP + SOUTH,
-					npos + NORTH,                 npos + SOUTH,
-					npos + DOWN + NORTH, npos + DOWN, npos + DOWN + SOUTH
-				]
-			case 2: # UP
-				neighbours = [
-					npos + SOUTH + EAST, npos + SOUTH, npos + SOUTH + WEST,
-					npos + EAST,					   npos + WEST,
-					npos + NORTH + EAST, npos + NORTH, npos + NORTH + WEST
-				]
-			case 3: # DOWN
-				neighbours = [
-					npos + SOUTH + WEST, npos + SOUTH, npos + SOUTH + EAST,
-					npos + WEST,                       npos + EAST,
-					npos + NORTH + WEST, npos + NORTH, npos + NORTH + EAST
-				]
-			case 4:
-				neighbours = [
-					npos + UP + WEST, npos + UP, npos + UP + EAST,
-					npos + WEST,                 npos + EAST,
-					npos + DOWN + WEST, npos + DOWN, npos + DOWN + EAST
-				]
-			case 5:
-				neighbours = [
-					npos + UP + EAST, npos + UP, npos + UP + WEST,
-					npos + EAST,                 npos + WEST,
-					npos + DOWN + EAST, npos + DOWN, npos + DOWN + WEST
-				]
+		if not face: # EAST
+			neighbours = [
+				npos + UP + SOUTH, npos + UP, npos + UP + NORTH,
+				npos + SOUTH,				  npos + NORTH,
+				npos + DOWN + SOUTH, npos + DOWN, npos + DOWN + NORTH
+			]
+		elif face == 1: # WEST
+			neighbours = [
+				npos + UP + NORTH, npos + UP, npos + UP + SOUTH,
+				npos + NORTH,                 npos + SOUTH,
+				npos + DOWN + NORTH, npos + DOWN, npos + DOWN + SOUTH
+			]
+		elif face == 2: # UP
+			neighbours = [
+				npos + SOUTH + EAST, npos + SOUTH, npos + SOUTH + WEST,
+				npos + EAST,					   npos + WEST,
+				npos + NORTH + EAST, npos + NORTH, npos + NORTH + WEST
+			]
+		elif face == 3: # DOWN
+			neighbours = [
+				npos + SOUTH + WEST, npos + SOUTH, npos + SOUTH + EAST,
+				npos + WEST,                       npos + EAST,
+				npos + NORTH + WEST, npos + NORTH, npos + NORTH + EAST
+			]
+		elif face == 4:
+			neighbours = [
+				npos + UP + WEST, npos + UP, npos + UP + EAST,
+				npos + WEST,                 npos + EAST,
+				npos + DOWN + WEST, npos + DOWN, npos + DOWN + EAST
+			]
+		elif face == 5:
+			neighbours = [
+				npos + UP + EAST, npos + UP, npos + UP + WEST,
+				npos + EAST,                 npos + WEST,
+				npos + DOWN + EAST, npos + DOWN, npos + DOWN + WEST
+			]
+		else:
+			return []
 		return neighbours
 
 
