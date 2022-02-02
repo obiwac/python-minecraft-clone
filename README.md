@@ -46,7 +46,7 @@ The community has several features and options that can be toggled in "options.p
 - Max CPU Ahead frames: Number of frames that the CPU can go ahead of a frame before syncing with the GPU by waiting for it to complete the execution of the command buffer, using glClientWaitSync()
 - Smooth FPS: Legacy CPU/GPU sync by forcing the flushing and completion of command buffer using glFinish(), not recommended. Similar to setting Max CPU Ahead Frames to 0. Mostly for testing whether it makes any difference with glClientWaitSync()
 
-- Smooth Lighting: Smooth Lighting smoothes the light of each vertex to achieve a linear interpolation of light on each fragment, hence creating a smoother light effect. It also adds ambient occlusion, to simulate light blocked by opaqua objects. Chunk updates / building time will be severely affected by this feature
+- Smooth Lighting: Smooth Lighting smoothes the light of each vertex to achieve a linear interpolation of light on each fragment, hence creating a smoother light effect. It also adds ambient occlusion, to simulate light blocked by opaque objects. Chunk updates / building time will be severely affected by this feature
 - Fancy Translucency: Better translucency blending, avoid weird looking artefacts. Disable on low-end hardware.
 - Mipmap (Minification filtering): Mipmap/filtering used on higher distances. Default is GL_NEAREST (No filtering). More info in options.py
 - Colored lighting: Uses an alternative shader program to achieve a more colored lighting. No performance impact should happen. It aims to look similar to Beta 1.8+
