@@ -35,6 +35,23 @@ It more generally extends the project with functionality I've yet to cover in a 
 Characteristic contributions are contributions which *add* something to the code.
 Contributions which *fix* something are still merged on the source of all episodes.
 
+The community has several features and options that can be toggled in "options.py":
+- Render Distance
+- FOV
+
+- Indirect Rendering: alternative way of rendering that has less overhead but is only supported on devices supporting OpenGL 4.2
+- Advanced OpenGL: rudimentary occlusion culling using hardware occlusion queries, however it is not performant and will cause pipeline stalls and decrease performance on most hardware. Mostly for testing if it improves framerate.
+- Chunk Updates: chunk updates per chunk every tick. 1 gives the best performance and best framerate, however as Python is an slow language, 1 may increase chunk building time by an ludicrous amount.
+- Vsync: Vertical sync, may yield smoother framerate but bigger frame times and input lag
+- Max CPU Ahead frames: Number of frames that the CPU can go ahead of a frame before syncing with the GPU by waiting for it to complete the execution of the command buffer, using glClientWaitSync()
+- Smooth FPS: Legacy CPU/GPU sync by forcing the flushing and completion of command buffer using glFinish(), not recommended. Similar to setting Max CPU Ahead Frames to 0. Mostly for testing whether it makes any difference with glClientWaitSync()
+
+- Smooth Lighting: Smooth Lighting smoothes the light of each vertex to achieve a linear interpolation of light on each fragment, hence creating a smoother light effect. It also adds ambient occlusion, to simulate light blocked by opaque objects. Chunk updates / building time will be severely affected by this feature
+- Fancy Translucency: Better translucency blending, avoid weird looking artefacts. Disable on low-end hardware.
+- Mipmap (Minification filtering): Mipmap/filtering used on higher distances. Default is GL_NEAREST (No filtering). More info in options.py
+- Colored lighting: Uses an alternative shader program to achieve a more colored lighting. No performance impact should happen. It aims to look similar to Beta 1.8+
+- Antialiasing: Experimental feature.
+                        
 ## List of projects based on this
 
 - **Nim implementation:** https://github.com/phargobikcin/nim-minecraft-clone
