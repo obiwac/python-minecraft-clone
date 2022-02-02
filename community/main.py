@@ -1,4 +1,5 @@
-import sys
+import platform
+import ctypes
 import logging
 import random
 import time
@@ -7,13 +8,13 @@ import os
 import pyglet
 
 pyglet.options["shadow_window"] = False
-pyglet.options["debug_gl"] = True
+pyglet.options["debug_gl"] = False
 pyglet.options["search_local_libs"] = True
 pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent")
 
 import pyglet.gl as gl
 import shader
-import camera
+import player
 import texture_manager
 
 import world
@@ -23,29 +24,57 @@ import time
 
 import joystick
 import keyboard_mouse
+from collections import deque
+
+class InternalConfig:
+	def __init__(self, options):
+		self.RENDER_DISTANCE = options.RENDER_DISTANCE
+		self.FOV = options.FOV
+		self.INDIRECT_RENDERING = options.INDIRECT_RENDERING
+		self.ADVANCED_OPENGL = options.ADVANCED_OPENGL
+		self.CHUNK_UPDATES = options.CHUNK_UPDATES
+		self.VSYNC = options.VSYNC
+		self.MAX_CPU_AHEAD_FRAMES = options.MAX_CPU_AHEAD_FRAMES
+		self.SMOOTH_FPS = options.SMOOTH_FPS
+		self.SMOOTH_LIGHTING = options.SMOOTH_LIGHTING
+		self.FANCY_TRANSLUCENCY = options.FANCY_TRANSLUCENCY
+		self.MIPMAP_TYPE = options.MIPMAP_TYPE
+		self.COLORED_LIGHTING = options.COLORED_LIGHTING
+		self.ANTIALIASING = options.ANTIALIASING
 
 
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
 
-		if options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
+		# Options
+		self.options = InternalConfig(options)
+
+		if self.options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
 			raise RuntimeError("""Indirect Rendering is not supported on your hardware
 			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
 			Please disable "INDIRECT_RENDERING" in options.py""")
-
-		print(f"OpenGL Version: {gl.gl_info.get_version()}")
 	
-		# FPS display
-		if options.FPS_DISPLAY:
-			self.fps_display = pyglet.window.FPSDisplay(self)
-			self.fps_display.label.color = (255, 255, 255, 255)
-			self.fps_display.label.y = self.height - 30
-		
+		# F3 Debug Screen
+
+		self.show_f3 = False
+		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
+				font_size = 16,
+				color = (255, 255, 255, 255),
+				width = self.width // 3,
+				multiline = True
+		)
+		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
+System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
+CPU: {platform.processor()}
+Display: {gl.gl_info.get_renderer()} 
+{gl.gl_info.get_version()}"""
+
+		logging.info(f"System Info: {self.system_info}")
 		# create shader
 
 		logging.info("Compiling Shaders")
-		if not options.COLORED_LIGHTING:
+		if not self.options.COLORED_LIGHTING:
 			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
 		else:
 			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
@@ -56,19 +85,19 @@ class Window(pyglet.window.Window):
 		logging.info("Creating Texture Array")
 		self.texture_manager = texture_manager.TextureManager(16, 16, 256)
 
-		# camera stuff
-
-		logging.info("Setting up camera scene")
-		self.camera = camera.Camera(self.shader, self.width, self.height)
-
 		# create world
 
-		self.world = world.World(self.shader, self.camera, self.texture_manager)
+		self.world = world.World(self.shader, None, self.texture_manager, self.options)
+
+		# player stuff
+
+		logging.info("Setting up player & camera")
+		self.player = player.Player(self.world, self.shader, self.width, self.height)
+		self.world.player = self.player
 
 		# pyglet stuff
-
-		pyglet.clock.schedule(self.update)
-		pyglet.clock.schedule_interval(self.tick, 1 / 60)
+		pyglet.clock.schedule(self.player.update_interpolation)
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
 		self.mouse_captured = False
 
 		# misc stuff
@@ -86,6 +115,11 @@ class Window(pyglet.window.Window):
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+		
+		if self.options.ANTIALIASING:
+			gl.glEnable(gl.GL_MULTISAMPLE)
+			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
+			gl.glSampleCoverage(0.5, gl.GL_TRUE)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
@@ -103,77 +137,128 @@ class Window(pyglet.window.Window):
 		except:
 			self.music = []
 
-		self.player = pyglet.media.Player()
-		self.player.volume = 0.5
+		self.media_player = pyglet.media.Player()
+		self.media_player.volume = 0.5
 
 		if len(self.music) > 0:
-			self.player.queue(random.choice(self.music))
-			self.player.play()
-			self.player.standby = False
+			self.media_player.queue(random.choice(self.music))
+			self.media_player.play()
+			self.media_player.standby = False
 		else:
-			self.player.standby = True
+			self.media_player.standby = True
 
-		self.player.next_time = 0
+		self.media_player.next_time = 0
 
-		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
-		self.ahead_frames = 0
+		# GPU command syncs
+		self.fences = deque()
 		
 	def toggle_fullscreen(self):
 		self.set_fullscreen(not self.fullscreen)
 
 	def on_close(self):
-		logging.info("Deleting player")
-		self.player.delete()
-		gl.glDeleteSync(self.fence)
+		logging.info("Deleting media player")
+		self.media_player.delete()
+		for fence in self.fences:
+			gl.glDeleteSync(fence)
 
-		pyglet.app.exit() # Closes the game
+		pyglet.app.exit()
 
-	def tick(self, delta_time):
-		if not self.player.source and len(self.music) > 0:
-			if not self.player.standby:
-				self.player.standby = True
-				self.player.next_time = time.time() + random.randint(240, 360)
-			elif time.time() >= self.player.next_time:
-				self.player.standby = False
-				self.player.queue(random.choice(self.music))
-				self.player.play()
-		
-		self.world.tick(delta_time)
+	def update_f3(self, delta_time):
+		"""Update the F3 debug screen content"""
+
+		player_chunk_pos = world.get_chunk_position(self.player.position)
+		player_local_pos = world.get_local_position(self.player.position)
+		chunk_count = len(self.world.chunks)
+		visible_chunk_count = len(self.world.visible_chunks)
+		quad_count = sum(chunk.mesh_quad_count for chunk in self.world.chunks.values())
+		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
+		self.f3.text = \
+f"""
+{round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
+C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
+Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
+
+XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
+Block: {self.player.rounded_position[0]} {self.player.rounded_position[1]} {self.player.rounded_position[2]}
+Chunk: {player_local_pos[0]} {player_local_pos[1]} {player_local_pos[2]} in {player_chunk_pos[0]} {player_chunk_pos[1]} {player_chunk_pos[2]}
+Light: {max(self.world.get_light(self.player.rounded_position), self.world.get_skylight(self.player.rounded_position))} ({self.world.get_skylight(self.player.rounded_position)} sky, {self.world.get_light(self.player.rounded_position)} block)
+
+{self.system_info}
+
+Renderer: {"OpenGL 3.3 VAOs" if not self.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.options.ADVANCED_OPENGL else ""}
+Buffers: {chunk_count}
+Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
+Visible Quads: {visible_quad_count}
+Buffer Uploading: Direct (glBufferSubData)
+"""
 
 	def update(self, delta_time):
+		"""Every tick"""
+		if self.show_f3:
+			self.update_f3(delta_time)
+
+		if not self.media_player.source and len(self.music) > 0:
+			if not self.media_player.standby:
+				self.media_player.standby = True
+				self.media_player.next_time = time.time() + random.randint(240, 360)
+			elif time.time() >= self.media_player.next_time:
+				self.media_player.standby = False
+				self.media_player.queue(random.choice(self.music))
+				self.media_player.play()
+
 		if not self.mouse_captured:
-			self.camera.input = [0, 0, 0]
+			self.player.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
-		self.camera.update_camera(delta_time)
-		
-	
+		self.player.update(delta_time)
+
+		self.world.tick(delta_time)
+
 	def on_draw(self):
-		self.clear()
-
-		result = gl.glClientWaitSync(self.fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 0)
-		if self.ahead_frames <= options.MAX_PRERENDERED_FRAMES \
-				and (result != gl.GL_CONDITION_SATISFIED or result != gl.GL_ALREADY_SIGNALED):
-			self.ahead_frames += 1
-		
-
-		self.ahead_frames = 0
-
+		gl.glEnable(gl.GL_DEPTH_TEST)
 		self.shader.use()
-		self.camera.update_matrices()
+		self.player.update_matrices()
 
-		gl.glDeleteSync(self.fence)
-		
+		while len(self.fences) > self.options.MAX_CPU_AHEAD_FRAMES:
+			fence = self.fences.popleft()
+			gl.glClientWaitSync(fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 2147483647)
+			gl.glDeleteSync(fence)
 
+		self.clear()
+		self.world.prepare_rendering()
 		self.world.draw()
 
-		self.fence = gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+		# Draw the F3 Debug screen
+		if self.show_f3:
+			self.draw_f3()
 
-		# Clear GL global state
-		if options.FPS_DISPLAY:
-			gl.glUseProgram(0) 
-			gl.glBindVertexArray(0)
-			self.fps_display.draw()
+		# CPU - GPU Sync
+		if not self.options.SMOOTH_FPS:
+			self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+		else:
+			gl.glFinish()
+
+	def draw_f3(self):
+		"""Draws the f3 debug screen. Current uses the fixed-function pipeline since pyglet labels uses it"""
+		gl.glDisable(gl.GL_DEPTH_TEST)
+		gl.glUseProgram(0) 
+		gl.glBindVertexArray(0)
+		gl.glMatrixMode(gl.GL_MODELVIEW)
+		gl.glPushMatrix()
+		gl.glLoadIdentity()
+
+		gl.glMatrixMode(gl.GL_PROJECTION)
+		gl.glPushMatrix()
+		gl.glLoadIdentity()
+		gl.glOrtho(0, self.width, 0, self.height, -1, 1)
+
+		self.f3.draw()
+
+		gl.glPopMatrix()
+
+		gl.glMatrixMode(gl.GL_MODELVIEW)
+		gl.glPopMatrix()
+
 
 	# input functions
 
@@ -181,17 +266,17 @@ class Window(pyglet.window.Window):
 		logging.info(f"Resize {width} * {height}")
 		gl.glViewport(0, 0, width, height)
 
-		self.camera.width = width
-		self.camera.height = height
-		if options.FPS_DISPLAY:
-			self.fps_display.label.y = self.height - 30
+		self.player.view_width = width
+		self.player.view_height = height
+		self.f3.y = self.height - 10
+		self.f3.width = self.width // 3
 
 class Game:
 	def __init__(self):
 		self.config = gl.Config(double_buffer = True,
 				major_version = 3, minor_version = 3,
-				depth_size = 16)
-		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = False)
+				depth_size = 16, sample_buffers=bool(options.ANTIALIASING), samples=options.ANTIALIASING)
+		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = options.VSYNC)
 
 	def run(self): 
 		pyglet.app.run()

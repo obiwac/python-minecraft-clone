@@ -1,0 +1,36 @@
+{
+	"name": "mcpy",
+	"displayName": "MCPY",
+	"description": "Syntax highlighting for MCPY data files",
+	"categories": [
+		"Programming Languages"
+	],
+	"publisher": "obiwac",
+	"author": {
+		"name": "obiwac"
+	},
+	"homepage": "https://github.com/obiwac/python-minecraft-clone",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.22.0"
+	},
+	"contributes": {
+		"languages": [{
+			"id": "mcpy_blocks",
+			"aliases": [
+				"MCPY Blocks"
+			],
+			"filenames": [
+				"blocks.mcpy"
+			],
+			"configuration": "./language-configuration.json"
+		}],
+		"grammars": [
+			{
+				"language": "mcpy_blocks",
+				"scopeName": "source.mcpy_blocks",
+				"path": "./syntaxes/mcpy_blocks.tmLanguage.json"
+			}
+		]
+	}
+}

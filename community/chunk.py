@@ -1,5 +1,5 @@
 import ctypes
-import numpy as np
+from collections import deque
 
 import pyglet.gl as gl
 
@@ -33,6 +33,7 @@ class Chunk:
 							for x in range(CHUNK_WIDTH)]
 		
 		self.subchunks = {}
+		self.chunk_update_queue = deque()
 		
 		for x in range(int(CHUNK_WIDTH / subchunk.SUBCHUNK_WIDTH)):
 			for y in range(int(CHUNK_HEIGHT / subchunk.SUBCHUNK_HEIGHT)):
@@ -78,7 +79,7 @@ class Chunk:
 
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
 		
-		if options.INDIRECT_RENDERING:
+		if self.world.options.INDIRECT_RENDERING:
 			self.indirect_command_buffer = gl.GLuint(0)
 			gl.glGenBuffers(1, self.indirect_command_buffer)
 			gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
@@ -91,7 +92,12 @@ class Chunk:
 
 		self.draw_commands = []
 
+		self.occlusion_query = gl.GLuint(0)
+		gl.glGenQueries(1, self.occlusion_query)
+		
+
 	def __del__(self):
+		gl.glDeleteQueries(1, self.occlusion_query)
 		gl.glDeleteBuffers(1, self.vbo)
 		gl.glDeleteVertexArrays(1, self.vao)
 
@@ -141,8 +147,9 @@ class Chunk:
 		return not block_type.transparent
 	
 	def update_subchunk_meshes(self):
+		self.chunk_update_queue.clear()
 		for subchunk in self.subchunks.values():
-			subchunk.update_mesh()
+			self.chunk_update_queue.append(subchunk)
 
 	def update_at_position(self, position):
 		x, y, z = position
@@ -157,11 +164,13 @@ class Chunk:
 		sy = cly // subchunk.SUBCHUNK_HEIGHT
 		sz = clz // subchunk.SUBCHUNK_LENGTH
 
-		self.subchunks[(sx, sy, sz)].update_mesh()
+		if self.subchunks[(sx, sy, sz)] not in self.chunk_update_queue:
+			self.chunk_update_queue.append(self.subchunks[(sx, sy, sz)])
 
 		def try_update_subchunk_mesh(subchunk_position):
 			if subchunk_position in self.subchunks:
-				self.subchunks[subchunk_position].update_mesh()
+				if not self.subchunks[subchunk_position] in self.chunk_update_queue:
+					self.chunk_update_queue.append(self.subchunks[subchunk_position])
 
 		if lx == subchunk.SUBCHUNK_WIDTH - 1: try_update_subchunk_mesh((sx + 1, sy, sz))
 		if lx == 0: try_update_subchunk_mesh((sx - 1, sy, sz))
@@ -171,6 +180,16 @@ class Chunk:
 
 		if lz == subchunk.SUBCHUNK_LENGTH - 1: try_update_subchunk_mesh((sx, sy, sz + 1))
 		if lz == 0: try_update_subchunk_mesh((sx, sy, sz - 1))
+
+	def process_chunk_updates(self):
+		for i in range(self.world.options.CHUNK_UPDATES):
+			if self.chunk_update_queue:
+				subchunk = self.chunk_update_queue.popleft()
+				subchunk.update_mesh()
+				self.world.chunk_update_counter += 1
+				if not self.chunk_update_queue:
+					self.world.chunk_building_queue.append(self)
+					return
 
 	def update_mesh(self):
 		# combine all the small subchunk meshes into one big chunk mesh
@@ -215,7 +234,7 @@ class Chunk:
 			(gl.GLfloat * len(self.translucent_mesh)) (*self.translucent_mesh)
 		)
 
-		if not options.INDIRECT_RENDERING:
+		if not self.world.options.INDIRECT_RENDERING:
 			return
 		
 		self.draw_commands = [
@@ -232,19 +251,19 @@ class Chunk:
 			(gl.GLuint * len(self.draw_commands)) (*self.draw_commands)
 		)
 
-	def draw_direct(self):
+	def draw_direct(self, mode):
 		if not self.mesh_quad_count:
 			return
 		gl.glBindVertexArray(self.vao)
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 		gl.glDrawElements(
-			gl.GL_TRIANGLES,
+			mode,
 			self.mesh_quad_count * 6,
 			gl.GL_UNSIGNED_INT,
 			None,
 		)
 
-	def draw_indirect(self):
+	def draw_indirect(self, mode):
 		if not self.mesh_quad_count:
 			return
 
@@ -252,17 +271,68 @@ class Chunk:
 		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
-		gl.glMemoryBarrier(gl.GL_COMMAND_BARRIER_BIT)
-
 		gl.glDrawElementsIndirect(
-			gl.GL_TRIANGLES,
+			mode,
 			gl.GL_UNSIGNED_INT,
 			None,
 		)
 
-	draw = draw_indirect if options.INDIRECT_RENDERING else draw_direct
+	def draw_direct_advanced(self, mode):
+		if not self.mesh_quad_count:
+			return
 
-	def draw_translucent_direct(self):
+		gl.glBindVertexArray(self.vao)
+		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+
+		gl.glBeginQuery(gl.GL_ANY_SAMPLES_PASSED, self.occlusion_query)
+		gl.glDrawElements(
+			mode,
+			self.mesh_quad_count * 6,
+			gl.GL_UNSIGNED_INT,
+			None,
+		)
+		gl.glEndQuery(gl.GL_ANY_SAMPLES_PASSED)
+
+		
+		gl.glBeginConditionalRender(self.occlusion_query, gl.GL_QUERY_BY_REGION_WAIT)
+		gl.glDrawElements(
+			mode,
+			self.mesh_quad_count * 6,
+			gl.GL_UNSIGNED_INT,
+			None,
+		)
+		gl.glEndConditionalRender()
+
+	def draw_indirect_advanced(self, mode):
+		if not self.mesh_quad_count:
+			return
+
+		gl.glBindVertexArray(self.vao)
+		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
+		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+
+		gl.glBeginQuery(gl.GL_ANY_SAMPLES_PASSED, self.occlusion_query)
+		gl.glDrawElementsIndirect(
+			mode,
+			gl.GL_UNSIGNED_INT,
+			None,
+		)
+		gl.glEndQuery(gl.GL_ANY_SAMPLES_PASSED)
+
+		
+		gl.glBeginConditionalRender(self.occlusion_query, gl.GL_QUERY_BY_REGION_WAIT)
+		gl.glDrawElementsIndirect(
+			mode,
+			gl.GL_UNSIGNED_INT,
+			None,
+		)
+		gl.glEndConditionalRender()
+
+	draw_normal = draw_indirect if options.INDIRECT_RENDERING else draw_direct
+	draw_advanced = draw_indirect_advanced if options.INDIRECT_RENDERING else draw_direct_advanced
+	draw = draw_advanced if options.ADVANCED_OPENGL else draw_normal
+
+	def draw_translucent_direct(self, mode):
 		if not self.mesh_quad_count:
 			return
 		
@@ -270,14 +340,14 @@ class Chunk:
 		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glDrawElementsBaseVertex(
-			gl.GL_TRIANGLES,
+			mode,
 			self.translucent_quad_count * 6,
 			gl.GL_UNSIGNED_INT,
 			None,
 			self.mesh_quad_count * 4
 		)
 
-	def draw_translucent_indirect(self):
+	def draw_translucent_indirect(self, mode):
 		if not self.translucent_quad_count:
 			return
 		
@@ -288,7 +358,7 @@ class Chunk:
 		gl.glMemoryBarrier(gl.GL_COMMAND_BARRIER_BIT)
 
 		gl.glDrawElementsIndirect(
-			gl.GL_TRIANGLES,
+			mode,
 			gl.GL_UNSIGNED_INT,
 			5 * ctypes.sizeof(gl.GLuint)  # offset pointer to the indirect command buffer pointing to the translucent mesh commands
 		)

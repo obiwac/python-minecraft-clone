@@ -2,7 +2,7 @@ import pyglet.input
 
 import controller
 import threading
-import camera
+import player
 import math
 import time
 
@@ -44,10 +44,10 @@ class Joystick_controller(controller.Controller):
 		if not self.game.mouse_captured or not self.joysticks:
 			return
 
-		self.game.camera.rotation[0] += self.joystick_look[0] * self.camera_sensitivity
-		self.game.camera.rotation[1] += -self.joystick_look[1] * self.camera_sensitivity
+		self.game.player.rotation[0] += self.joystick_look[0] * self.camera_sensitivity
+		self.game.player.rotation[1] += -self.joystick_look[1] * self.camera_sensitivity
 
-		self.game.camera.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.game.camera.rotation[1]))
+		self.game.player.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.game.player.rotation[1]))
 
 		if round(max(self.joystick_interact)) > 0 and (self.last_update + self.update_delay) <= time.process_time():
 			if round(self.joystick_interact[0]) > 0: self.interact(self.InteractMode.BREAK)
@@ -65,8 +65,8 @@ class Joystick_controller(controller.Controller):
 			elif button == 9: self.start_move(self.MoveMode.DOWN)
 
 			elif button == 8:
-				if self.game.camera.target_speed == camera.SPRINTING_SPEED: self.end_modifier(self.ModifierMode.SPRINT)
-				elif self.game.camera.target_speed == camera.WALKING_SPEED: self.start_modifier(self.ModifierMode.SPRINT)
+				if self.game.player.target_speed == player.SPRINTING_SPEED: self.end_modifier(self.ModifierMode.SPRINT)
+				elif self.game.player.target_speed == player.WALKING_SPEED: self.start_modifier(self.ModifierMode.SPRINT)
 
 		elif "wireless controller" == joystick.device.name.lower():
 			if button == 2: self.misc(self.MiscMode.RANDOM)
@@ -77,8 +77,8 @@ class Joystick_controller(controller.Controller):
 			elif button == 11: self.start_move(self.MoveMode.DOWN)
 
 			elif button == 10:
-				if self.game.camera.target_speed == camera.SPRINTING_SPEED: self.end_modifier(self.ModifierMode.SPRINT)
-				elif self.game.camera.target_speed == camera.WALKING_SPEED: self.start_modifier(self.ModifierMode.SPRINT)
+				if self.game.player.target_speed == player.SPRINTING_SPEED: self.end_modifier(self.ModifierMode.SPRINT)
+				elif self.game.player.target_speed == player.WALKING_SPEED: self.start_modifier(self.ModifierMode.SPRINT)
 
 	def on_joybutton_release(self, joystick, button):
 		if "xbox" in joystick.device.name.lower():

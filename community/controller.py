@@ -1,5 +1,6 @@
 import random
-import camera
+import player
+import chunk
 import hit
 
 from enum import IntEnum
@@ -16,6 +17,10 @@ class Controller:
 		ESCAPE = 2
 		SPEED_TIME = 3
 		FULLSCREEN = 4
+		FLY = 5
+		TELEPORT = 6
+		TOGGLE_F3 = 7
+		TOGGLE_AO = 8
 
 	class MoveMode(IntEnum):
 		LEFT = 0
@@ -33,11 +38,14 @@ class Controller:
 
 	def interact(self, mode):
 		def hit_callback(current_block, next_block):
-			if mode == self.InteractMode.PLACE: self.game.world.set_block(current_block, self.game.holding)
+			if mode == self.InteractMode.PLACE: self.game.world.try_set_block(current_block, self.game.holding, self.game.player.collider)
 			elif mode == self.InteractMode.BREAK: self.game.world.set_block(next_block, 0)
 			elif mode == self.InteractMode.PICK: self.game.holding = self.game.world.get_block_number(next_block)
 
-		hit_ray = hit.Hit_ray(self.game.world, self.game.camera.rotation, self.game.camera.position)
+		x, y, z = self.game.player.position
+		y += self.game.player.eyelevel
+
+		hit_ray = hit.Hit_ray(self.game.world, self.game.player.rotation, (x, y, z))
 
 		while hit_ray.distance < hit.HIT_RANGE:
 			if hit_ray.step(hit_callback):
@@ -55,9 +63,47 @@ class Controller:
 			self.game.world.speed_daytime()
 		elif mode == self.MiscMode.FULLSCREEN:
 			self.game.toggle_fullscreen()
+		elif mode == self.MiscMode.FLY:
+			self.game.player.flying = not self.game.player.flying
+		elif mode == self.MiscMode.TELEPORT:
+			# how large is the world?
+
+			max_y = 0
+
+			max_x, max_z = (0, 0)
+			min_x, min_z = (0, 0)
+
+			for pos in self.game.world.chunks:
+				x, y, z = pos
+
+				max_y = max(max_y, (y + 1) * chunk.CHUNK_HEIGHT)
+
+				max_x = max(max_x, (x + 1) * chunk.CHUNK_WIDTH)
+				min_x = min(min_x,  x      * chunk.CHUNK_WIDTH)
+
+				max_z = max(max_z, (z + 1) * chunk.CHUNK_LENGTH)
+				min_z = min(min_z,  z      * chunk.CHUNK_LENGTH)
+
+			# get random X & Z coordinates to teleport the player to
+
+			x = random.randint(min_x, max_x)
+			z = random.randint(min_z, max_z)
+
+			# find height at which to teleport to, by finding the first non-air block from the top of the world
+
+			for y in range(chunk.CHUNK_HEIGHT - 1,  -1, -1):
+				if not self.game.world.get_block_number((x, y, z)):
+					continue
+
+				self.game.player.teleport((x, y + 1, z))
+				break
+		elif mode == self.MiscMode.TOGGLE_F3:
+			self.game.show_f3 = not self.game.show_f3
+		elif mode == self.MiscMode.TOGGLE_AO:
+			self.game.world.toggle_AO()
 
 	def update_move(self, axis):
-		self.game.camera.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))
+		self.game.player.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))
 
 	def start_move(self, mode):
 		axis = int((mode if mode % 2 == 0 else mode - 1) / 2)
@@ -71,8 +117,8 @@ class Controller:
 
 	def start_modifier(self, mode):
 		if mode == self.ModifierMode.SPRINT:
-			self.game.camera.target_speed = camera.SPRINTING_SPEED
+			self.game.player.target_speed = player.SPRINTING_SPEED
 
 	def end_modifier(self, mode):
 		if mode == self.ModifierMode.SPRINT:
-			self.game.camera.target_speed = camera.WALKING_SPEED
+			self.game.player.target_speed = player.WALKING_SPEED
