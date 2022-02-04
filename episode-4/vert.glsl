@@ -1,6 +1,4 @@
-#version 300 es
-
-precision mediump float;
+#version 330
 
 layout(location = 0) in vec3 vertex_position;
 

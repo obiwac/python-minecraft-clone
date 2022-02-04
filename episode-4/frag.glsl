@@ -1,6 +1,4 @@
-#version 300 es
-
-precision mediump float;
+#version 330
 
 out vec4 fragment_colour;
 
