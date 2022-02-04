@@ -1,0 +1,12 @@
+# not actually sure of the ID's yet, I can't find a reference for them anywhere atm
+
+1:  name "Player", model player, texture steve
+2:  name "Pig", model pig, texture pig
+3:  name "Zombie", model zombie, texture zombie
+4:  name "Skeleton", model skeleton, texture skeleton
+5:  name "Creeper", model creeper, texture creeper
+6:  name "Spider", model spider, texture spider
+7:  name "Sheep", model sheep, texture sheep
+8:  name "Giant", model giant, texture giant
+9:  name "Cow", model cow, texture cow
+10: name "Slime", model slime, texture slime
