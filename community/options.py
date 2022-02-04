@@ -2,10 +2,10 @@
 import pyglet.gl as gl
 
 # Render Distance (in chunks)
-RENDER_DISTANCE = 3
+RENDER_DISTANCE = 30
 
 # Field of view
-FOV = 70
+FOV = 90
 
 # --------------------------------- Performance --------------------------------- 
 
@@ -25,7 +25,7 @@ CHUNK_UPDATES = 4
 VSYNC = False
 
 # Max CPU ahead frames
-MAX_CPU_AHEAD_FRAMES = 3 # Number of frames the CPU can be ahead of the GPU until waiting for it to finish rendering. 
+MAX_CPU_AHEAD_FRAMES = 0 # Number of frames the CPU can be ahead of the GPU until waiting for it to finish rendering. 
                            # Higher values gives higher framerate but causes framerate instability and higher frame spikes
                            # Lower values causes average lower framerate but gives smoother framerate
                            # Recommended values are between 0 and 9
@@ -38,7 +38,7 @@ SMOOTH_FPS = False # Legacy way to force the flushing of command buffer and forc
 # --------------------------------- Quality --------------------------------- 
 
 # Ambient Occlusion and Smooth Lighting
-SMOOTH_LIGHTING = False # Smooth Lighting smoothes the light of each vertex to achieve a linear interpolation
+SMOOTH_LIGHTING = True # Smooth Lighting smoothes the light of each vertex to achieve a linear interpolation
                        # of light on each fragment, hence creating a smoother light effect
                        # It also adds ambient occlusion, to simulate light blocked by opaqua objects
                        # Chunk updates / building will be severely affecteds by this feature
@@ -60,7 +60,7 @@ MIPMAP_TYPE = gl.GL_NEAREST # Linear filtering samples the texture in a bilinear
                             # Trilinear mipmap (GL_LINEAR_MIPMAP_LINEAR)
 
 # Colored Lighting      
-COLORED_LIGHTING = False # Uses an alternative shader program to achieve a more colored lighting
+COLORED_LIGHTING = True # Uses an alternative shader program to achieve a more colored lighting
                         # No performance impact should happen
                         # It aims to look similar to Beta 1.8+
                         # Disable for authentic Alpha - Beta look
