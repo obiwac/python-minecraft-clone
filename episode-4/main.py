@@ -85,12 +85,14 @@ class Window(pyglet.window.Window):
 
 		self.mv_matrix.load_identity()
 		self.mv_matrix.translate(0, 0, -1)
-		self.mv_matrix.rotate_2d(self.x, math.sin(self.x / 3 * 2) / 2)
+		#elf.mv_matrix.rotate_2d(self.x + 6.28 / 4, math.sin(self.x / 3 * 2) / 2)
 
 		# multiply the two matrices together and send to the shader program
 
 		mvp_matrix = self.p_matrix * self.mv_matrix
 		self.shader.uniform_matrix(self.shader_matrix_location, mvp_matrix)
+
+		print(sum(mvp_matrix.data, []))
 
 		# draw stuff
 
@@ -109,7 +111,7 @@ class Window(pyglet.window.Window):
 
 class Game:
 	def __init__(self):
-		self.config = gl.Config(double_buffer = True, major_version = 3)
+		self.config = gl.Config(double_buffer = True, major_version = 3, minor_version = 3)
 		self.window = Window(config = self.config, width = 800, height = 600, caption = "Minecraft clone", resizable = True, vsync = False)
 	
 	def run(self):
