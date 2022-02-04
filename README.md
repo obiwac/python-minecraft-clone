@@ -15,7 +15,7 @@ and for Debian-based Linux distros:
 
 [<img alt = "Setup: Linux" src = "https://i.imgur.com/9rZiv4B.png" width = 25% />](https://youtu.be/TtkTkfwwefA?list=PL6_bLxRDFzoKjaa3qCGkwR5L_ouSreaVP)
 
-The `pyglet` module is a necessary dependency for all episodes. The `nbtlib` & `base36` modules are necessary dependencies for all episodes starting with 11, and the `pyglm` module is necessary for the `community` directory. You can install them with PIP by issuing:
+The `pyglet` module is a necessary dependency for all episodes, the `nbtlib` & `base36` modules are necessary dependencies for all episodes starting with 11, and the `pyglm` module is necessary for the `community` directory. You can install them with PIP by issuing:
 
 ```shell
 $ pip install --user pyglet nbtlib base36 pyglm
