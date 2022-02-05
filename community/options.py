@@ -2,10 +2,10 @@
 import pyglet.gl as gl
 
 # Render Distance (in chunks)
-RENDER_DISTANCE = 30
+RENDER_DISTANCE = 4
 
 # Field of view
-FOV = 90
+FOV = 70
 
 # --------------------------------- Performance --------------------------------- 
 
