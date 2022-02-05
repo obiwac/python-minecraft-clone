@@ -5,7 +5,7 @@ import pyglet.gl as gl
 RENDER_DISTANCE = 4
 
 # Field of view
-FOV = 70
+FOV = 90
 
 # --------------------------------- Performance --------------------------------- 
 
