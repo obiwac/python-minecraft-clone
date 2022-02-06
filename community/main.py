@@ -5,8 +5,9 @@ from scene import __WIDTH__
 from scene import __HEIGHT__
 from scene import convert_hashColor_to_RGBA
 from time import time, sleep
-import options
 from gamemain import GameMain
+from gui import GuiButton
+import options
 import os
 import logging
 
@@ -65,20 +66,31 @@ class MenuScreen(Scene):
 
 		self.screen_text = pyglet.text.Label('Minecraft', font_size=50, font_name=('Verdana', 'Calibri', 'Arial'), x=self.window.width/2, y=self.window.height/2+170, multiline=False, width=self.window.width, height=self.window.height, color=(100, 100, 100, 255), anchor_x='center')
 
-		button_texture = pyglet.image.load('textures/button.png')
-		self.button_sprite = pyglet.sprite.Sprite(button_texture, x=self.window.width/2-button_texture.width, y=self.window.height/2-button_texture.height)
-		self.signal_text = pyglet.text.Label('Singelplayer', font_size=10, font_name=('Verdana', 'Calibri', 'Arial'), x=self.button_sprite.x, y=self.button_sprite.y, multiline=False, width=self.button_sprite.width, height=self.button_sprite.height, color=(255, 255, 255, 255), anchor_x='center')
+		self.singelplayer = GuiButton(self.on_singelplayer, self.window, self.window.width/2, self.window.height/2+25, 'Singelplayer')
+		self.multiplayer = GuiButton(self.on_multilplayer, self.window, self.window.width/2, self.window.height/2, 'Multiplayer')
+		self.options = GuiButton(self.on_options, self.window, self.window.width/2, self.window.height/2-25, 'Options')
+
+
+	def on_singelplayer(self):
+		self.window.set_scene(GameMain(self.window))
+
+	def on_multilplayer(self):
+		print("No multiplayer yet")
+
+	def on_options(self):
+		print("No options yet")
 
 	def on_mouse_press(self, x, y, button, modifiers):
-		if x > self.button_sprite.x and x < (self.button_sprite.x + self.button_sprite.width):
-			if y > self.button_sprite.y and y < (self.button_sprite.y + self.button_sprite.height):
-				self.window.set_scene(GameMain(self.window))
+		self.singelplayer.on_mouse_press(x, y, button, modifiers)
+		self.multiplayer.on_mouse_press(x, y, button, modifiers)
+		self.options.on_mouse_press(x, y, button, modifiers)
 
 	def on_draw(self):
 		self.draw()
 		self.screen_text.draw()
-		self.button_sprite.draw()
-		self.signal_text.draw()
+		self.singelplayer.draw()
+		self.multiplayer.draw()
+		self.options.draw()
 
 class Window(pyglet.window.Window):
 	def __init__(self, refreshrate, **args):
