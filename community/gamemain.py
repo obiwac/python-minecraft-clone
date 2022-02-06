@@ -150,6 +150,9 @@ Display: {gl.gl_info.get_renderer()}
 		self.window.mouse_captured = False
 		self.window.set_exclusive_mouse(False)
 		self.show_pause = True
+		self.media_player.delete()
+		for fence in self.fences:
+			gl.glDeleteSync(fence)
 		self.world.save.save()
 		self.window.show_menu()
 
