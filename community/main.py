@@ -67,7 +67,7 @@ class MenuScreen(Scene):
 
 		button_texture = pyglet.image.load('textures/button.png')
 		self.button_sprite = pyglet.sprite.Sprite(button_texture, x=self.window.width/2-button_texture.width, y=self.window.height/2-button_texture.height)
-		self.signal_text = pyglet.text.Label('Singalplayer', font_size=10, font_name=('Verdana', 'Calibri', 'Arial'), x=self.button_sprite.x, y=self.button_sprite.y, multiline=False, width=self.button_sprite.width, height=self.button_sprite.height, color=(255, 255, 255, 255), anchor_x='center')
+		self.signal_text = pyglet.text.Label('Singelplayer', font_size=10, font_name=('Verdana', 'Calibri', 'Arial'), x=self.button_sprite.x, y=self.button_sprite.y, multiline=False, width=self.button_sprite.width, height=self.button_sprite.height, color=(255, 255, 255, 255), anchor_x='center')
 
 	def on_mouse_press(self, x, y, button, modifiers):
 		if x > self.button_sprite.x and x < (self.button_sprite.x + self.button_sprite.width):
