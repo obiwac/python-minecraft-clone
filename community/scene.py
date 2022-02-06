@@ -57,3 +57,5 @@ class Scene(pyglet.sprite.Sprite):
 		self.image.height = height
 		self.image.anchor_x = self.image.width / 2
 		self.image.anchor_y = self.image.height / 2
+		self.x = width/2
+		self.y = height/2

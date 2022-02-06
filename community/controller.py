@@ -59,6 +59,11 @@ class Controller:
 		elif mode == self.MiscMode.ESCAPE:
 			self.game.window.mouse_captured = False
 			self.game.window.set_exclusive_mouse(False)
+			self.game.show_pause = True
+			self.end_move(self.MoveMode.RIGHT)
+			self.end_move(self.MoveMode.LEFT)
+			self.end_move(self.MoveMode.FORWARD)
+			self.end_move(self.MoveMode.BACKWARD)
 		elif mode == self.MiscMode.SPEED_TIME:
 			self.game.world.speed_daytime()
 		elif mode == self.MiscMode.FULLSCREEN:
@@ -116,9 +121,9 @@ class Controller:
 		self.update_move(axis)
 
 	def start_modifier(self, mode):
-		if mode == self.ModifierMode.SPRINT:
+		if mode == self.ModifierMode.SPRINT and not self.game.show_pause:
 			self.game.player.target_speed = player.SPRINTING_SPEED
 
 	def end_modifier(self, mode):
-		if mode == self.ModifierMode.SPRINT:
+		if mode == self.ModifierMode.SPRINT and not self.game.show_pause:
 			self.game.player.target_speed = player.WALKING_SPEED

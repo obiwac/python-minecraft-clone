@@ -7,6 +7,7 @@ import os
 
 import pyglet
 from scene import Scene
+from gui import GuiButton
 
 pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
@@ -43,6 +44,10 @@ class GameMain(Scene):
 			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
 			Please disable "INDIRECT_RENDERING" in options.py""")
 	
+		# Pause menu
+		self.show_pause = False
+		self.back_to_game = GuiButton(self.on_back_to_game, self.window, self.window.width/2, self.window.height/2+25, 'Back to game')
+
 		# F3 Debug Screen
 
 		self.show_f3 = False
@@ -139,6 +144,11 @@ Display: {gl.gl_info.get_renderer()}
 
 		# GPU command syncs
 		self.fences = deque()
+
+	def on_back_to_game(self):
+		self.window.mouse_captured = True
+		self.window.set_exclusive_mouse(True)
+		self.show_pause = False
 		
 	def toggle_fullscreen(self):
 		self.set_fullscreen(not self.fullscreen)
@@ -220,12 +230,37 @@ Buffer Uploading: Direct (glBufferSubData)
 		# Draw the F3 Debug screen
 		if self.show_f3:
 			self.draw_f3()
+		
+		# Draw pause menu
+		if self.show_pause:
+			self.draw_pause()
 
 		# CPU - GPU Sync
 		if not self.options.SMOOTH_FPS:
 			self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
 		else:
 			gl.glFinish()
+
+	def draw_pause(self):
+		"""Draws the pause screen. Current uses the fixed-function pipeline since pyglet labels uses it"""
+		gl.glDisable(gl.GL_DEPTH_TEST)
+		gl.glUseProgram(0) 
+		gl.glBindVertexArray(0)
+		gl.glMatrixMode(gl.GL_MODELVIEW)
+		gl.glPushMatrix()
+		gl.glLoadIdentity()
+
+		gl.glMatrixMode(gl.GL_PROJECTION)
+		gl.glPushMatrix()
+		gl.glLoadIdentity()
+		gl.glOrtho(0, self.width, 0, self.height, -1, 1)
+
+		self.back_to_game.draw()
+
+		gl.glPopMatrix()
+
+		gl.glMatrixMode(gl.GL_MODELVIEW)
+		gl.glPopMatrix()
 
 	def draw_f3(self):
 		"""Draws the f3 debug screen. Current uses the fixed-function pipeline since pyglet labels uses it"""

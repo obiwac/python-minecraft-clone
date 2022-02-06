@@ -1,4 +1,4 @@
-from re import I
+from re import I, S
 import pyglet
 from scene import Scene
 from scene import __WIDTH__
@@ -109,6 +109,9 @@ class Window(pyglet.window.Window):
 
 		self.currentScreen = IntroScreen(self)
 		self.screen_has_been_shown_since = time()
+
+	def show_menu(self):
+		self.currentScreen = MenuScreen(self)
 
 	def set_scene(self, scene):
 		self.currentScreen = scene
