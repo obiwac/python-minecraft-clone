@@ -568,9 +568,9 @@ class World:
 			if self.daylight >= 1800:
 				self.incrementer = 0
 
-		if self.time % 600 == 0:
+		if self.time % 36000 == 0:
 			self.incrementer = 1
-		elif self.time % 600 == 300:
+		elif self.time % 36000 == 18000:
 			self.incrementer = -1
 
 		self.daylight += self.incrementer
@@ -587,7 +587,7 @@ class World:
 	
 	def tick(self, delta_time):
 		self.chunk_update_counter = 0
-		self.time += delta_time
+		self.time += 1
 		self.pending_chunk_update_count = sum(len(chunk.chunk_update_queue) for chunk in self.chunks.values())
 		self.update_daylight()
 		self.build_pending_chunks()
