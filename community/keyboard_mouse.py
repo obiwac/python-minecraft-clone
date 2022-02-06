@@ -23,6 +23,7 @@ class Keyboard_Mouse(controller.Controller):
 			return
 		elif self.game.show_pause:
 			self.game.back_to_game.on_mouse_press(x, y, button, modifiers)
+			self.game.save_game.on_mouse_press(x, y, button, modifiers)
 		else:
 			if button == pyglet.window.mouse.RIGHT: self.interact(self.InteractMode.PLACE)
 			elif button == pyglet.window.mouse.LEFT: self.interact(self.InteractMode.BREAK)
@@ -38,6 +39,7 @@ class Keyboard_Mouse(controller.Controller):
 			self.game.player.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.game.player.rotation[1]))
 		elif self.game.show_pause:
 			self.game.back_to_game.on_mouse_motion(x, y, delta_x, delta_y)
+			self.game.save_game.on_mouse_motion(x, y, delta_x, delta_y)
 
 	def on_mouse_drag(self, x, y, delta_x, delta_y, buttons, modifiers):
 		self.on_mouse_motion(x, y, delta_x, delta_y)

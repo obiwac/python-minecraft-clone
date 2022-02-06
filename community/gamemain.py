@@ -47,6 +47,7 @@ class GameMain(Scene):
 		# Pause menu
 		self.show_pause = False
 		self.back_to_game = GuiButton(self.on_back_to_game, self.window, self.window.width/2, self.window.height/2+25, 'Back to game')
+		self.save_game = GuiButton(self.on_save_game, self.window, self.window.width/2, self.window.height/2, 'Save and quit to title')
 
 		# F3 Debug Screen
 
@@ -144,6 +145,13 @@ Display: {gl.gl_info.get_renderer()}
 
 		# GPU command syncs
 		self.fences = deque()
+
+	def on_save_game(self):
+		self.window.mouse_captured = False
+		self.window.set_exclusive_mouse(False)
+		self.show_pause = True
+		self.world.save.save()
+		self.window.show_menu()
 
 	def on_back_to_game(self):
 		self.window.mouse_captured = True
@@ -256,6 +264,7 @@ Buffer Uploading: Direct (glBufferSubData)
 		gl.glOrtho(0, self.width, 0, self.height, -1, 1)
 
 		self.back_to_game.draw()
+		self.save_game.draw()
 
 		gl.glPopMatrix()
 
@@ -295,3 +304,6 @@ Buffer Uploading: Direct (glBufferSubData)
 		self.player.view_height = height
 		self.f3.y = self.height - 10
 		self.f3.width = self.width // 3
+
+		self.back_to_game = GuiButton(self.on_back_to_game, self.window, self.window.width/2, self.window.height/2+25, 'Back to game')
+		self.save_game = GuiButton(self.on_back_to_game, self.window, self.window.width/2, self.window.height/2, 'Save and quit to title')

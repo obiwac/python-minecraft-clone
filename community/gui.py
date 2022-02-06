@@ -6,14 +6,14 @@ class GuiButton():
 		self.window = window
 		self.text = text
 		self.hovered=False
-		button_texture = pyglet.image.load('textures/button.png')
-		button_texture_hover = pyglet.image.load('textures/button_hover.png')
-		self.font_size = button_texture.height/2
-		self.x = x-button_texture.width/2
-		self.y = y-button_texture.height/2
-		self.button_sprite = pyglet.sprite.Sprite(button_texture, x=self.x, y=self.y)
-		self.button_sprite_hover = pyglet.sprite.Sprite(button_texture_hover, x=self.x, y=self.y)
-		self.button_text = pyglet.text.Label(text, font_size=self.font_size, font_name=('Verdana', 'Calibri', 'Arial'), x=self.button_sprite.x+button_texture.width/2, y=(self.button_sprite.y+button_texture.height/2)-self.font_size/2, multiline=False, width=self.button_sprite.width, height=self.button_sprite.height, color=(255, 255, 255, 255), anchor_x='center')
+		self.button_texture = pyglet.image.load('textures/button.png')
+		self.button_texture_hover = pyglet.image.load('textures/button_hover.png')
+		self.font_size = self.button_texture.height/2
+		self.x = x-self.button_texture.width/2
+		self.y = y-self.button_texture.height/2
+		self.button_sprite = pyglet.sprite.Sprite(self.button_texture, x=self.x, y=self.y)
+		self.button_sprite_hover = pyglet.sprite.Sprite(self.button_texture_hover, x=self.x, y=self.y)
+		self.button_text = pyglet.text.Label(text, font_size=self.font_size, font_name=('Verdana', 'Calibri', 'Arial'), x=self.button_sprite.x+self.button_texture.width/2, y=(self.button_sprite.y+self.button_texture.height/2)-self.font_size/2, multiline=False, width=self.button_sprite.width, height=self.button_sprite.height, color=(255, 255, 255, 255), anchor_x='center')
 
 	def draw(self):
 		if self.hovered:
