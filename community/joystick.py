@@ -41,7 +41,7 @@ class Joystick_controller(controller.Controller):
 			joystick.open(exclusive=True)
 
 	def update_controller(self):
-		if not self.game.mouse_captured or not self.joysticks:
+		if not self.game.window.mouse_captured or not self.joysticks:
 			return
 
 		self.game.player.rotation[0] += self.joystick_look[0] * self.camera_sensitivity

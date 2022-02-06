@@ -1,0 +1,14 @@
+[LOGS]
+[2022-02-05 13:31:15,444] [MainProcess/MainThread/INFO] (gamemain.py/__init__) System Info: Python: CPython 3.10.2
+System: AMD64 Windows 10 10.0.19044
+CPU: Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
+Display: Intel(R) UHD Graphics 630 
+4.6.0 - Build 26.20.100.7926
+[2022-02-05 13:31:15,444] [MainProcess/MainThread/INFO] (gamemain.py/__init__) Compiling Shaders
+[2022-02-05 13:31:15,459] [MainProcess/MainThread/INFO] (gamemain.py/__init__) Creating Texture Array
+[2022-02-05 13:31:15,459] [MainProcess/MainThread/INFO] (world.py/__init__) Loading block models
+[2022-02-05 13:31:15,844] [MainProcess/MainThread/INFO] (save.py/load) Loading world
+[2022-02-05 13:31:21,719] [MainProcess/MainThread/INFO] (world.py/__init__) Lighting chunks
+[2022-02-05 13:31:35,630] [MainProcess/MainThread/INFO] (world.py/__init__) Generating chunks
+[2022-02-05 13:31:35,646] [MainProcess/MainThread/INFO] (gamemain.py/__init__) Setting up player & camera
+[2022-02-05 13:31:35,693] [MainProcess/MainThread/INFO] (gamemain.py/__init__) Loading audio

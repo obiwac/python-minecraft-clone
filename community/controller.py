@@ -57,8 +57,8 @@ class Controller:
 		elif mode == self.MiscMode.SAVE:
 			self.game.world.save.save()
 		elif mode == self.MiscMode.ESCAPE:
-			self.game.mouse_captured = False
-			self.game.set_exclusive_mouse(False)
+			self.game.window.mouse_captured = False
+			self.game.window.set_exclusive_mouse(False)
 		elif mode == self.MiscMode.SPEED_TIME:
 			self.game.world.speed_daytime()
 		elif mode == self.MiscMode.FULLSCREEN:
