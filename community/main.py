@@ -85,6 +85,11 @@ class MenuScreen(Scene):
 		self.multiplayer.on_mouse_press(x, y, button, modifiers)
 		self.options.on_mouse_press(x, y, button, modifiers)
 
+	def on_mouse_motion(self, x, y, delta_x, delta_y):
+		self.singelplayer.on_mouse_motion(x, y, delta_x, delta_y)
+		self.multiplayer.on_mouse_motion(x, y, delta_x, delta_y)
+		self.options.on_mouse_motion(x, y, delta_x, delta_y)
+
 	def on_draw(self):
 		self.draw()
 		self.screen_text.draw()
