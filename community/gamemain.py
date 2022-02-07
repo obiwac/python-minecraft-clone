@@ -162,7 +162,7 @@ Display: {gl.gl_info.get_renderer()}
 		self.show_pause = False
 		
 	def toggle_fullscreen(self):
-		self.set_fullscreen(not self.fullscreen)
+		self.window.set_fullscreen(not self.window.fullscreen)
 
 	def on_close(self):
 		logging.info("Deleting media player")

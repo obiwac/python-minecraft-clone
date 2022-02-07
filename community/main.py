@@ -64,36 +64,30 @@ class MenuScreen(Scene):
 
 		super(MenuScreen, self).__init__(window, texture=image, color='#000000')
 
-		self.screen_text = pyglet.text.Label('Minecraft', font_size=50, font_name=('Verdana', 'Calibri', 'Arial'), x=self.window.width/2, y=self.window.height/2+170, multiline=False, width=self.window.width, height=self.window.height, color=(100, 100, 100, 255), anchor_x='center')
+		image = pyglet.image.load("textures/logo.png")
+		self.logo = pyglet.sprite.Sprite(image, x=(self.window.width/2)-image.width/2, y=self.window.height-100)
 
-		self.singelplayer = GuiButton(self.on_singelplayer, self.window, self.window.width/2, self.window.height/2+25, 'Singelplayer')
-		self.multiplayer = GuiButton(self.on_multilplayer, self.window, self.window.width/2, self.window.height/2, 'Multiplayer')
-		self.options = GuiButton(self.on_options, self.window, self.window.width/2, self.window.height/2-25, 'Options')
+		self.singleplayer = GuiButton(self.on_singleplayer, self.window, self.window.width/2, self.window.height/2+25, 'Singleplayer')
+		self.multiplayer = GuiButton(None, self.window, self.window.width/2, self.window.height/2, 'Multiplayer', locked=True)
+		self.options = GuiButton(None, self.window, self.window.width/2, self.window.height/2-25, 'Options', locked=True)
 
-
-	def on_singelplayer(self):
+	def on_singleplayer(self):
 		self.window.set_scene(GameMain(self.window))
 
-	def on_multilplayer(self):
-		print("No multiplayer yet")
-
-	def on_options(self):
-		print("No options yet")
-
 	def on_mouse_press(self, x, y, button, modifiers):
-		self.singelplayer.on_mouse_press(x, y, button, modifiers)
+		self.singleplayer.on_mouse_press(x, y, button, modifiers)
 		self.multiplayer.on_mouse_press(x, y, button, modifiers)
 		self.options.on_mouse_press(x, y, button, modifiers)
 
 	def on_mouse_motion(self, x, y, delta_x, delta_y):
-		self.singelplayer.on_mouse_motion(x, y, delta_x, delta_y)
+		self.singleplayer.on_mouse_motion(x, y, delta_x, delta_y)
 		self.multiplayer.on_mouse_motion(x, y, delta_x, delta_y)
 		self.options.on_mouse_motion(x, y, delta_x, delta_y)
 
 	def on_draw(self):
 		self.draw()
-		self.screen_text.draw()
-		self.singelplayer.draw()
+		self.logo.draw()
+		self.singleplayer.draw()
 		self.multiplayer.draw()
 		self.options.draw()
 
@@ -109,6 +103,7 @@ class Window(pyglet.window.Window):
 
 		self.currentScreen = IntroScreen(self)
 		self.screen_has_been_shown_since = time()
+		self.not_first = 0
 
 	def show_menu(self):
 		self.currentScreen = MenuScreen(self)
@@ -147,6 +142,13 @@ class Window(pyglet.window.Window):
 	def on_close(self):
 		self.currentScreen.on_close()
 		self.alive = 0
+
+	# def on_resize(self, width, height):
+	# 	if self.not_first > 5:
+	# 		print("s")
+	# 		self.not_first = 0
+	# 		self.currentScreen.on_resize(width, height)
+	# 	self.not_first += 1
 
 	def run(self):
 		while self.alive:
