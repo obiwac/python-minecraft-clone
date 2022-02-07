@@ -67,9 +67,9 @@ class MenuScreen(Scene):
 		image = pyglet.image.load("textures/logo.png")
 		self.logo = pyglet.sprite.Sprite(image, x=(self.window.width/2)-image.width/2, y=self.window.height-100)
 
-		self.singleplayer = GuiButton(self.on_singleplayer, self.window, self.window.width/2, self.window.height/2+25, 'Singleplayer')
+		self.singleplayer = GuiButton(self.on_singleplayer, self.window, self.window.width/2, self.window.height/2+35, 'Singleplayer')
 		self.multiplayer = GuiButton(None, self.window, self.window.width/2, self.window.height/2, 'Multiplayer', locked=True)
-		self.options = GuiButton(None, self.window, self.window.width/2, self.window.height/2-25, 'Options', locked=True)
+		self.options = GuiButton(None, self.window, self.window.width/2, self.window.height/2-35, 'Options', locked=True)
 
 	def on_singleplayer(self):
 		self.window.set_scene(GameMain(self.window))

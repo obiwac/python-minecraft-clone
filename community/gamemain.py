@@ -46,7 +46,7 @@ class GameMain(Scene):
 	
 		# Pause menu
 		self.show_pause = False
-		self.back_to_game = GuiButton(self.on_back_to_game, self.window, self.window.width/2, self.window.height/2+25, 'Back to game')
+		self.back_to_game = GuiButton(self.on_back_to_game, self.window, self.window.width/2, self.window.height/2+35, 'Back to game')
 		self.save_game = GuiButton(self.on_save_game, self.window, self.window.width/2, self.window.height/2, 'Save and quit to title')
 
 		# F3 Debug Screen
