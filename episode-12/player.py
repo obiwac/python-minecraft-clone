@@ -33,17 +33,22 @@ class Player(entity.Entity):
 	def update(self, delta_time):
 		# process input
 
-		self.speed += (self.target_speed - self.speed) * delta_time * 20
-		multiplier = self.speed
+		if delta_time * 20 > 1:
+			self.speed = self.target_speed
+
+		else:
+			self.speed += (self.target_speed - self.speed) * delta_time * 20
+
+		multiplier = self.speed * (1, 2)[self.flying]
 
 		if self.flying and self.input[1]:
-			self.velocity[1] = self.input[1] * multiplier
+			self.accel[1] = self.input[1] * multiplier
 
 		if self.input[0] or self.input[2]:
 			angle = self.rotation[0] - math.atan2(self.input[2], self.input[0]) + math.tau / 4
 
-			self.velocity[0] = math.cos(angle) * multiplier
-			self.velocity[2] = math.sin(angle) * multiplier
+			self.accel[0] = math.cos(angle) * multiplier
+			self.accel[2] = math.sin(angle) * multiplier
 
 		if not self.flying and self.input[1] > 0:
 			self.jump()

@@ -4,6 +4,14 @@ import collider
 FLYING_ACCEL = (0, 0, 0)
 GRAVITY_ACCEL = (0, -32, 0)
 
+# these values all come (losely) from Minecraft, but are multiplied by 20 (since Minecraft runs at 20 TPS)
+
+FRICTION = (14, 14, 14)
+
+DRAG_FLY  = (  5,   5,   5)
+DRAG_JUMP = (1.8,   0, 1.8)
+DRAG_FALL = (1.8, 0.4, 1.8)
+
 class Entity:
 	def __init__(self, world):
 		self.world = world
@@ -17,6 +25,7 @@ class Entity:
 		self.rotation = [-math.tau / 4, 0]
 
 		self.velocity = [0, 0, 0]
+		self.accel = [0, 0, 0]
 
 		# collision variables
 
@@ -53,7 +62,25 @@ class Entity:
 
 		self.velocity[1] = math.sqrt(2 * height * -GRAVITY_ACCEL[1])
 
+	@property
+	def friction(self):
+		if self.flying:
+			return DRAG_FLY
+
+		elif self.grounded:
+			return FRICTION
+
+		elif self.velocity[1] > 0:
+			return DRAG_JUMP
+
+		return DRAG_FALL
+
 	def update(self, delta_time):
+		# apply input acceleration, and adjust for friction/drag
+
+		self.velocity = [v + a * f * delta_time for v, a, f in zip(self.velocity, self.accel, self.friction)]
+		self.accel = [0, 0, 0]
+
 		# compute collisions
 
 		self.update_collider()
@@ -120,26 +147,14 @@ class Entity:
 
 		self.position = [x + v * delta_time for x, v in zip(self.position, self.velocity)]
 
-		# process physics (apply acceleration, friction, & drag)
+		# apply gravity acceleration
 
-		acceleration = (GRAVITY_ACCEL, FLYING_ACCEL)[self.flying]
-		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, acceleration)]
+		gravity = (GRAVITY_ACCEL, FLYING_ACCEL)[self.flying]
+		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, gravity)]
 
-		if self.grounded or self.flying:
-			k = 0.05 ** (20 * delta_time) # takes 95% off of current velocity every 20th of a second
+		# apply friction/drag
 
-			self.velocity[0] *= k
-			self.velocity[1] *= k
-			self.velocity[2] *= k
-
-		else:
-			k = 0.98 ** (20 * delta_time) # takes 2% off of current velocity every 20th of a second
-
-			self.velocity[0] *= k
-			self.velocity[2] *= k
-
-			if self.velocity[1] < 0:
-				self.velocity[1] *= k
+		self.velocity = [v - min(v * f * delta_time, v, key = abs) for v, f in zip(self.velocity, self.friction)]
 
 		# make sure we can rely on the entity's collider outside of this function
 
