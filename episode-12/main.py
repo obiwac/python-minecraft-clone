@@ -47,7 +47,7 @@ class Window(pyglet.window.Window):
 		# misc stuff
 
 		self.holding = 44 # 5
-	
+
 	def update(self, delta_time):
 		# print(f"FPS: {1.0 / delta_time}")
 
@@ -55,7 +55,7 @@ class Window(pyglet.window.Window):
 			self.player.input = [0, 0, 0]
 
 		self.player.update(delta_time)
-	
+
 	def on_draw(self):
 		self.player.update_matrices()
 
@@ -75,7 +75,7 @@ class Window(pyglet.window.Window):
 		self.world.draw()
 
 		gl.glFinish()
-	
+
 	# input functions
 
 	def on_resize(self, width, height):
@@ -107,7 +107,7 @@ class Window(pyglet.window.Window):
 		while hit_ray.distance < hit.HIT_RANGE:
 			if hit_ray.step(hit_callback):
 				break
-	
+
 	def on_mouse_motion(self, x, y, delta_x, delta_y):
 		if self.mouse_captured:
 			sensitivity = 0.004
@@ -116,10 +116,10 @@ class Window(pyglet.window.Window):
 			self.player.rotation[1] += delta_y * sensitivity
 
 			self.player.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.player.rotation[1]))
-	
+
 	def on_mouse_drag(self, x, y, delta_x, delta_y, buttons, modifiers):
 		self.on_mouse_motion(x, y, delta_x, delta_y)
-	
+
 	def on_key_press(self, key, modifiers):
 		if not self.mouse_captured:
 			return
@@ -178,7 +178,7 @@ class Window(pyglet.window.Window):
 		elif key == pyglet.window.key.ESCAPE:
 			self.mouse_captured = False
 			self.set_exclusive_mouse(False)
-	
+
 	def on_key_release(self, key, modifiers):
 		if not self.mouse_captured:
 			return
@@ -196,7 +196,7 @@ class Game:
 	def __init__(self):
 		self.config = gl.Config(major_version = 3, minor_version = 3, depth_size = 16)
 		self.window = Window(config = self.config, width = 800, height = 600, caption = "Minecraft clone", resizable = True, vsync = False)
-	
+
 	def run(self):
 		pyglet.app.run()
 
