@@ -170,8 +170,7 @@ class Player(entity.Entity):
 		self.mv_matrix = glm.mat4(1.0)
 		self.mv_matrix = glm.rotate(self.mv_matrix, self.rotation[1], -glm.vec3(1.0, 0.0, 0.0))
 		self.mv_matrix = glm.rotate(self.mv_matrix, self.rotation[0] + math.tau / 4, glm.vec3(0.0, 1.0, 0.0))
-		
-		self.position = glm.vec3(*self.position)
+
 		self.mv_matrix = glm.translate(self.mv_matrix, -glm.vec3(*self.interpolated_position) - glm.vec3(0, self.eyelevel, 0))
 
 		# modelviewprojection matrix
