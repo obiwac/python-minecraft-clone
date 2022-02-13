@@ -162,7 +162,7 @@ class Player(entity.Entity):
 		# create projection matrix
 		
 		self.p_matrix = glm.perspective(
-			glm.radians(options.FOV + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED)),
+			glm.radians(options.FOV + 10 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED)),
 			float(self.view_width) / self.view_height, 0.1, 500)
 
 		# create modelview matrix
