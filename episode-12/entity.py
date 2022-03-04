@@ -60,7 +60,7 @@ class Entity:
 		if height is None:
 			height = self.jump_height
 
-		self.velocity[1] = math.sqrt(2 * height * -GRAVITY_ACCEL[1])
+		self.velocity[1] = math.sqrt(-2 * GRAVITY_ACCEL[1] * height)
 
 	@property
 	def friction(self):
@@ -149,7 +149,7 @@ class Entity:
 
 		# apply gravity acceleration
 
-		gravity = (GRAVITY_ACCEL, FLYING_ACCEL)[self.flying]
+		gravity = FLYING_ACCEL if self.flying else GRAVITY_ACCEL
 		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, gravity)]
 
 		# apply friction/drag
