@@ -1,12 +1,12 @@
 import math
 import collider
 
-FLYING_ACCEL = (0, 0, 0)
+FLYING_ACCEL  = (0,   0, 0)
 GRAVITY_ACCEL = (0, -32, 0)
 
 # these values all come (losely) from Minecraft, but are multiplied by 20 (since Minecraft runs at 20 TPS)
 
-FRICTION = (14, 14, 14)
+FRICTION  = ( 20,  20,  20)
 
 DRAG_FLY  = (  5,   5,   5)
 DRAG_JUMP = (1.8,   0, 1.8)
@@ -60,7 +60,7 @@ class Entity:
 		if height is None:
 			height = self.jump_height
 
-		self.velocity[1] = math.sqrt(2 * height * -GRAVITY_ACCEL[1])
+		self.velocity[1] = math.sqrt(-2 * GRAVITY_ACCEL[1] * height)
 
 	@property
 	def friction(self):
@@ -149,7 +149,7 @@ class Entity:
 
 		# apply gravity acceleration
 
-		gravity = (GRAVITY_ACCEL, FLYING_ACCEL)[self.flying]
+		gravity = FLYING_ACCEL if self.flying else GRAVITY_ACCEL
 		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, gravity)]
 
 		# apply friction/drag

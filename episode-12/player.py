@@ -63,7 +63,7 @@ class Player(entity.Entity):
 		self.p_matrix.load_identity()
 		
 		self.p_matrix.perspective(
-			90 + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED),
+			90 + 10 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED),
 			float(self.view_width) / self.view_height, 0.1, 500)
 
 		# create modelview matrix

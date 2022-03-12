@@ -83,15 +83,15 @@ class Save:
 
 		# for x in range(-1, 15):
 		# 	for y in range(-15, 1):
-		# 		self.load_chunk((x, y))
+		# 		self.load_chunk((x, 0, y))
 
 		for x in range(-4, 4):
 			for y in range(-4, 4):
 				self.load_chunk((x, 0, y))
 
 		# for x in range(-1, 1):
-		# 	for y in range(-1, 1):
-		# 		self.load_chunk((x, 0, y))
+		#  	for y in range(-1, 1):
+		#  		self.load_chunk((x, 0, y))
 
 		for chunk_position, unlit_chunk in self.world.chunks.items():
 			for x in range(chunk.CHUNK_WIDTH):

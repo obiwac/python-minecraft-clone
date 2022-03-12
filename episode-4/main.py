@@ -85,14 +85,12 @@ class Window(pyglet.window.Window):
 
 		self.mv_matrix.load_identity()
 		self.mv_matrix.translate(0, 0, -1)
-		#elf.mv_matrix.rotate_2d(self.x + 6.28 / 4, math.sin(self.x / 3 * 2) / 2)
+		self.mv_matrix.rotate_2d(self.x + 6.28 / 4, math.sin(self.x / 3 * 2) / 2)
 
 		# multiply the two matrices together and send to the shader program
 
 		mvp_matrix = self.p_matrix * self.mv_matrix
 		self.shader.uniform_matrix(self.shader_matrix_location, mvp_matrix)
-
-		print(sum(mvp_matrix.data, []))
 
 		# draw stuff
 

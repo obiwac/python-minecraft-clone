@@ -1,12 +1,12 @@
 import math
 import collider
 
-FLYING_ACCEL = (0, 0, 0)
+FLYING_ACCEL  = (0,   0, 0)
 GRAVITY_ACCEL = (0, -32, 0)
 
 # these values all come (losely) from Minecraft, but are multiplied by 20 (since Minecraft runs at 20 TPS)
 
-FRICTION = (14, 14, 14)
+FRICTION  = ( 20,  20,  20)
 
 DRAG_FLY  = (  5,   5,   5)
 DRAG_JUMP = (1.8,   0, 1.8)
