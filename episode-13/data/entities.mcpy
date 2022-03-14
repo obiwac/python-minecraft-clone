@@ -1,6 +1,6 @@
 # not actually sure of the ID's yet, I can't find a reference for them anywhere atm
 
-#1:  name "Player", width 0.6, height 1.8, model models.player, texture steve
+1:  name "Player", width 0.6, height 1.8, model models.pig, texture pig
 2:  name "Pig", width 0.9, height 0.9, model models.pig, texture pig
 3:  name "Zombie", width 0.6, height 1.95, model models.zombie, texture zombie
 4:  name "Skeleton", width 0.6, height 1.99, model models.skeleton, texture skeleton

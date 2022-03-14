@@ -10,6 +10,7 @@ pyglet.options["debug_gl"] = False
 import pyglet.gl as gl
 
 import player
+import mob
 
 import chunk
 import world
@@ -48,7 +49,7 @@ class Window(pyglet.window.Window):
 		# update other entities
 
 		for entity in self.world.entities:
-			entity.ai(delta_time)
+			# entity.target = [self.player.position[0], self.player.position[2]]
 			entity.update(delta_time)
 
 	def on_draw(self):
@@ -132,37 +133,17 @@ class Window(pyglet.window.Window):
 			self.world.save.save()
 
 		elif key == pyglet.window.key.R:
-			# how large is the world?
+			self.player.reset()
 
-			max_y = 0
+		elif key == pyglet.window.key.B:
+			for entity in self.world.entities:
+				entity.reset()
 
-			max_x, max_z = (0, 0)
-			min_x, min_z = (0, 0)
+		elif key == pyglet.window.key.E:
+			_mob = mob.Mob(self.world, self.world.entity_types[random.choice([1, 2, 3, 4, 6])])
+			self.world.entities.append(_mob)
 
-			for pos in self.world.chunks:
-				x, y, z = pos
-
-				max_y = max(max_y, (y + 1) * chunk.CHUNK_HEIGHT)
-
-				max_x = max(max_x, (x + 1) * chunk.CHUNK_WIDTH)
-				min_x = min(min_x,  x      * chunk.CHUNK_WIDTH)
-
-				max_z = max(max_z, (z + 1) * chunk.CHUNK_LENGTH)
-				min_z = min(min_z,  z      * chunk.CHUNK_LENGTH)
-
-			# get random X & Z coordinates to teleport the player to
-
-			x = random.randint(min_x, max_x)
-			z = random.randint(min_z, max_z)
-
-			# find height at which to teleport to, by finding the first non-air block from the top of the world
-
-			for y in range(chunk.CHUNK_HEIGHT - 1,  -1, -1):
-				if not self.world.get_block_number((x, y, z)):
-					continue
-
-				self.player.teleport((x, y + 1, z))
-				break
+			_mob.teleport(self.player.position)
 
 		elif key == pyglet.window.key.ESCAPE:
 			self.mouse_captured = False

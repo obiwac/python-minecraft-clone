@@ -12,7 +12,7 @@ import shader
 import block_type
 import texture_manager
 
-import entity
+import mob
 import entity_type
 
 # import custom block & entity models
@@ -125,7 +125,7 @@ class World:
 			
 			# add entity type
 
-			_entity_type = entity_type.Entity_type(self, name, texture, model)
+			_entity_type = entity_type.Entity_type(self, name, texture, model, width, height)
 
 			if number < len(self.entity_types):
 				self.entity_types[number] = _entity_type
@@ -157,12 +157,9 @@ class World:
 			self.chunks[chunk_position].update_mesh()
 		
 		# TODO remme
-		# summon a few entities
+		# summon a few mobs
 
 		self.entities = []
-
-		for _entity_type in self.entity_types:
-			self.entities.append(entity.Entity(self, _entity_type))
 
 	def get_chunk_position(self, position):
 		x, y, z = position

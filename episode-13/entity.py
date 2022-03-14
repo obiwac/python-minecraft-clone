@@ -1,7 +1,10 @@
 import math
+import random
 
 import matrix
 import collider
+
+import chunk
 
 FLYING_ACCEL  = (0,   0, 0)
 GRAVITY_ACCEL = (0, -32, 0)
@@ -15,7 +18,7 @@ DRAG_JUMP = (1.8,   0, 1.8)
 DRAG_FALL = (1.8, 0.4, 1.8)
 
 class Entity:
-	def __init__(self, world, entity_type, width = 0.6, height = 1.8):
+	def __init__(self, world, entity_type):
 		self.world = world
 		self.entity_type = entity_type
 
@@ -33,7 +36,9 @@ class Entity:
 		# collision variables
 
 		self.collider = collider.Collider()
+		
 		self.grounded = False
+		self.wall = False
 
 	def update_collider(self):
 		x, y, z = self.position
@@ -62,6 +67,39 @@ class Entity:
 
 		self.velocity[1] = math.sqrt(-2 * GRAVITY_ACCEL[1] * height)
 
+	def reset(self):
+		# how large is the world?
+
+		max_y = 0
+
+		max_x, max_z = (0, 0)
+		min_x, min_z = (0, 0)
+
+		for pos in self.world.chunks:
+			x, y, z = pos
+
+			max_y = max(max_y, (y + 1) * chunk.CHUNK_HEIGHT)
+
+			max_x = max(max_x, (x + 1) * chunk.CHUNK_WIDTH)
+			min_x = min(min_x,  x      * chunk.CHUNK_WIDTH)
+
+			max_z = max(max_z, (z + 1) * chunk.CHUNK_LENGTH)
+			min_z = min(min_z,  z      * chunk.CHUNK_LENGTH)
+
+		# get random X & Z coordinates to teleport the player to
+
+		x = random.randint(min_x, max_x)
+		z = random.randint(min_z, max_z)
+
+		# find height at which to teleport to, by finding the first non-air block from the top of the world
+
+		for y in range(chunk.CHUNK_HEIGHT - 1,  -1, -1):
+			if not self.world.get_block_number((x, y, z)):
+				continue
+
+			self.teleport((x, y + 1, z))
+			break
+
 	@property
 	def friction(self):
 		if self.flying:
@@ -84,7 +122,9 @@ class Entity:
 		# compute collisions
 
 		self.update_collider()
+		
 		self.grounded = False
+		self.wall = False
 
 		for _ in range(3):
 			adjusted_velocity = [v * delta_time for v in self.velocity]
@@ -142,6 +182,9 @@ class Entity:
 				self.velocity[2] = 0
 				self.position[2] += vz * entry_time
 
+			if normal[0] or normal[2]:
+				self.wall = True
+
 			if normal[1] == 1:
 				self.grounded = True
 
@@ -169,7 +212,8 @@ class Entity:
 		self.accel[0] =  math.cos(self.rotation[0] + math.tau / 4) * 3
 		self.accel[2] = -math.sin(self.rotation[0] + math.tau / 4) * 3
 
-		self.jump()
+		if not random.randint(0, 50):
+			self.jump()
 
 		if self.position[1] < 0:
 			self.position = [0, 80, 0]

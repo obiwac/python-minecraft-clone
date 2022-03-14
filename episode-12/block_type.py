@@ -3,7 +3,6 @@ import collider
 import models.cube # default model
 
 class Block_type:
-	# new optional model argument (cube model by default)
 	def __init__(self, texture_manager, name = "unknown", block_face_textures = {"all": "cobblestone"}, model = models.cube):
 		self.name = name
 		self.block_face_textures = block_face_textures
@@ -22,7 +21,7 @@ class Block_type:
 		for _collider in model.colliders:
 			self.colliders.append(collider.Collider(*_collider))
 
-		# replace data contained in numbers.py with model specific data
+		# get model specific data
 
 		self.vertex_positions = model.vertex_positions
 		self.tex_coords = model.tex_coords.copy()

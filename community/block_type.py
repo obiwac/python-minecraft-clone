@@ -3,7 +3,6 @@ import collider
 import models.cube # default model
 
 class Block_type:
-	# new optional model argument (cube model by default)
 	def __init__(self, texture_manager, name = "unknown", block_face_textures = {"all": "cobblestone"}, model = models.cube):
 		self.name = name
 		self.block_face_textures = block_face_textures
@@ -23,7 +22,7 @@ class Block_type:
 		for _collider in model.colliders:
 			self.colliders.append(collider.Collider(*_collider))
 
-		# replace data contained in numbers.py with model specific data
+		# get model specific data
 
 		self.vertex_positions = model.vertex_positions
 		self.tex_coords = model.tex_coords # to deprecate
@@ -32,8 +31,10 @@ class Block_type:
 
 		def set_block_face(face, texture):
 			# make sure we don't add inexistent face
+
 			if face > len(self.tex_coords) - 1:
 				return
+
 			self.tex_indices[face] = texture
 
 		for face in block_face_textures:
