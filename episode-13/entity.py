@@ -1,12 +1,23 @@
 import math
+
+import matrix
 import collider
 
-FLYING_ACCEL = (0, 0, 0)
+FLYING_ACCEL  = (0,   0, 0)
 GRAVITY_ACCEL = (0, -32, 0)
 
+# these values all come (losely) from Minecraft, but are multiplied by 20 (since Minecraft runs at 20 TPS)
+
+FRICTION  = ( 20,  20,  20)
+
+DRAG_FLY  = (  5,   5,   5)
+DRAG_JUMP = (1.8,   0, 1.8)
+DRAG_FALL = (1.8, 0.4, 1.8)
+
 class Entity:
-	def __init__(self, world):
+	def __init__(self, world, entity_type, width = 0.6, height = 1.8):
 		self.world = world
+		self.entity_type = entity_type
 
 		# physical variables
 
@@ -17,11 +28,9 @@ class Entity:
 		self.rotation = [-math.tau / 4, 0]
 
 		self.velocity = [0, 0, 0]
+		self.accel = [0, 0, 0]
 
 		# collision variables
-
-		self.width = 0.6
-		self.height = 1.8
 
 		self.collider = collider.Collider()
 		self.grounded = False
@@ -29,14 +38,14 @@ class Entity:
 	def update_collider(self):
 		x, y, z = self.position
 
-		self.collider.x1 = x - self.width / 2
-		self.collider.x2 = x + self.width / 2
+		self.collider.x1 = x - self.entity_type.width / 2
+		self.collider.x2 = x + self.entity_type.width / 2
 
 		self.collider.y1 = y
-		self.collider.y2 = y + self.height
+		self.collider.y2 = y + self.entity_type.height
 
-		self.collider.z1 = z - self.width / 2
-		self.collider.z2 = z + self.width / 2
+		self.collider.z1 = z - self.entity_type.width / 2
+		self.collider.z2 = z + self.entity_type.width / 2
 
 	def teleport(self, pos):
 		self.position = list(pos)
@@ -51,9 +60,27 @@ class Entity:
 		if height is None:
 			height = self.jump_height
 
-		self.velocity[1] = math.sqrt(2 * height * -GRAVITY_ACCEL[1])
+		self.velocity[1] = math.sqrt(-2 * GRAVITY_ACCEL[1] * height)
+
+	@property
+	def friction(self):
+		if self.flying:
+			return DRAG_FLY
+
+		elif self.grounded:
+			return FRICTION
+
+		elif self.velocity[1] > 0:
+			return DRAG_JUMP
+
+		return DRAG_FALL
 
 	def update(self, delta_time):
+		# apply input acceleration, and adjust for friction/drag
+
+		self.velocity = [v + a * f * delta_time for v, a, f in zip(self.velocity, self.accel, self.friction)]
+		self.accel = [0, 0, 0]
+
 		# compute collisions
 
 		self.update_collider()
@@ -70,8 +97,8 @@ class Entity:
 			step_y = 1 if vy > 0 else -1
 			step_z = 1 if vz > 0 else -1
 
-			steps_xz = int(self.width / 2)
-			steps_y  = int(self.height)
+			steps_xz = int(self.entity_type.width / 2)
+			steps_y  = int(self.entity_type.height)
 
 			x, y, z = map(int, self.position)
 			cx, cy, cz = [int(x + v) for x, v in zip(self.position, adjusted_velocity)]
@@ -120,27 +147,42 @@ class Entity:
 
 		self.position = [x + v * delta_time for x, v in zip(self.position, self.velocity)]
 
-		# process physics (apply acceleration, friction, & drag)
+		# apply gravity acceleration
 
-		acceleration = (GRAVITY_ACCEL, FLYING_ACCEL)[self.flying]
-		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, acceleration)]
+		gravity = FLYING_ACCEL if self.flying else GRAVITY_ACCEL
+		self.velocity = [v + a * delta_time for v, a in zip(self.velocity, gravity)]
 
-		if self.grounded or self.flying:
-			k = 0.05 ** (20 * delta_time) # takes 95% off of current velocity every 20th of a second
+		# apply friction/drag
 
-			self.velocity[0] *= k
-			self.velocity[1] *= k
-			self.velocity[2] *= k
-
-		else:
-			k = 0.98 ** (20 * delta_time) # takes 2% off of current velocity every 20th of a second
-
-			self.velocity[0] *= k
-			self.velocity[2] *= k
-
-			if self.velocity[1] < 0:
-				self.velocity[1] *= k
+		self.velocity = [v - min(v * f * delta_time, v, key = abs) for v, f in zip(self.velocity, self.friction)]
 
 		# make sure we can rely on the entity's collider outside of this function
 
 		self.update_collider()
+
+	def ai(self, delta_time):
+		import random
+
+		if not random.randint(0, 500):
+			self.rotation[0] += random.uniform(-3, 3)
+
+		self.accel[0] =  math.cos(self.rotation[0] + math.tau / 4) * 3
+		self.accel[2] = -math.sin(self.rotation[0] + math.tau / 4) * 3
+
+		self.jump()
+
+		if self.position[1] < 0:
+			self.position = [0, 80, 0]
+
+	def draw(self):
+		# compute transformation matrix
+
+		_matrix = matrix.copy_matrix(self.world.mvp_matrix)
+
+		_matrix.translate(*self.position)
+		_matrix.rotate_2d(*self.rotation)
+
+		# actually draw entity
+
+		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, _matrix)
+		self.entity_type.draw()

@@ -9,12 +9,7 @@ pyglet.options["debug_gl"] = False
 
 import pyglet.gl as gl
 
-import matrix
-import shader
 import player
-
-import block_type
-import texture_manager
 
 import chunk
 import world
@@ -28,12 +23,6 @@ class Window(pyglet.window.Window):
 		# create world
 
 		self.world = world.World()
-		
-		# create shader
-
-		self.shader = shader.Shader("vert.glsl", "frag.glsl")
-		self.shader_sampler_location = self.shader.find_uniform(b"texture_array_sampler")
-		self.shader.use()
 
 		# pyglet stuff
 
@@ -42,12 +31,12 @@ class Window(pyglet.window.Window):
 
 		# player stuff
 
-		self.player = player.Player(self.world, self.shader, self.width, self.height)
+		self.player = player.Player(self.world, self.width, self.height)
 
 		# misc stuff
 
-		self.holding = 44 # 5
-	
+		self.holding = 19 # 5
+
 	def update(self, delta_time):
 		# print(f"FPS: {1.0 / delta_time}")
 
@@ -55,27 +44,27 @@ class Window(pyglet.window.Window):
 			self.player.input = [0, 0, 0]
 
 		self.player.update(delta_time)
-	
+
+		# update other entities
+
+		for entity in self.world.entities:
+			entity.ai(delta_time)
+			entity.update(delta_time)
+
 	def on_draw(self):
 		self.player.update_matrices()
-
-		# bind textures
-
-		gl.glActiveTexture(gl.GL_TEXTURE0)
-		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
-		gl.glUniform1i(self.shader_sampler_location, 0)
 
 		# draw stuff
 
 		gl.glEnable(gl.GL_DEPTH_TEST)
-		gl.glEnable(gl.GL_CULL_FACE)
 
 		gl.glClearColor(0.0, 0.0, 0.0, 0.0)
 		self.clear()
+
 		self.world.draw()
 
 		gl.glFinish()
-	
+
 	# input functions
 
 	def on_resize(self, width, height):
@@ -107,7 +96,7 @@ class Window(pyglet.window.Window):
 		while hit_ray.distance < hit.HIT_RANGE:
 			if hit_ray.step(hit_callback):
 				break
-	
+
 	def on_mouse_motion(self, x, y, delta_x, delta_y):
 		if self.mouse_captured:
 			sensitivity = 0.004
@@ -116,10 +105,10 @@ class Window(pyglet.window.Window):
 			self.player.rotation[1] += delta_y * sensitivity
 
 			self.player.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.player.rotation[1]))
-	
+
 	def on_mouse_drag(self, x, y, delta_x, delta_y, buttons, modifiers):
 		self.on_mouse_motion(x, y, delta_x, delta_y)
-	
+
 	def on_key_press(self, key, modifiers):
 		if not self.mouse_captured:
 			return
@@ -178,7 +167,7 @@ class Window(pyglet.window.Window):
 		elif key == pyglet.window.key.ESCAPE:
 			self.mouse_captured = False
 			self.set_exclusive_mouse(False)
-	
+
 	def on_key_release(self, key, modifiers):
 		if not self.mouse_captured:
 			return
@@ -196,7 +185,7 @@ class Game:
 	def __init__(self):
 		self.config = gl.Config(major_version = 3, minor_version = 3, depth_size = 16)
 		self.window = Window(config = self.config, width = 800, height = 600, caption = "Minecraft clone", resizable = True, vsync = False)
-	
+
 	def run(self):
 		pyglet.app.run()
 

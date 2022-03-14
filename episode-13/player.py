@@ -6,8 +6,8 @@ WALKING_SPEED = 4.317
 SPRINTING_SPEED = 7 # faster than in Minecraft, feels better
 
 class Player(entity.Entity):
-	def __init__(self, world, shader, width, height):
-		super().__init__(world)
+	def __init__(self, world, width, height):
+		super().__init__(world, world.entity_types[0])
 
 		self.view_width = width
 		self.view_height = height
@@ -17,14 +17,9 @@ class Player(entity.Entity):
 		self.mv_matrix = matrix.Matrix()
 		self.p_matrix = matrix.Matrix()
 
-		# shaders
-
-		self.shader = shader
-		self.shader_matrix_location = self.shader.find_uniform(b"matrix")
-
 		# camera variables
 
-		self.eyelevel = self.height - 0.2
+		self.eyelevel = self.entity_type.height - 0.2
 		self.input = [0, 0, 0]
 
 		self.target_speed = WALKING_SPEED
@@ -33,17 +28,22 @@ class Player(entity.Entity):
 	def update(self, delta_time):
 		# process input
 
-		self.speed += (self.target_speed - self.speed) * delta_time * 20
-		multiplier = self.speed
+		if delta_time * 20 > 1:
+			self.speed = self.target_speed
+
+		else:
+			self.speed += (self.target_speed - self.speed) * delta_time * 20
+
+		multiplier = self.speed * (1, 2)[self.flying]
 
 		if self.flying and self.input[1]:
-			self.velocity[1] = self.input[1] * multiplier
+			self.accel[1] = self.input[1] * multiplier
 
 		if self.input[0] or self.input[2]:
 			angle = self.rotation[0] - math.atan2(self.input[2], self.input[0]) + math.tau / 4
 
-			self.velocity[0] = math.cos(angle) * multiplier
-			self.velocity[2] = math.sin(angle) * multiplier
+			self.accel[0] = math.cos(angle) * multiplier
+			self.accel[2] = math.sin(angle) * multiplier
 
 		if not self.flying and self.input[1] > 0:
 			self.jump()
@@ -58,7 +58,7 @@ class Player(entity.Entity):
 		self.p_matrix.load_identity()
 		
 		self.p_matrix.perspective(
-			90 + 20 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED),
+			90 + 10 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED),
 			float(self.view_width) / self.view_height, 0.1, 500)
 
 		# create modelview matrix
@@ -69,5 +69,4 @@ class Player(entity.Entity):
 
 		# modelviewprojection matrix
 
-		mvp_matrix = self.p_matrix * self.mv_matrix
-		self.shader.uniform_matrix(self.shader_matrix_location, mvp_matrix)
+		self.world.mvp_matrix = self.p_matrix * self.mv_matrix

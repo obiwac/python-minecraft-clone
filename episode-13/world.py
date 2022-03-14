@@ -1,13 +1,21 @@
+import pyglet
+import pyglet.gl as gl
+
 import math
 import random
 
 import save
 import chunk
 
+import shader
+
 import block_type
 import texture_manager
 
-# import custom block models
+import entity
+import entity_type
+
+# import custom block & entity models
 
 import models
 
@@ -15,6 +23,8 @@ class World:
 	def __init__(self):
 		self.texture_manager = texture_manager.Texture_manager(16, 16, 256)
 		self.block_types = [None]
+
+		self.entity_types = []
 
 		# parse block type data file
 
@@ -70,6 +80,71 @@ class World:
 
 		self.texture_manager.generate_mipmaps()
 
+		# parse entity type data file
+
+		entities_data_file = open("data/entities.mcpy")
+		entities_data = entities_data_file.readlines()
+		entities_data_file.close()
+
+		for _entity in entities_data:
+			if _entity[0] in ['\n', '#']: # skip if empty line or comment
+				continue
+
+			number, props = _entity.split(':', 1)
+			number = int(number)
+
+			# default entity
+
+			name = "Unknown"
+			model = models.pig
+			texture = "pig"
+
+			width = 0.6
+			height = 1.8
+
+			# read properties
+
+			for prop in props.split(','):
+				prop = prop.strip()
+				prop = list(filter(None, prop.split(' ', 1)))
+
+				if prop[0] == "name":
+					name = eval(prop[1])
+
+				elif prop[0] == "width":
+					width = float(prop[1])
+
+				elif prop[0] == "height":
+					height = float(prop[1])
+
+				elif prop[0] == "texture":
+					texture = prop[1]
+
+				elif prop[0] == "model":
+					model = eval(prop[1])
+			
+			# add entity type
+
+			_entity_type = entity_type.Entity_type(self, name, texture, model)
+
+			if number < len(self.entity_types):
+				self.entity_types[number] = _entity_type
+			
+			else:
+				self.entity_types.append(_entity_type)
+		
+		# create shaders
+
+		self.mvp_matrix = None # to be set by Player object
+
+		self.block_shader = shader.Shader("shaders/block/vert.glsl", "shaders/block/frag.glsl")
+		self.block_shader_sampler_location = self.block_shader.find_uniform(b"texture_array_sampler")
+		self.block_shader_matrix_location = self.block_shader.find_uniform(b"matrix")
+
+		self.entity_shader = shader.Shader("shaders/entity/vert.glsl", "shaders/entity/frag.glsl")
+		self.entity_shader_sampler_location = self.entity_shader.find_uniform(b"texture_sampler")
+		self.entity_shader_matrix_location = self.entity_shader.find_uniform(b"matrix")
+
 		# load the world
 
 		self.save = save.Save(self)
@@ -80,7 +155,15 @@ class World:
 		for chunk_position in self.chunks:
 			self.chunks[chunk_position].update_subchunk_meshes()
 			self.chunks[chunk_position].update_mesh()
-	
+		
+		# TODO remme
+		# summon a few entities
+
+		self.entities = []
+
+		for _entity_type in self.entity_types:
+			self.entities.append(entity.Entity(self, _entity_type))
+
 	def get_chunk_position(self, position):
 		x, y, z = position
 
@@ -172,5 +255,28 @@ class World:
 		self.set_block(pos, num)
 
 	def draw(self):
+		# setup block shader
+
+		self.block_shader.use()
+		self.block_shader.uniform_matrix(self.block_shader_matrix_location, self.mvp_matrix)
+
+		# bind block textures
+
+		gl.glActiveTexture(gl.GL_TEXTURE0)
+		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.texture_manager.texture_array)
+		gl.glUniform1i(self.block_shader_sampler_location, 0)
+
+		# draw chunks
+
+		gl.glEnable(gl.GL_CULL_FACE)
+
 		for chunk_position in self.chunks:
 			self.chunks[chunk_position].draw()
+		
+		# draw entities
+
+		self.entity_shader.use()
+		gl.glDisable(gl.GL_CULL_FACE)
+
+		for entity in self.entities:
+			entity.draw()

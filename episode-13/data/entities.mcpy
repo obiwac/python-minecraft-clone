@@ -1,12 +1,12 @@
 # not actually sure of the ID's yet, I can't find a reference for them anywhere atm
 
-1:  name "Player", width 0.6, height 1.8, model player, texture steve
-2:  name "Pig", width 0.9, height 0.9, model pig, texture pig
-3:  name "Zombie", width 0.6, height 1.95, model zombie, texture zombie
-4:  name "Skeleton", width 0.6, height 1.99, model skeleton, texture skeleton
-5:  name "Creeper", width 0.6, height 1.7, model creeper, texture creeper
-6:  name "Spider", width 1.4, height 0.9, model spider, texture spider
-7:  name "Sheep", width 0.9, height 1.3, model sheep, texture sheep
-8:  name "Giant", width 3.6, height 12, model giant, texture giant
-9:  name "Cow", width 0.9, height 1.3, model cow, texture cow
-10: name "Slime", width 2.08, height 2.08, model slime, texture slime
+#1:  name "Player", width 0.6, height 1.8, model models.player, texture steve
+2:  name "Pig", width 0.9, height 0.9, model models.pig, texture pig
+3:  name "Zombie", width 0.6, height 1.95, model models.zombie, texture zombie
+4:  name "Skeleton", width 0.6, height 1.99, model models.skeleton, texture skeleton
+5:  name "Creeper", width 0.6, height 1.7, model models.creeper, texture creeper
+6:  name "Spider", width 1.4, height 0.9, model models.spider, texture spider
+#7:  name "Sheep", width 0.9, height 1.3, model models.sheep, texture sheep
+#8:  name "Giant", width 3.6, height 12, model models.giant, texture giant
+9:  name "Cow", width 0.9, height 1.3, model models.cow, texture cow
+#10: name "Slime", width 2.08, height 2.08, model models.slime, texture slime
