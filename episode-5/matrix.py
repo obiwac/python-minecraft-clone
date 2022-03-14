@@ -38,15 +38,15 @@ class Matrix:
 	
 	def __mul__(self, matrix):
 		return Matrix(multiply_matrices(self.data, matrix.data))
-	
+
 	def __imul__(self, matrix):
 		self.data = multiply_matrices(self.data, matrix.data)
-	
+
 	def scale(self, x, y, z):
-		for i in range(4): self.data[0][i] *= scale_x
-		for i in range(4): self.data[1][i] *= scale_y
-		for i in range(4): self.data[2][i] *= scale_z
-	
+		for i in range(4): self.data[0][i] *= x
+		for i in range(4): self.data[1][i] *= y
+		for i in range(4): self.data[2][i] *= z
+
 	def translate(self, x, y, z):
 		for i in range(4):
 			self.data[3][i] = self.data[3][i] + (self.data[0][i] * x + self.data[1][i] * y + self.data[2][i] * z)

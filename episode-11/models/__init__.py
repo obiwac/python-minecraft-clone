@@ -21,7 +21,7 @@ __all__ = [
 	"pressure_plate",
 	"button",
 	"snow",
-	"cactus",
+	"cactus"
 ]
 
 from . import *
