@@ -5,6 +5,7 @@ import pylint.lint as linter
 print("Starting linter...")
 
 LINTER_OPTIONS = [
+	"--variable-rgx", "[a-z0-9_]{1,30}$", # in pylint's opinion, single-letter variable names should be avoided (???) (from https://stackoverflow.com/questions/21833872)
 	"--disable", "C0114", # disable 'missing-module-docstring'
 	"--disable", "C0115", # disable 'missing-class-docstring'
 	"--disable", "C0116", # disable 'missing-function-docstring'

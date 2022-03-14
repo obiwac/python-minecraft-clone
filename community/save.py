@@ -39,8 +39,8 @@ class Save:
 			for y in range(chunk.CHUNK_HEIGHT):
 				for z in range(chunk.CHUNK_LENGTH):
 					self.world.chunks[glm.ivec3(chunk_position)].blocks[x][y][z] = chunk_blocks[
-						x * chunk.CHUNK_LENGTH * chunk.CHUNK_HEIGHT +
-						z * chunk.CHUNK_HEIGHT +
+						x * chunk.CHUNK_LENGTH * chunk.CHUNK_HEIGHT
+						z * chunk.CHUNK_HEIGHT
 						y]
 
 	def save_chunk(self, chunk_position):
@@ -69,8 +69,8 @@ class Save:
 			for y in range(chunk.CHUNK_HEIGHT):
 				for z in range(chunk.CHUNK_LENGTH):
 					chunk_blocks[
-						x * chunk.CHUNK_LENGTH * chunk.CHUNK_HEIGHT +
-						z * chunk.CHUNK_HEIGHT +
+						x * chunk.CHUNK_LENGTH * chunk.CHUNK_HEIGHT
+						z * chunk.CHUNK_HEIGHT
 						y] = self.world.chunks[chunk_position].blocks[x][y][z]
 		
 		# save the chunk file
