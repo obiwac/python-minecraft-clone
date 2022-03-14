@@ -9,14 +9,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.9
+    - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        python-version: 3.10
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint pyglet
+        pip install pylint pyglet nbtlib base36 pyglm
     - name: Analysing the code with pylint
       run: |
-        for path in `ls | grep ^episode-`; do ( cd $path && pylint `ls -R | grep .py$ | xargs` ); done
+        python lint.py
