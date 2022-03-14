@@ -16,7 +16,7 @@ class Mob(entity.Entity):
 		self.target = [x + random.randint(-10, 10) for x in self.position]
 
 	def update(self, delta_time):
-		if not random.randint(0, int(5 / delta_time)): # change target every 5 seconds on average
+		if not random.randint(0, int(3 / delta_time)): # change target every 3 seconds on average
 			self.select_target()
 
 		delta_x = self.position[0] - self.target[0]
@@ -24,11 +24,11 @@ class Mob(entity.Entity):
 
 		self.heading = -math.atan2(delta_y, delta_x) + math.tau / 4
 
-		if delta_time * 20 > 1:
+		if delta_time * 5 > 1:
 			self.rotation[0] = self.heading
 		
 		else:
-			self.rotation[0] += (self.heading - self.rotation[0]) * delta_time * 20
+			self.rotation[0] += (self.heading - self.rotation[0]) * delta_time * 5
 
 		target_dist = math.sqrt(delta_x ** 2 + delta_y ** 2)
 

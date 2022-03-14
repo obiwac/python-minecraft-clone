@@ -12,11 +12,6 @@ class Player(entity.Entity):
 		self.view_width = width
 		self.view_height = height
 
-		# create matrices
-
-		self.mv_matrix = matrix.Matrix()
-		self.p_matrix = matrix.Matrix()
-
 		# camera variables
 
 		self.eyelevel = self.entity_type.height - 0.2
@@ -55,18 +50,18 @@ class Player(entity.Entity):
 	def update_matrices(self):
 		# create projection matrix
 
-		self.p_matrix.load_identity()
+		self.world.p_matrix.load_identity()
 		
-		self.p_matrix.perspective(
+		self.world.p_matrix.perspective(
 			90 + 10 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED),
 			float(self.view_width) / self.view_height, 0.1, 500)
 
 		# create modelview matrix
 
-		self.mv_matrix.load_identity()
-		self.mv_matrix.rotate_2d(self.rotation[0] + math.tau / 4, self.rotation[1])
-		self.mv_matrix.translate(-self.position[0], -self.position[1] - self.eyelevel, -self.position[2])
+		self.world.mv_matrix.load_identity()
+		self.world.mv_matrix.rotate_2d(self.rotation[0] + math.tau / 4, self.rotation[1])
+		self.world.mv_matrix.translate(-self.position[0], -self.position[1] - self.eyelevel, -self.position[2])
 
 		# modelviewprojection matrix
 
-		self.world.mvp_matrix = self.p_matrix * self.mv_matrix
+		self.world.mvp_matrix = self.world.p_matrix * self.world.mv_matrix

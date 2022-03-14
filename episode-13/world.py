@@ -4,6 +4,8 @@ import pyglet.gl as gl
 import math
 import random
 
+import matrix
+
 import save
 import chunk
 
@@ -135,7 +137,9 @@ class World:
 		
 		# create shaders
 
-		self.mvp_matrix = None # to be set by Player object
+		self.mvp_matrix = matrix.Matrix() # to be set by Player object
+		self.mv_matrix  = matrix.Matrix() # to be set by Player object
+		self.p_matrix   = matrix.Matrix() # to be set by Player object
 
 		self.block_shader = shader.Shader("shaders/block/vert.glsl", "shaders/block/frag.glsl")
 		self.block_shader_sampler_location = self.block_shader.find_uniform(b"texture_array_sampler")
@@ -143,6 +147,7 @@ class World:
 
 		self.entity_shader = shader.Shader("shaders/entity/vert.glsl", "shaders/entity/frag.glsl")
 		self.entity_shader_sampler_location = self.entity_shader.find_uniform(b"texture_sampler")
+		self.entity_shader_m_matrix_location = self.entity_shader.find_uniform(b"m_matrix")
 		self.entity_shader_matrix_location = self.entity_shader.find_uniform(b"matrix")
 
 		# load the world

@@ -221,12 +221,17 @@ class Entity:
 	def draw(self):
 		# compute transformation matrix
 
-		_matrix = matrix.copy_matrix(self.world.mvp_matrix)
+		m_matrix = matrix.Matrix()
+		m_matrix.load_identity()
 
-		_matrix.translate(*self.position)
-		_matrix.rotate_2d(*self.rotation)
+		m_matrix.translate(*self.position)
+		m_matrix.rotate_2d(*self.rotation)
+
+		_matrix = self.world.mvp_matrix * m_matrix
 
 		# actually draw entity
 
+		self.world.entity_shader.uniform_matrix(self.world.entity_shader_m_matrix_location, m_matrix)
 		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, _matrix)
+		
 		self.entity_type.draw()

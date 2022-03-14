@@ -44,6 +44,26 @@ class Entity_type:
 		self.vertices = sum(model.vertex_positions, [])
 		self.tex_coords = sum(model.tex_coords, [])
 
+		# get normal vector for each face
+
+		self.normals = []
+
+		for face in model.vertex_positions:
+			# take the cross product between two vectors we know are on the plane the face belongs to
+
+			u = [face[0] - face[3], face[1] - face[4], face[2] - face[5]]
+			v = [face[0] - face[6], face[1] - face[7], face[2] - face[8]]
+
+			n = [
+				 u[1] * v[2] - u[2] * v[1],
+				-u[0] * v[2] + u[2] * v[0],
+				 u[0] * v[1] - u[1] * v[0],
+			]
+
+			self.normals.extend(n * 4)
+
+		# compute indices
+
 		self.indices = []
 		index_counter = 0
 
@@ -85,6 +105,19 @@ class Entity_type:
 
 		gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
 		gl.glEnableVertexAttribArray(1)
+
+		self.normals_vbo = gl.GLuint(0)
+		gl.glGenBuffers(1, self.normals_vbo)
+
+		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.normals_vbo)
+		gl.glBufferData(
+			gl.GL_ARRAY_BUFFER,
+			ctypes.sizeof(gl.GLfloat * len(self.normals)),
+			(gl.GLfloat * len(self.normals)) (*self.normals),
+			gl.GL_STATIC_DRAW)
+
+		gl.glVertexAttribPointer(2, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+		gl.glEnableVertexAttribArray(2)
 
 		self.ibo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.ibo)
