@@ -203,21 +203,6 @@ class Entity:
 
 		self.update_collider()
 
-	def ai(self, delta_time):
-		import random
-
-		if not random.randint(0, 500):
-			self.rotation[0] += random.uniform(-3, 3)
-
-		self.accel[0] =  math.cos(self.rotation[0] + math.tau / 4) * 3
-		self.accel[2] = -math.sin(self.rotation[0] + math.tau / 4) * 3
-
-		if not random.randint(0, 50):
-			self.jump()
-
-		if self.position[1] < 0:
-			self.position = [0, 80, 0]
-
 	def draw(self):
 		# compute transformation matrix
 
