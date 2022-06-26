@@ -1,8 +1,11 @@
+import sys
 import json
 import math
 import glm # from pyglm
 
-f = open("models/mobs.json")
+name = sys.argv[1]
+
+f = open(f"work/models/{name}.json")
 data, = json.load(f).values()
 f.close()
 
@@ -32,6 +35,10 @@ def process_cube(cube):
 	rotation   = cube["rotation"]
 	sx, sy, sz = cube["size"]
 	u, v       = cube["uv"] # note that UV's start from the top-left (because... well... just because... idk)
+
+	# snap rotation, because our dataset is a bit weird
+
+	*rotation, = map(lambda x: round(x / 90) * 90, rotation)
 
 	# construct transformation matrix based on pivot & rotation
 
@@ -162,4 +169,5 @@ tex_coords = {tex_coords}
 shading_values = {shading_values}
 """
 
-print(out)
+with open(f"models/{name}.py", "w") as f:
+	f.write(out)

@@ -1,6 +1,5 @@
 
 import math
-import ctypes
 import random
 import pyglet
 
@@ -12,7 +11,6 @@ import pyglet.gl as gl
 import player
 import mob
 
-import chunk
 import world
 
 import hit

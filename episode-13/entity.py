@@ -9,7 +9,7 @@ import chunk
 FLYING_ACCEL  = (0,   0, 0)
 GRAVITY_ACCEL = (0, -32, 0)
 
-# these values all come (losely) from Minecraft, but are multiplied by 20 (since Minecraft runs at 20 TPS)
+# these values all come (loosely) from Minecraft, but are multiplied by 20 (since Minecraft runs at 20 TPS)
 
 FRICTION  = ( 20,  20,  20)
 
@@ -36,7 +36,7 @@ class Entity:
 		# collision variables
 
 		self.collider = collider.Collider()
-		
+
 		self.grounded = False
 		self.wall = False
 
@@ -122,7 +122,7 @@ class Entity:
 		# compute collisions
 
 		self.update_collider()
-		
+
 		self.grounded = False
 		self.wall = False
 
@@ -173,7 +173,7 @@ class Entity:
 			if normal[0]:
 				self.velocity[0] = 0
 				self.position[0] += vx * entry_time
-			
+
 			if normal[1]:
 				self.velocity[1] = 0
 				self.position[1] += vy * entry_time
@@ -233,5 +233,5 @@ class Entity:
 
 		self.world.entity_shader.uniform_matrix(self.world.entity_shader_m_matrix_location, m_matrix)
 		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, _matrix)
-		
+
 		self.entity_type.draw()

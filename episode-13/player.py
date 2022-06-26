@@ -46,12 +46,12 @@ class Player(entity.Entity):
 		# process physics & collisions &c
 
 		super().update(delta_time)
-	
+
 	def update_matrices(self):
 		# create projection matrix
 
 		self.world.p_matrix.load_identity()
-		
+
 		self.world.p_matrix.perspective(
 			90 + 10 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED),
 			float(self.view_width) / self.view_height, 0.1, 500)
