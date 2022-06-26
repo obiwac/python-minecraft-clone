@@ -8,7 +8,7 @@ import models.pig # default model
 class Entity_type:
 	def __init__(self, world, name = "unknown", texture = "pig", model = models.pig, width = 0.6, height = 1.8):
 		self.world = world
-		
+
 		self.name = name
 		self.model = model
 
@@ -17,7 +17,7 @@ class Entity_type:
 
 		# load texture image
 
-		texture_image = pyglet.image.load(f"textures/entity/{texture}.png").get_image_data()
+		texture_image = pyglet.image.load(f"textures/{texture}.png").get_image_data()
 
 		self.texture_width  = texture_image.width
 		self.texture_height = texture_image.height
@@ -36,7 +36,7 @@ class Entity_type:
 			self.texture_width, self.texture_height,
 			0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE,
 			texture_image.get_data("RGBA", self.texture_width * 4))
-		
+
 		gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
 
 		# convert model to arrays we can send to the GPU
