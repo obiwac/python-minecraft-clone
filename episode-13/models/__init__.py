@@ -27,7 +27,8 @@ __all__ = [
 	"zombie",
 	"skeleton",
 	"creeper",
-	"cow"
+	"cow",
+	"curry",
 ]
 
 from . import *

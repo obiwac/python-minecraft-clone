@@ -31,8 +31,8 @@ shading_values = []
 
 def process_cube(cube):
 	x, y, z    = cube["origin"]
-	pivot      = cube["pivot"]
-	rotation   = cube["rotation"]
+	pivot      = cube.get("pivot", (0, 0, 0))
+	rotation   = cube.get("rotation", (0, 0, 0))
 	sx, sy, sz = cube["size"]
 	u, v       = cube["uv"] # note that UV's start from the top-left (because... well... just because... idk)
 
