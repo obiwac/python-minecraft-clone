@@ -47,6 +47,11 @@ class Window(pyglet.window.Window):
 		# update other entities
 
 		for entity in self.world.entities:
+			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, self.player.position))))
+
+			if dist > 32:
+				continue
+
 			# entity.target = [self.player.position[0], self.player.position[2]]
 			entity.update(delta_time)
 
