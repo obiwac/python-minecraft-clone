@@ -10,26 +10,43 @@
 		"name": "obiwac"
 	},
 	"homepage": "https://github.com/obiwac/python-minecraft-clone",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"engines": {
 		"vscode": "^1.22.0"
 	},
 	"contributes": {
-		"languages": [{
-			"id": "mcpy_blocks",
-			"aliases": [
-				"MCPY Blocks"
-			],
-			"filenames": [
-				"blocks.mcpy"
-			],
-			"configuration": "./language-configuration.json"
-		}],
+		"languages": [
+			{
+				"id": "mcpy_blocks",
+				"aliases": [
+					"MCPY Blocks"
+				],
+				"filenames": [
+					"blocks.mcpy"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "mcpy_entities",
+				"aliases": [
+					"MCPY Entities"
+				],
+				"filenames": [
+					"entities.mcpy"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
 		"grammars": [
 			{
 				"language": "mcpy_blocks",
 				"scopeName": "source.mcpy_blocks",
 				"path": "./syntaxes/mcpy_blocks.tmLanguage.json"
+			},
+			{
+				"language": "mcpy_entities",
+				"scopeName": "source.mcpy_entities",
+				"path": "./syntaxes/mcpy_entities.tmLanguage.json"
 			}
 		]
 	}

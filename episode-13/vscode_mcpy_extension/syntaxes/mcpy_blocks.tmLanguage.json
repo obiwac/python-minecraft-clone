@@ -11,7 +11,15 @@
 			"match": "\\b(sameas)\\b"
 		},
 		{
-			"name": "constant.language.mcpy_blocks",
+			"name": "entity.name.tag.mcpy_blocks",
+			"match": "\\b^[0-9]+(:)|(:)\\b"
+		},
+		{
+			"name": "variable.class.mcpy_blocks",
+			"match": "\\bmodels\\b"
+		},
+		{
+			"name": "entity.name.function.mcpy_blocks",
 			"match": "\\b(all|sides|x|y|z|top|bottom|front|back|left|right)\\b"
 		},
 		{

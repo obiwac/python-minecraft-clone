@@ -1,0 +1,36 @@
+{
+	"name": "mcpy_entities",
+	"scopeName": "source.mcpy_entities",
+	"patterns": [
+		{
+			"name": "keyword.operator.mcpy_entities",
+			"match": "\\b(name|width|height|model|texture)\\b"
+		},
+		{
+			"name": "entity.name.tag.mcpy_entities",
+			"match": "\\b^.+(:)|(:)\\b"
+		},
+		{
+			"name": "variable.class.mcpy_entities",
+			"match": "\\bmodels\\b"
+		},
+		{
+			"name": "constant.numeric.mcpy_entities",
+			"match": "\\b[0-9]+\\.*[0-9]*\\b"
+		},
+		{
+			"name": "comment.line.mcpy_entities",
+			"begin": "#",
+			"end": "$"
+		},
+		{
+			"name": "string.quoted.double.mcpy_entities",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [{
+				"name": "constant.character.escape.mcpy_entities",
+				"match": "\\\\."
+			}]
+		}
+	]
+}

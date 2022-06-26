@@ -11,7 +11,7 @@ class Mob(entity.Entity):
 		self.select_target()
 
 		self.reset()
-	
+
 	def select_target(self):
 		self.target = [x + random.randint(-10, 10) for x in self.position]
 
@@ -26,7 +26,7 @@ class Mob(entity.Entity):
 
 		if delta_time * 5 > 1:
 			self.rotation[0] = self.heading
-		
+
 		else:
 			self.rotation[0] += (self.heading - self.rotation[0]) * delta_time * 5
 
@@ -41,7 +41,7 @@ class Mob(entity.Entity):
 		if self.wall and self.grounded:
 			if random.randint(0, 3):
 				self.jump()
-			
+
 			else:
 				self.select_target()
 
