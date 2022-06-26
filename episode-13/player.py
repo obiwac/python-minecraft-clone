@@ -7,7 +7,7 @@ SPRINTING_SPEED = 7 # faster than in Minecraft, feels better
 
 class Player(entity.Entity):
 	def __init__(self, world, width, height):
-		super().__init__(world, world.entity_types[0])
+		super().__init__(world, world.entity_types["Player"])
 
 		self.view_width = width
 		self.view_height = height

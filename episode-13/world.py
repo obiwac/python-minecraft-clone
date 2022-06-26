@@ -26,7 +26,7 @@ class World:
 		self.texture_manager = texture_manager.Texture_manager(16, 16, 256)
 		self.block_types = [None]
 
-		self.entity_types = []
+		self.entity_types = {}
 
 		# parse block type data file
 
@@ -37,7 +37,7 @@ class World:
 		for block in blocks_data:
 			if block[0] in ['\n', '#']: # skip if empty line or comment
 				continue
-			
+
 			number, props = block.split(':', 1)
 			number = int(number)
 
@@ -59,24 +59,24 @@ class World:
 					name = self.block_types[sameas_number].name
 					texture = self.block_types[sameas_number].block_face_textures
 					model = self.block_types[sameas_number].model
-				
+
 				elif prop[0] == "name":
 					name = eval(prop[1])
-				
+
 				elif prop[0][:7] == "texture":
 					_, side = prop[0].split('.')
 					texture[side] = prop[1].strip()
 
 				elif prop[0] == "model":
 					model = eval(prop[1])
-			
+
 			# add block type
 
 			_block_type = block_type.Block_type(self.texture_manager, name, texture, model)
 
 			if number < len(self.block_types):
 				self.block_types[number] = _block_type
-			
+
 			else:
 				self.block_types.append(_block_type)
 
@@ -92,12 +92,10 @@ class World:
 			if _entity[0] in ['\n', '#']: # skip if empty line or comment
 				continue
 
-			number, props = _entity.split(':', 1)
-			number = int(number)
+			name, props = _entity.split(':', 1)
 
 			# default entity
 
-			name = "Unknown"
 			model = models.pig
 			texture = "pig"
 
@@ -110,10 +108,7 @@ class World:
 				prop = prop.strip()
 				prop = list(filter(None, prop.split(' ', 1)))
 
-				if prop[0] == "name":
-					name = eval(prop[1])
-
-				elif prop[0] == "width":
+				if prop[0] == "width":
 					width = float(prop[1])
 
 				elif prop[0] == "height":
@@ -124,17 +119,11 @@ class World:
 
 				elif prop[0] == "model":
 					model = eval(prop[1])
-			
+
 			# add entity type
 
-			_entity_type = entity_type.Entity_type(self, name, texture, model, width, height)
+			self.entity_types[name] = entity_type.Entity_type(self, name, texture, model, width, height)
 
-			if number < len(self.entity_types):
-				self.entity_types[number] = _entity_type
-			
-			else:
-				self.entity_types.append(_entity_type)
-		
 		# create shaders
 
 		self.mvp_matrix = matrix.Matrix() # to be set by Player object
@@ -155,16 +144,13 @@ class World:
 		self.save = save.Save(self)
 
 		self.chunks = {}
+		self.entities = []
+
 		self.save.load()
-		
+
 		for chunk_position in self.chunks:
 			self.chunks[chunk_position].update_subchunk_meshes()
 			self.chunks[chunk_position].update_mesh()
-		
-		# TODO remme
-		# summon a few mobs
-
-		self.entities = []
 
 	def get_chunk_position(self, position):
 		x, y, z = position
@@ -176,7 +162,7 @@ class World:
 
 	def get_local_position(self, position):
 		x, y, z = position
-		
+
 		return (
 			int(x % chunk.CHUNK_WIDTH),
 			int(y % chunk.CHUNK_HEIGHT),
@@ -188,7 +174,7 @@ class World:
 
 		if not chunk_position in self.chunks:
 			return 0
-		
+
 		lx, ly, lz = self.get_local_position(position)
 
 		block_number = self.chunks[chunk_position].blocks[lx][ly][lz]
@@ -197,12 +183,12 @@ class World:
 	def is_opaque_block(self, position):
 		# get block type and check if it's opaque or not
 		# air counts as a transparent block, so test for that too
-		
+
 		block_type = self.block_types[self.get_block_number(position)]
 
 		if not block_type:
 			return False
-		
+
 		return not block_type.transparent
 
 	def set_block(self, position, number): # set number to 0 (air) to remove block
@@ -214,10 +200,10 @@ class World:
 				return # no point in creating a whole new chunk if we're not gonna be adding anything
 
 			self.chunks[chunk_position] = chunk.Chunk(self, chunk_position)
-		
+
 		if self.get_block_number(position) == number: # no point updating mesh if the block is the same
 			return
-		
+
 		lx, ly, lz = self.get_local_position(position)
 
 		self.chunks[chunk_position].blocks[lx][ly][lz] = number
@@ -232,7 +218,7 @@ class World:
 			if chunk_position in self.chunks:
 				self.chunks[chunk_position].update_at_position(position)
 				self.chunks[chunk_position].update_mesh()
-		
+
 		if lx == chunk.CHUNK_WIDTH - 1: try_update_chunk_at_position((cx + 1, cy, cz), (x + 1, y, z))
 		if lx == 0: try_update_chunk_at_position((cx - 1, cy, cz), (x - 1, y, z))
 
@@ -247,13 +233,13 @@ class World:
 
 		if not num:
 			return self.set_block(pos, 0)
-		
+
 		# make sure the block doesn't intersect with the passed collider
 
 		for block_collider in self.block_types[num].colliders:
 			if collider & (block_collider + pos):
 				return
-		
+
 		self.set_block(pos, num)
 
 	def draw(self):
@@ -274,7 +260,7 @@ class World:
 
 		for chunk_position in self.chunks:
 			self.chunks[chunk_position].draw()
-		
+
 		# draw entities
 
 		self.entity_shader.use()

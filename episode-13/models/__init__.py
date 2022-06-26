@@ -27,7 +27,6 @@ __all__ = [
 	"zombie",
 	"skeleton",
 	"creeper",
-	"spider",
 	"cow"
 ]
 

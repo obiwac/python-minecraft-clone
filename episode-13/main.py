@@ -138,7 +138,7 @@ class Window(pyglet.window.Window):
 				entity.reset()
 
 		elif key == pyglet.window.key.E:
-			_mob = mob.Mob(self.world, self.world.entity_types[random.choice([1, 2, 3, 4, 6])])
+			_mob = mob.Mob(self.world, random.choice([*self.world.entity_types.values()]))
 			self.world.entities.append(_mob)
 
 			_mob.teleport(self.player.position)
