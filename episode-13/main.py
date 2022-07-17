@@ -34,9 +34,11 @@ class Window(pyglet.window.Window):
 
 		# misc stuff
 
+		self.frame = 0
 		self.holding = 19 # 5
 
 	def update(self, delta_time):
+		self.frame += 1
 		# print(f"FPS: {1.0 / delta_time}")
 
 		if not self.mouse_captured:
@@ -46,14 +48,12 @@ class Window(pyglet.window.Window):
 
 		# update other entities
 
-		for entity in self.world.entities:
-			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, self.player.position))))
+		entities = sorted(self.world.entities, key = lambda e: math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(e.position, self.player.position)))))
 
-			if dist > 32:
-				continue
+		PRECISION = 1 # 3
 
-			# entity.target = [self.player.position[0], self.player.position[2]]
-			entity.update(delta_time)
+		for entity in entities[(self.frame % PRECISION)::PRECISION]:
+			entity.update(delta_time * PRECISION)
 
 	def on_draw(self):
 		self.player.update_matrices()
@@ -65,7 +65,7 @@ class Window(pyglet.window.Window):
 		gl.glClearColor(0.0, 0.0, 0.0, 0.0)
 		self.clear()
 
-		self.world.draw()
+		self.world.draw(self.player)
 
 		gl.glFinish()
 
@@ -131,6 +131,9 @@ class Window(pyglet.window.Window):
 
 		elif key == pyglet.window.key.G:
 			self.holding = random.randint(1, len(self.world.block_types) - 1)
+
+		elif key == pyglet.window.key.N:
+			self.player.ghost = not self.player.ghost
 
 		elif key == pyglet.window.key.O:
 			self.world.save.save()

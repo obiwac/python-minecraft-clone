@@ -55,6 +55,8 @@ class Save:
 			mob_ = mob.Mob(self.world, self.world.entity_types[name])
 			*mob_.position, = entity["Pos"]
 
+			print(name, mob_.position)
+
 			self.world.entities.append(mob_)
 
 	def save_chunk(self, chunk_position):
@@ -92,17 +94,17 @@ class Save:
 		chunk_data.save(chunk_path, gzipped = True)
 
 	def load(self):
-		for x in range(-16, 15):
-			for y in range(-15, 16):
-				self.load_chunk((x, 0, y))
+		# for x in range(-16, 15):
+		# 	for y in range(-15, 16):
+		# 		self.load_chunk((x, 0, y))
 
 		# for x in range(-4, 4):
 		# 	for y in range(-4, 4):
 		# 		self.load_chunk((x, 0, y))
 
-		# for x in range(-1, 1):
-		# 	for y in range(-1, 1):
-		# 		self.load_chunk((x, 0, y))
+		for x in range(-1, 1):
+			for y in range(-1, 1):
+				self.load_chunk((x, 0, y))
 
 	def save(self):
 		for chunk_position in self.world.chunks:

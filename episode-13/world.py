@@ -30,9 +30,8 @@ class World:
 
 		# parse block type data file
 
-		blocks_data_file = open("data/blocks.mcpy")
-		blocks_data = blocks_data_file.readlines()
-		blocks_data_file.close()
+		with open("data/blocks.mcpy") as f:
+			blocks_data = f.readlines()
 
 		for block in blocks_data:
 			if block[0] in ['\n', '#']: # skip if empty line or comment
@@ -51,7 +50,7 @@ class World:
 
 			for prop in props.split(','):
 				prop = prop.strip()
-				prop = list(filter(None, prop.split(' ', 1)))
+				*prop, = filter(None, prop.split(' ', 1))
 
 				if prop[0] == "sameas":
 					sameas_number = int(prop[1])
@@ -84,9 +83,8 @@ class World:
 
 		# parse entity type data file
 
-		entities_data_file = open("data/entities.mcpy")
-		entities_data = entities_data_file.readlines()
-		entities_data_file.close()
+		with open("data/entities.mcpy") as f:
+			entities_data = f.readlines()
 
 		for _entity in entities_data:
 			if _entity[0] in ['\n', '#']: # skip if empty line or comment
@@ -106,7 +104,7 @@ class World:
 
 			for prop in props.split(','):
 				prop = prop.strip()
-				prop = list(filter(None, prop.split(' ', 1)))
+				*prop, = filter(None, prop.split(' ', 1))
 
 				if prop[0] == "width":
 					width = float(prop[1])
@@ -242,7 +240,7 @@ class World:
 
 		self.set_block(pos, num)
 
-	def draw(self):
+	def draw(self, player):
 		# setup block shader
 
 		self.block_shader.use()
@@ -267,4 +265,9 @@ class World:
 		gl.glDisable(gl.GL_CULL_FACE)
 
 		for entity in self.entities:
+			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, player.position))))
+
+			if dist > 32:
+				continue
+
 			entity.draw()

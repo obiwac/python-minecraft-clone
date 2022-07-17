@@ -26,6 +26,7 @@ class Entity:
 
 		self.jump_height = 1.25
 		self.flying = False
+		self.ghost = False
 
 		self.position = [0, 80, 0]
 		self.rotation = [-math.tau / 4, 0]
@@ -113,6 +114,68 @@ class Entity:
 
 		return DRAG_FALL
 
+	def resolve_collision(self, delta_time):
+		adjusted_velocity = [v * delta_time for v in self.velocity]
+		vx, vy, vz = adjusted_velocity
+
+		# find all the blocks we could potentially be colliding with
+		# this step is known as "broad-phasing"
+
+		step_x = 1 if vx > 0 else -1
+		step_y = 1 if vy > 0 else -1
+		step_z = 1 if vz > 0 else -1
+
+		steps_xz = int(self.entity_type.width / 2)
+		steps_y  = int(self.entity_type.height)
+
+		x, y, z = map(int, self.position)
+		cx, cy, cz = [int(p + v) for p, v in zip(self.position, adjusted_velocity)]
+
+		potential_collisions = []
+
+		for i in range(x - step_x * (steps_xz + 1), cx + step_x * (steps_xz + 2), step_x):
+			for j in range(y - step_y * (steps_y + 2), cy + step_y * (steps_y + 3), step_y):
+				for k in range(z - step_z * (steps_xz + 1), cz + step_z * (steps_xz + 2), step_z):
+					pos = (i, j, k)
+					num = self.world.get_block_number(pos)
+
+					if not num:
+						continue
+
+					for _collider in self.world.block_types[num].colliders:
+						entry_time, normal = self.collider.collide(_collider + pos, adjusted_velocity)
+
+						if normal is None:
+							continue
+
+						potential_collisions.append((entry_time, normal))
+
+		# get first collision
+
+		if not potential_collisions:
+			return
+
+		entry_time, normal = min(potential_collisions, key = lambda x: x[0])
+		entry_time -= 0.001
+
+		if normal[0]:
+			self.velocity[0] = 0
+			self.position[0] += vx * entry_time
+
+		if normal[1]:
+			self.velocity[1] = 0
+			self.position[1] += vy * entry_time
+
+		if normal[2]:
+			self.velocity[2] = 0
+			self.position[2] += vz * entry_time
+
+		if normal[0] or normal[2]:
+			self.wall = True
+
+		if normal[1] == 1:
+			self.grounded = True
+
 	def update(self, delta_time):
 		# apply input acceleration, and adjust for friction/drag
 
@@ -126,67 +189,9 @@ class Entity:
 		self.grounded = False
 		self.wall = False
 
-		for _ in range(3):
-			adjusted_velocity = [v * delta_time for v in self.velocity]
-			vx, vy, vz = adjusted_velocity
-
-			# find all the blocks we could potentially be colliding with
-			# this step is known as "broad-phasing"
-
-			step_x = 1 if vx > 0 else -1
-			step_y = 1 if vy > 0 else -1
-			step_z = 1 if vz > 0 else -1
-
-			steps_xz = int(self.entity_type.width / 2)
-			steps_y  = int(self.entity_type.height)
-
-			x, y, z = map(int, self.position)
-			cx, cy, cz = [int(x + v) for x, v in zip(self.position, adjusted_velocity)]
-
-			potential_collisions = []
-
-			for i in range(x - step_x * (steps_xz + 1), cx + step_x * (steps_xz + 2), step_x):
-				for j in range(y - step_y * (steps_y + 2), cy + step_y * (steps_y + 3), step_y):
-					for k in range(z - step_z * (steps_xz + 1), cz + step_z * (steps_xz + 2), step_z):
-						pos = (i, j, k)
-						num = self.world.get_block_number(pos)
-
-						if not num:
-							continue
-
-						for _collider in self.world.block_types[num].colliders:
-							entry_time, normal = self.collider.collide(_collider + pos, adjusted_velocity)
-
-							if normal is None:
-								continue
-
-							potential_collisions.append((entry_time, normal))
-
-			# get first collision
-
-			if not potential_collisions:
-				break
-
-			entry_time, normal = min(potential_collisions, key = lambda x: x[0])
-			entry_time -= 0.001
-
-			if normal[0]:
-				self.velocity[0] = 0
-				self.position[0] += vx * entry_time
-
-			if normal[1]:
-				self.velocity[1] = 0
-				self.position[1] += vy * entry_time
-
-			if normal[2]:
-				self.velocity[2] = 0
-				self.position[2] += vz * entry_time
-
-			if normal[0] or normal[2]:
-				self.wall = True
-
-			if normal[1] == 1:
-				self.grounded = True
+		if not self.ghost:
+			for _ in range(3):
+				self.resolve_collision(delta_time)
 
 		self.position = [x + v * delta_time for x, v in zip(self.position, self.velocity)]
 

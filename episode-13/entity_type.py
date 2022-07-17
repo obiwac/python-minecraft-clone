@@ -44,6 +44,8 @@ class Entity_type:
 		self.vertices = sum(model.vertex_positions, [])
 		self.tex_coords = sum(model.tex_coords, [])
 
+		del self.tex_coords[2::3]
+
 		# get normal vector for each face
 
 		self.normals = []
@@ -65,13 +67,12 @@ class Entity_type:
 		# compute indices
 
 		self.indices = []
-		index_counter = 0
 
 		for i in range(len(model.vertex_positions)):
-			self.indices.extend(x + index_counter for x in (0, 1, 2, 0, 2, 3))
-			index_counter += 4
+			self.indices.extend(x + i * 4 for x in (0, 1, 2, 0, 2, 3))
 
 		# create VAO/VBO/IBO
+		# vertex positions
 
 		self.vao = gl.GLuint(0)
 		gl.glGenVertexArrays(1, self.vao)
@@ -85,10 +86,12 @@ class Entity_type:
 			gl.GL_ARRAY_BUFFER,
 			ctypes.sizeof(gl.GLfloat * len(self.vertices)),
 			(gl.GLfloat * len(self.vertices)) (*self.vertices),
-			gl.GL_STREAM_DRAW)
+			gl.GL_STATIC_DRAW)
 
 		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
 		gl.glEnableVertexAttribArray(0)
+
+		# texture coordinates
 
 		self.tex_coords_vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.tex_coords_vbo)
@@ -98,13 +101,15 @@ class Entity_type:
 			gl.GL_ARRAY_BUFFER,
 			ctypes.sizeof(gl.GLfloat * len(self.tex_coords)),
 			(gl.GLfloat * len(self.tex_coords)) (*self.tex_coords),
-			gl.GL_STREAM_DRAW)
+			gl.GL_STATIC_DRAW)
 
 		# texture coordinates are still 3D here even though we don't use texture arrays (as is the case with blocks)
 		# this is so that we can interchange block & entity models
 
-		gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+		gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
 		gl.glEnableVertexAttribArray(1)
+
+		# normals
 
 		self.normals_vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.normals_vbo)
@@ -114,10 +119,12 @@ class Entity_type:
 			gl.GL_ARRAY_BUFFER,
 			ctypes.sizeof(gl.GLfloat * len(self.normals)),
 			(gl.GLfloat * len(self.normals)) (*self.normals),
-			gl.GL_STREAM_DRAW)
+			gl.GL_STATIC_DRAW)
 
 		gl.glVertexAttribPointer(2, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
 		gl.glEnableVertexAttribArray(2)
+
+		# indices
 
 		self.ibo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.ibo)
@@ -127,7 +134,7 @@ class Entity_type:
 			gl.GL_ELEMENT_ARRAY_BUFFER,
 			ctypes.sizeof(gl.GLuint * len(self.indices)),
 			(gl.GLuint * len(self.indices)) (*self.indices),
-			gl.GL_STREAM_DRAW)
+			gl.GL_STATIC_DRAW)
 
 	def draw(self):
 		# bind textures
