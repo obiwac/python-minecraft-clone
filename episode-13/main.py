@@ -50,7 +50,7 @@ class Window(pyglet.window.Window):
 
 		entities = sorted(self.world.entities, key = lambda e: math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(e.position, self.player.position)))))
 
-		for entity in entities:
+		for entity in entities[:5]:
 			entity.update(delta_time)
 
 	def on_draw(self):

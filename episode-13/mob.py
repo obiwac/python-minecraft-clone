@@ -23,6 +23,7 @@ class Mob(entity.Entity):
 		delta_y = self.position[2] - self.target[2]
 
 		self.heading = -math.atan2(delta_y, delta_x) + math.tau / 4
+		self.heading += math.modf((self.rotation[0] - math.tau / 4) / math.tau)[1] * math.tau
 
 		if delta_time * 5 > 1:
 			self.rotation[0] = self.heading

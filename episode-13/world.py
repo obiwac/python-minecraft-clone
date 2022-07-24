@@ -165,7 +165,6 @@ class World:
 			int(z % chunk.CHUNK_LENGTH))
 
 	def get_block_number(self, position):
-		x, y, z = position
 		chunk_position = self.get_chunk_position(position)
 
 		if not chunk_position in self.chunks:
