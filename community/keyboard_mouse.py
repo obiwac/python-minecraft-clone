@@ -50,6 +50,7 @@ class Keyboard_Mouse(controller.Controller):
 
 		elif key == pyglet.window.key.LCTRL : self.start_modifier(self.ModifierMode.SPRINT)
 
+		elif key == pyglet.window.key.E: self.misc(self.MiscMode.SPAWN)
 		elif key == pyglet.window.key.F: self.misc(self.MiscMode.FLY)
 		elif key == pyglet.window.key.G: self.misc(self.MiscMode.RANDOM)
 		elif key == pyglet.window.key.O: self.misc(self.MiscMode.SAVE)

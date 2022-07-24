@@ -1,7 +1,7 @@
-transparent = 0
+transparent = False
+translucent = False
 is_cube = True
 glass = False
-translucent = False
 
 colliders = [
 	[
@@ -19,7 +19,6 @@ vertex_positions = [
 	[ 0.5,  0.5, -0.5,  0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,  0.5, -0.5], # back
 ]
 
-# Deprecating
 tex_coords = [
 	[0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
 	[0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],

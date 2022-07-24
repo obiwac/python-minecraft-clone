@@ -1,7 +1,7 @@
-translucent = False
-transparent = 1
+transparent = True
 is_cube = False
 glass = False
+translucent = False
 
 colliders = [
 	[

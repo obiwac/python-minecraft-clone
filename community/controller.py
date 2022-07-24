@@ -2,6 +2,7 @@ import random
 import player
 import chunk
 import hit
+import mob
 
 from enum import IntEnum
 
@@ -21,6 +22,7 @@ class Controller:
 		TELEPORT = 6
 		TOGGLE_F3 = 7
 		TOGGLE_AO = 8
+		SPAWN = 9
 
 	class MoveMode(IntEnum):
 		LEFT = 0
@@ -54,6 +56,13 @@ class Controller:
 	def misc(self, mode):
 		if mode == self.MiscMode.RANDOM:
 			self.game.holding = random.randint(1, len(self.game.world.block_types) - 1)
+
+		elif mode == self.MiscMode.SPAWN:
+			_mob = mob.Mob(self.game.world, random.choice([*self.game.world.entity_types.values()]))
+			self.game.world.entities.append(_mob)
+
+			_mob.teleport(self.game.player.position)
+
 		elif mode == self.MiscMode.SAVE:
 			self.game.world.save.save()
 		elif mode == self.MiscMode.ESCAPE:

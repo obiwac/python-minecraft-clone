@@ -9,25 +9,25 @@ class Save:
 	def __init__(self, world, path = "save"):
 		self.world = world
 		self.path = path
-	
+
 	def chunk_position_to_path(self, chunk_position):
 		x, _, z = chunk_position
 
 		chunk_path = '/'.join((self.path,
 			base36.dumps(x % 64), base36.dumps(z % 64),
 			f"c.{base36.dumps(x)}.{base36.dumps(z)}.dat"))
-		
+
 		return chunk_path
 
 	def load_chunk(self, chunk_position):
 		logging.debug(f"Loading chunk at position {chunk_position}")
 		# load the chunk file
-		
+
 		chunk_path = self.chunk_position_to_path(chunk_position)
 
 		try:
 			chunk_blocks = nbt.load(chunk_path)["Level"]["Blocks"]
-		
+
 		except FileNotFoundError:
 			return
 
@@ -46,7 +46,7 @@ class Save:
 	def save_chunk(self, chunk_position):
 		logging.debug(f"Saving chunk at position {chunk_position}")
 		x, y, z = chunk_position
-		
+
 		# try to load the chunk file
 		# if it doesn't exist, create a new one
 
@@ -54,10 +54,10 @@ class Save:
 
 		try:
 			chunk_data = nbt.load(chunk_path)
-		
+
 		except FileNotFoundError:
 			chunk_data = nbt.File({"": nbt.Compound({"Level": nbt.Compound()})})
-			
+
 			chunk_data["Level"]["xPos"] = x
 			chunk_data["Level"]["zPos"] = z
 
@@ -72,7 +72,7 @@ class Save:
 						x * chunk.CHUNK_LENGTH * chunk.CHUNK_HEIGHT +
 						z * chunk.CHUNK_HEIGHT +
 						y] = self.world.chunks[chunk_position].blocks[x][y][z]
-		
+
 		# save the chunk file
 
 		chunk_data["Level"]["Blocks"] = chunk_blocks
@@ -85,13 +85,13 @@ class Save:
 		# 	for y in range(-15, 1):
 		# 		self.load_chunk((x, 0, y))
 
-		for x in range(-4, 4):
-			for y in range(-4, 4):
-				self.load_chunk((x, 0, y))
+		# for x in range(-4, 4):
+		# 	for y in range(-4, 4):
+		# 		self.load_chunk((x, 0, y))
 
-		# for x in range(-1, 1):
-		#  	for y in range(-1, 1):
-		#  		self.load_chunk((x, 0, y))
+		for x in range(-1, 1):
+			for y in range(-1, 1):
+				self.load_chunk((x, 0, y))
 
 		for chunk_position, unlit_chunk in self.world.chunks.items():
 			for x in range(chunk.CHUNK_WIDTH):
@@ -110,7 +110,7 @@ class Save:
 		for chunk_position in self.world.chunks:
 			if chunk_position[1] != 0: # reject all chunks above and below the world limit
 				continue
-		
+
 			chunk = self.world.chunks[chunk_position]
 
 			if chunk.modified:

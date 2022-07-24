@@ -1,5 +1,6 @@
 import platform
 import ctypes
+import math
 import logging
 import random
 import time
@@ -13,7 +14,6 @@ pyglet.options["search_local_libs"] = True
 pyglet.options["audio"] = ("openal", "pulse", "directsound", "xaudio2", "silent")
 
 import pyglet.gl as gl
-import shader
 import player
 import texture_manager
 
@@ -42,7 +42,6 @@ class InternalConfig:
 		self.COLORED_LIGHTING = options.COLORED_LIGHTING
 		self.ANTIALIASING = options.ANTIALIASING
 
-
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
 		super().__init__(**args)
@@ -52,9 +51,9 @@ class Window(pyglet.window.Window):
 
 		if self.options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
 			raise RuntimeError("""Indirect Rendering is not supported on your hardware
-			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
+			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it,
 			Please disable "INDIRECT_RENDERING" in options.py""")
-	
+
 		# F3 Debug Screen
 
 		self.show_f3 = False
@@ -67,19 +66,10 @@ class Window(pyglet.window.Window):
 		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
 System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
 CPU: {platform.processor()}
-Display: {gl.gl_info.get_renderer()} 
+Display: {gl.gl_info.get_renderer()}
 {gl.gl_info.get_version()}"""
 
 		logging.info(f"System Info: {self.system_info}")
-		# create shader
-
-		logging.info("Compiling Shaders")
-		if not self.options.COLORED_LIGHTING:
-			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
-		else:
-			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
-		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
-		self.shader.use()
 
 		# create textures
 		logging.info("Creating Texture Array")
@@ -87,12 +77,12 @@ Display: {gl.gl_info.get_renderer()}
 
 		# create world
 
-		self.world = world.World(self.shader, None, self.texture_manager, self.options)
+		self.world = world.World(None, self.texture_manager, self.options)
 
 		# player stuff
 
 		logging.info("Setting up player & camera")
-		self.player = player.Player(self.world, self.shader, self.width, self.height)
+		self.player = player.Player(self.world, self.width, self.height)
 		self.world.player = self.player
 
 		# pyglet stuff
@@ -104,18 +94,11 @@ Display: {gl.gl_info.get_renderer()}
 
 		self.holding = 50
 
-		# bind textures
-
-		gl.glActiveTexture(gl.GL_TEXTURE0)
-		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
-		gl.glUniform1i(self.shader_sampler_location, 0)
-
 		# enable cool stuff
 
 		gl.glEnable(gl.GL_DEPTH_TEST)
-		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-		
+
 		if self.options.ANTIALIASING:
 			gl.glEnable(gl.GL_MULTISAMPLE)
 			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
@@ -151,7 +134,7 @@ Display: {gl.gl_info.get_renderer()}
 
 		# GPU command syncs
 		self.fences = deque()
-		
+
 	def toggle_fullscreen(self):
 		self.set_fullscreen(not self.fullscreen)
 
@@ -214,9 +197,15 @@ Buffer Uploading: Direct (glBufferSubData)
 
 		self.world.tick(delta_time)
 
+		# update other entities
+
+		entities = sorted(self.world.entities, key = lambda e: math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(e.position, self.player.position)))))
+
+		for entity in entities[:5]:
+			entity.update(delta_time)
+
 	def on_draw(self):
 		gl.glEnable(gl.GL_DEPTH_TEST)
-		self.shader.use()
 		self.player.update_matrices()
 
 		while len(self.fences) > self.options.MAX_CPU_AHEAD_FRAMES:
@@ -241,7 +230,7 @@ Buffer Uploading: Direct (glBufferSubData)
 	def draw_f3(self):
 		"""Draws the f3 debug screen. Current uses the fixed-function pipeline since pyglet labels uses it"""
 		gl.glDisable(gl.GL_DEPTH_TEST)
-		gl.glUseProgram(0) 
+		gl.glUseProgram(0)
 		gl.glBindVertexArray(0)
 		gl.glMatrixMode(gl.GL_MODELVIEW)
 		gl.glPushMatrix()
@@ -258,7 +247,6 @@ Buffer Uploading: Direct (glBufferSubData)
 
 		gl.glMatrixMode(gl.GL_MODELVIEW)
 		gl.glPopMatrix()
-
 
 	# input functions
 
@@ -278,7 +266,7 @@ class Game:
 				depth_size = 16, sample_buffers=bool(options.ANTIALIASING), samples=options.ANTIALIASING)
 		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = options.VSYNC)
 
-	def run(self): 
+	def run(self):
 		pyglet.app.run()
 
 
@@ -294,7 +282,7 @@ def init_logger():
 	with open(log_path, 'x') as file:
 		file.write("[LOGS]\n")
 
-	logging.basicConfig(level=logging.INFO, filename=log_path, 
+	logging.basicConfig(level=logging.INFO, filename=log_path,
 		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
 
 

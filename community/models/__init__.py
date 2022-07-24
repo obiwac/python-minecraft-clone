@@ -22,8 +22,13 @@ __all__ = [
 	"button",
 	"snow",
 	"cactus",
-	"tinted_glass"
+	"tinted_glass",
+	"pig",
+	"zombie",
+	"skeleton",
+	"creeper",
+	"cow",
+	"curry",
 ]
 
 from . import *
-
