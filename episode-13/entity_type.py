@@ -72,11 +72,12 @@ class Entity_type:
 			self.indices.extend(x + i * 4 for x in (0, 1, 2, 0, 2, 3))
 
 		# create VAO/VBO/IBO
-		# vertex positions
 
 		self.vao = gl.GLuint(0)
 		gl.glGenVertexArrays(1, self.vao)
 		gl.glBindVertexArray(self.vao)
+
+		# vertex positions
 
 		self.vertices_vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.vertices_vbo)

@@ -50,10 +50,8 @@ class Window(pyglet.window.Window):
 
 		entities = sorted(self.world.entities, key = lambda e: math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(e.position, self.player.position)))))
 
-		PRECISION = 1 # 3
-
-		for entity in entities[(self.frame % PRECISION)::PRECISION]:
-			entity.update(delta_time * PRECISION)
+		for entity in entities:
+			entity.update(delta_time)
 
 	def on_draw(self):
 		self.player.update_matrices()

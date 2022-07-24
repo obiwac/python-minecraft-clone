@@ -8,7 +8,7 @@ out vec3 local_position;
 out vec3 interpolated_tex_coords;
 out float shading;
 
-uniform mat4 m_matrix;
+uniform mat4 transform_matrix;
 uniform mat4 matrix;
 
 void main(void) {
@@ -16,7 +16,7 @@ void main(void) {
 
 	interpolated_tex_coords = tex_coords;
 
-	vec3 adjusted_normal = (vec4(normal, 1.0) * m_matrix).xyz;
+	vec3 adjusted_normal = (vec4(normal, 1.0) * transform_matrix).xyz;
 	vec3 sunlight = vec3(0.0, 0.0, 1.0);
 
 	shading = 1.0 - 0.4 * abs(dot(normalize(adjusted_normal), normalize(sunlight)));

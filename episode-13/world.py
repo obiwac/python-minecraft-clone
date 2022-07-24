@@ -1,23 +1,18 @@
-import pyglet
-import pyglet.gl as gl
-
 import math
-import random
-
 import matrix
 
 import save
 import chunk
-
 import shader
 
 import block_type
 import texture_manager
 
-import mob
 import entity_type
 
-# import custom block & entity models
+import pyglet.gl as gl
+
+# import custom block models
 
 import models
 
@@ -30,8 +25,9 @@ class World:
 
 		# parse block type data file
 
-		with open("data/blocks.mcpy") as f:
-			blocks_data = f.readlines()
+		blocks_data_file = open("data/blocks.mcpy")
+		blocks_data = blocks_data_file.readlines()
+		blocks_data_file.close()
 
 		for block in blocks_data:
 			if block[0] in ['\n', '#']: # skip if empty line or comment
@@ -50,7 +46,7 @@ class World:
 
 			for prop in props.split(','):
 				prop = prop.strip()
-				*prop, = filter(None, prop.split(' ', 1))
+				prop = list(filter(None, prop.split(' ', 1)))
 
 				if prop[0] == "sameas":
 					sameas_number = int(prop[1])
@@ -87,7 +83,7 @@ class World:
 			entities_data = f.readlines()
 
 		for _entity in entities_data:
-			if _entity[0] in ['\n', '#']: # skip if empty line or comment
+			if _entity[0] in "\n#": # skip if empty line or comment
 				continue
 
 			name, props = _entity.split(':', 1)
@@ -122,11 +118,13 @@ class World:
 
 			self.entity_types[name] = entity_type.Entity_type(self, name, texture, model, width, height)
 
-		# create shaders
+		# matrices
 
-		self.mvp_matrix = matrix.Matrix() # to be set by Player object
-		self.mv_matrix  = matrix.Matrix() # to be set by Player object
-		self.p_matrix   = matrix.Matrix() # to be set by Player object
+		self.mv_matrix  = matrix.Matrix()
+		self.p_matrix   = matrix.Matrix()
+		self.mvp_matrix = matrix.Matrix()
+
+		# shaders
 
 		self.block_shader = shader.Shader("shaders/block/vert.glsl", "shaders/block/frag.glsl")
 		self.block_shader_sampler_location = self.block_shader.find_uniform(b"texture_array_sampler")
@@ -134,7 +132,7 @@ class World:
 
 		self.entity_shader = shader.Shader("shaders/entity/vert.glsl", "shaders/entity/frag.glsl")
 		self.entity_shader_sampler_location = self.entity_shader.find_uniform(b"texture_sampler")
-		self.entity_shader_m_matrix_location = self.entity_shader.find_uniform(b"m_matrix")
+		self.entity_shader_transform_matrix_location = self.entity_shader.find_uniform(b"transform_matrix")
 		self.entity_shader_matrix_location = self.entity_shader.find_uniform(b"matrix")
 
 		# load the world
@@ -246,7 +244,7 @@ class World:
 		self.block_shader.use()
 		self.block_shader.uniform_matrix(self.block_shader_matrix_location, self.mvp_matrix)
 
-		# bind block textures
+		# bind textures
 
 		gl.glActiveTexture(gl.GL_TEXTURE0)
 		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.texture_manager.texture_array)
