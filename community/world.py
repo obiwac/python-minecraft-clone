@@ -149,6 +149,8 @@ class World:
 
 			self.entity_types[name] = entity_type.Entity_type(self, name, texture, model, width, height)
 
+		gl.glBindVertexArray(0)
+		
 		indices = []
 
 		for nquad in range(chunk.CHUNK_WIDTH * chunk.CHUNK_HEIGHT * chunk.CHUNK_LENGTH * 8):
