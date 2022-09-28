@@ -159,6 +159,7 @@ Display: {gl.gl_info.get_renderer()}
 f"""
 {round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
+E: {self.world.visible_entities} / {len(self.world.entities)}
 Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
 
 XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )

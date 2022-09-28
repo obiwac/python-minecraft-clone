@@ -47,7 +47,7 @@ class World:
 		self.daylight = 1800
 		self.incrementer = 0
 		self.time = 0
-		self.c = 0
+		
 
 		# Compat
 		self.get_chunk_position = get_chunk_position
@@ -232,6 +232,8 @@ class World:
 
 		self.pending_chunk_update_count = 0
 		self.chunk_update_counter = 0
+		self.c = 0
+		self.visible_entities = 0
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
@@ -601,9 +603,13 @@ class World:
 	draw_translucent = draw_translucent_fancy if options.FANCY_TRANSLUCENCY else draw_translucent_fast
 
 	def draw(self):
+		# Debug variables
+
+		self.visible_entities = 0
+		self.c = 0
+                
 		# daylight stuff
 
-		self.c = 0
 		daylight_multiplier = self.daylight / 1800
 		gl.glClearColor(0.5 * (daylight_multiplier - 0.26),
 				0.8 * (daylight_multiplier - 0.26),
@@ -636,10 +642,11 @@ class World:
 		for entity in self.entities:
 			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, self.player.position))))
 
-			if dist > 32:
+			if dist > 32 or not self.player.check_in_frustum_aabb(entity.collider):
 				continue
 
 			entity.draw()
+			self.visible_entities += 1
 
 		# draw translucent chunks
 

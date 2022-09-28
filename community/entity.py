@@ -218,7 +218,7 @@ class Entity:
 
 	def draw(self):
 		# compute transformation matrix
-
+		
 		transform = glm.mat4(1)
 
 		transform = glm.translate(transform, glm.vec3(*self.position))

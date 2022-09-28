@@ -91,6 +91,58 @@ class Player(entity.Entity):
 		Frustum.near = normalize(Frustum.near)
 		Frustum.far = normalize(Frustum.far)
 
+	def check_in_frustum_aabb(self, collider):
+		"Frustum check for AABB boxes"
+		planes = (Frustum.left, Frustum.right, Frustum.bottom, Frustum.top, Frustum.near, Frustum.far)
+		result = 2
+
+		if collider.x1 is None or collider.y1 is None or collider.z1 is None \
+				or collider.x2 is None or collider.y2 is None or collider.z2 is None:
+			return 0
+
+		for plane in planes:
+			_in = 0
+			_out = 0
+			normal = plane.xyz
+			w = plane.w
+			if glm.dot(normal, glm.vec3(collider.x1, collider.y1, collider.z1)) + w < 0:
+				_out += 1
+			else:
+				_in += 1
+			if glm.dot(normal, glm.vec3(collider.x2, collider.y1, collider.z1)) + w < 0:
+				_out += 1
+			else:
+				_in += 1
+			if glm.dot(normal, glm.vec3(collider.x2, collider.y2, collider.z1)) + w < 0:
+				_out += 1
+			else:
+				_in += 1
+			if glm.dot(normal, glm.vec3(collider.x1, collider.y2, collider.z1)) + w < 0:
+				_out += 1
+			else:
+				_in += 1
+			if glm.dot(normal, glm.vec3(collider.x1, collider.y2, collider.z2)) + w < 0:
+				_out += 1
+			else:
+				_in += 1
+			if glm.dot(normal, glm.vec3(collider.x1, collider.y1, collider.z2)) + w < 0:
+				_out += 1
+			else:
+				_in += 1
+			if glm.dot(normal, glm.vec3(collider.x2, collider.y1, collider.z2)) + w < 0:
+				_out += 1
+			else:
+				_in += 1
+			if glm.dot(normal, glm.vec3(collider.x1, collider.y2, collider.z2)) + w < 0:
+				_out += 1
+			else:
+				_in += 1
+			if not _in:
+				return 0
+			elif _out:
+				result = 1
+		return result
+	
 	def check_in_frustum(self, chunk_pos):
 		"""Frustum check of each chunk. If the chunk is not in the view frustum, it is discarded"""
 		planes = (Frustum.left, Frustum.right, Frustum.bottom, Frustum.top, Frustum.near, Frustum.far)
