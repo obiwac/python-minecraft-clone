@@ -1,4 +1,4 @@
-from properties import *
+from .constants import *
 transparent = TRANSPARENT
 is_cube = False
 glass = False
