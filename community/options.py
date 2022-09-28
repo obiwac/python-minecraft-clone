@@ -29,6 +29,7 @@ MAX_CPU_AHEAD_FRAMES = 3 # Number of frames the CPU can be ahead of the GPU unti
                            # Higher values gives higher framerate but causes framerate instability and higher frame spikes
                            # Lower values causes average lower framerate but gives smoother framerate
                            # Recommended values are between 0 and 9
+                           # Usually 3 - 4 in most rendering scenarios
 
 # Legacy Smooth FPS
 SMOOTH_FPS = False # Legacy way to force the flushing of command buffer and forces the CPU to wait for the GPU to finish rendering. 
@@ -40,8 +41,8 @@ SMOOTH_FPS = False # Legacy way to force the flushing of command buffer and forc
 # Ambient Occlusion and Smooth Lighting
 SMOOTH_LIGHTING = True # Smooth Lighting smoothes the light of each vertex to achieve a linear interpolation
                        # of light on each fragment, hence creating a smoother light effect
-                       # It also adds ambient occlusion, to simulate light blocked by opaqua objects
-                       # Chunk updates / building will be severely affecteds by this feature
+                       # It also adds ambient occlusion, to simulate light blocked by opaque objects
+                       # Chunk updates / building will be severely affected by this feature
 
 # Better Translucency blending
 FANCY_TRANSLUCENCY = True

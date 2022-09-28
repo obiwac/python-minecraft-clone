@@ -196,6 +196,7 @@ class World:
 		self.entity_shader_sampler_location = self.entity_shader.find_uniform(b"texture_sampler")
 		self.entity_shader_transform_matrix_location = self.entity_shader.find_uniform(b"transform_matrix")
 		self.entity_shader_matrix_location = self.entity_shader.find_uniform(b"matrix")
+		self.entity_shader_lighting_location = self.entity_shader.find_uniform(b"lighting")
 
 		# load the world
 

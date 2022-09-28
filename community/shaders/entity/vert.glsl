@@ -10,6 +10,7 @@ out float shading;
 
 uniform mat4 transform_matrix;
 uniform mat4 matrix;
+uniform float lighting;
 
 void main(void) {
 	local_position = vertex_position;
@@ -19,7 +20,7 @@ void main(void) {
 	vec3 adjusted_normal = (vec4(normal, 1.0) * transform_matrix).xyz;
 	vec3 sunlight = vec3(0.0, 0.0, 1.0);
 
-	shading = 1.0 - 0.4 * abs(dot(normalize(adjusted_normal), normalize(sunlight)));
+	shading = (1.0 - 0.4 * abs(dot(normalize(adjusted_normal), normalize(sunlight)))) * lighting;
 
 	gl_Position = matrix * vec4(vertex_position, 1.0);
 }
