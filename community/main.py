@@ -144,7 +144,7 @@ Display: {gl.gl_info.get_renderer()}
 		for fence in self.fences:
 			gl.glDeleteSync(fence)
 
-		pyglet.app.exit()
+		super().on_close()
 
 	def update_f3(self, delta_time):
 		"""Update the F3 debug screen content"""
