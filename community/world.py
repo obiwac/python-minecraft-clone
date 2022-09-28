@@ -317,23 +317,23 @@ class World:
 				if neighbour_pos.y > chunk.CHUNK_HEIGHT:
 					continue
 
-				chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
-				if not chunk: continue
+				_chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
+				if not _chunk: continue
 				local_pos = get_local_position(neighbour_pos)
 
 				transparency = self.get_transparency(neighbour_pos)
 
-				if transparency and chunk.get_sky_light(local_pos) < light_level:
+				if transparency and _chunk.get_sky_light(local_pos) < light_level:
 					newlight = light_level - (2 - transparency)
 
 					if light_update:
-						chunk.update_at_position(neighbour_pos)
+						_chunk.update_at_position(neighbour_pos)
 
 					if direction.y == -1:
-						chunk.set_sky_light(local_pos, newlight)
+						_chunk.set_sky_light(local_pos, newlight)
 						self.skylight_increase_queue.append((neighbour_pos, newlight))
-					elif chunk.get_sky_light(local_pos) + 2 <= light_level:
-						chunk.set_sky_light(local_pos, newlight - 1)
+					elif _chunk.get_sky_light(local_pos) + 2 <= light_level:
+						_chunk.set_sky_light(local_pos, newlight - 1)
 						self.skylight_increase_queue.append((neighbour_pos, newlight - 1))
 
 	def decrease_light(self, world_pos):
