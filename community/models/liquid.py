@@ -1,7 +1,7 @@
 # in the end, it'd be nice to have it so that liquids fill up the whole block when they have a block above them
 # this would avoid the problems this solution has
-
-transparent = 1
+from properties import *
+transparent = TRANSLUCENT
 is_cube = True
 glass = True
 translucent = True

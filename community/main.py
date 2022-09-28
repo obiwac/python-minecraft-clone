@@ -144,7 +144,7 @@ Display: {gl.gl_info.get_renderer()}
 		for fence in self.fences:
 			gl.glDeleteSync(fence)
 
-		super().on_close()
+		self.close()
 
 	def update_f3(self, delta_time):
 		"""Update the F3 debug screen content"""

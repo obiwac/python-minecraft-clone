@@ -1,4 +1,5 @@
-transparent = 2
+from properties import *
+transparent = TRANSPARENT
 translucent = False
 is_cube = False
 glass = False
