@@ -1,5 +1,5 @@
-from .constants import *
-transparent = CUTOFF
+transparent = True
+transparency = 1
 is_cube = True
 glass = False
 translucent = False

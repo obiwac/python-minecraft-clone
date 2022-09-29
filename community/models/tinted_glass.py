@@ -1,5 +1,5 @@
-from .constants import *
-transparent = TRANSLUCENT
+transparent = True
+transparency = 1
 is_cube = True
 glass = True
 translucent = True

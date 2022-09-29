@@ -232,7 +232,6 @@ class World:
 
 		self.pending_chunk_update_count = 0
 		self.chunk_update_counter = 0
-		self.c = 0
 		self.visible_entities = 0
 
 	def __del__(self):
@@ -276,7 +275,7 @@ class World:
 						chunk.update_at_position(neighbour_pos)
 
 	def init_skylight(self, pending_chunk):
-		""" Initializes the skylight of each chunks
+		"""Initializes the skylight of each chunks
 		To avoid unsufferable lag from propagating from the top of the chunks when
 		most of the heights would be air, it instead runs a simple algorithm
 		to check where the highest point of the chunk is and propagates skylight from
@@ -394,6 +393,7 @@ class World:
 	def propagate_skylight_decrease(self, light_update=True):
 		"""Similar to the block light algorithm, but
 		always unlight in the downward direction"""
+
 		while self.skylight_decrease_queue:
 			pos, light_level = self.skylight_decrease_queue.popleft()
 
@@ -468,7 +468,7 @@ class World:
 		if not block_type:
 			return 2
 
-		return block_type.transparent
+		return block_type.transparency
 
 	def is_opaque_block(self, position):
 		# get block type and check if it's opaque or not
@@ -559,7 +559,7 @@ class World:
 			self.incrementer = -1
 
 	def can_render_chunk(self, chunk_position):
-		return self.player.check_in_frustum(chunk_position) and math.dist(self.get_chunk_position(self.player.position), chunk_position) <= self.options.RENDER_DISTANCE
+		return self.player.check_chunk_in_frustum(chunk_position) and math.dist(self.get_chunk_position(self.player.position), chunk_position) <= self.options.RENDER_DISTANCE
 
 	def prepare_rendering(self):
 		self.visible_chunks = [self.chunks[chunk_position]
@@ -606,7 +606,6 @@ class World:
 		# Debug variables
 
 		self.visible_entities = 0
-		self.c = 0
                 
 		# daylight stuff
 
@@ -642,7 +641,7 @@ class World:
 		for entity in self.entities:
 			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, self.player.position))))
 
-			if dist > 32 or not self.player.check_in_frustum_aabb(entity.collider):
+			if dist > 32 or not self.player.check_in_frustum(entity.collider):
 				continue
 
 			entity.draw()

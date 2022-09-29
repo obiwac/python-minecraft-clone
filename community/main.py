@@ -154,7 +154,7 @@ Display: {gl.gl_info.get_renderer()}
 		chunk_count = len(self.world.chunks)
 		visible_chunk_count = len(self.world.visible_chunks)
 		quad_count = sum(chunk.mesh_quad_count for chunk in self.world.chunks.values())
-		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
+		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks) 
 		self.f3.text = \
 f"""
 {round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
@@ -171,13 +171,13 @@ Light: {max(self.world.get_light(self.player.rounded_position), self.world.get_s
 
 Renderer: {"OpenGL 3.3 VAOs" if not self.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.options.ADVANCED_OPENGL else ""}
 Buffers: {chunk_count}
-Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
-Visible Quads: {visible_quad_count}
+Chunk Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
+Chunk Visible Quads: {visible_quad_count}
 Buffer Uploading: Direct (glBufferSubData)
 """
 
 	def update(self, delta_time):
-		"""Every tick"""
+		# Every tick
 		if self.show_f3:
 			self.update_f3(delta_time)
 
