@@ -232,7 +232,7 @@ class Entity:
 		self.world.entity_shader.uniform_matrix(self.world.entity_shader_transform_matrix_location, transform)
 		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, self.world.mvp_matrix * transform)
 		self.world.entity_shader.uniform_float(self.world.entity_shader_lighting_location, 
-			max(0.8 ** (15 - skylight) * self.world.daylight / 1800, 0.8 ** (15 - light))
+			max(0.8 ** (15 - skylight * self.world.daylight / 1800), 0.8 ** (15 - light))
 		)
 
 		self.entity_type.draw()
