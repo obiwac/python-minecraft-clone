@@ -61,4 +61,3 @@ The community has several features and options that can be toggled in `options.p
 - **Java implementation:** https://github.com/StartForKillerMC/JavaMinecraft
 - **C++ implementation:** https://github.com/Jukitsu/CppMinecraft-clone
 - **Odin implementation:** https://github.com/anthony-63/lvo
-- **Lighting test:** https://github.com/Jukitsu/python-minecraft-clone-ep10-lighting
