@@ -174,7 +174,7 @@ Display: {gl.gl_info.get_renderer()}
 		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
 		self.f3.text = \
 f"""
-{round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
+{round(1 / delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
 Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
 
@@ -230,35 +230,15 @@ Buffer Uploading: Direct (glBufferSubData)
 
 		# Draw the F3 Debug screen
 		if self.show_f3:
-			self.draw_f3()
+			self.f3.draw()
 
 		# CPU - GPU Sync
 		if not self.options.SMOOTH_FPS:
-			self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+			# self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+			# Broken in pyglet 2; glFenceSync is missing
+			pass
 		else:
 			gl.glFinish()
-
-	def draw_f3(self):
-		"""Draws the f3 debug screen. Current uses the fixed-function pipeline since pyglet labels uses it"""
-		gl.glDisable(gl.GL_DEPTH_TEST)
-		gl.glUseProgram(0) 
-		gl.glBindVertexArray(0)
-		gl.glMatrixMode(gl.GL_MODELVIEW)
-		gl.glPushMatrix()
-		gl.glLoadIdentity()
-
-		gl.glMatrixMode(gl.GL_PROJECTION)
-		gl.glPushMatrix()
-		gl.glLoadIdentity()
-		gl.glOrtho(0, self.width, 0, self.height, -1, 1)
-
-		self.f3.draw()
-
-		gl.glPopMatrix()
-
-		gl.glMatrixMode(gl.GL_MODELVIEW)
-		gl.glPopMatrix()
-
 
 	# input functions
 
@@ -279,7 +259,7 @@ class Game:
 		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = options.VSYNC)
 
 	def run(self): 
-		pyglet.app.run()
+		pyglet.app.run(interval = 0)
 
 
 
