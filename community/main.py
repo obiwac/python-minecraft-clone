@@ -63,7 +63,6 @@ class Window(pyglet.window.Window):
 				width = self.width // 3,
 				multiline = True
 		)
-
 		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
 System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
 CPU: {platform.processor()}
@@ -158,7 +157,7 @@ Display: {gl.gl_info.get_renderer()}
 		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks) 
 		self.f3.text = \
 f"""
-{round(1 / delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
+{round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
 E: {self.world.visible_entities} / {len(self.world.entities)}
 Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
@@ -176,7 +175,6 @@ Chunk Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576,
 Chunk Visible Quads: {visible_quad_count}
 Buffer Uploading: Direct (glBufferSubData)
 """
-
 
 	def update(self, delta_time):
 		# Every tick
@@ -226,16 +224,30 @@ Buffer Uploading: Direct (glBufferSubData)
 
 		# CPU - GPU Sync
 		if not self.options.SMOOTH_FPS:
-			#self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
-			pass
+			self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
 		else:
 			gl.glFinish()
 
 	def draw_f3(self):
-		"""Draws the f3 debug screen"""
+		"""Draws the f3 debug screen. Current uses the fixed-function pipeline since pyglet labels uses it"""
+		gl.glDisable(gl.GL_DEPTH_TEST)
+		gl.glUseProgram(0)
+		gl.glBindVertexArray(0)
+		gl.glMatrixMode(gl.GL_MODELVIEW)
+		gl.glPushMatrix()
+		gl.glLoadIdentity()
+
+		gl.glMatrixMode(gl.GL_PROJECTION)
+		gl.glPushMatrix()
+		gl.glLoadIdentity()
+		gl.glOrtho(0, self.width, 0, self.height, -1, 1)
+
 		self.f3.draw()
 
-		
+		gl.glPopMatrix()
+
+		gl.glMatrixMode(gl.GL_MODELVIEW)
+		gl.glPopMatrix()
 
 	# input functions
 
@@ -245,8 +257,8 @@ Buffer Uploading: Direct (glBufferSubData)
 
 		self.player.view_width = width
 		self.player.view_height = height
-		self.f3.width = width // 3
-		self.f3.y = height - 10
+		self.f3.y = self.height - 10
+		self.f3.width = self.width // 3
 
 class Game:
 	def __init__(self):
@@ -256,7 +268,7 @@ class Game:
 		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = options.VSYNC)
 
 	def run(self):
-		pyglet.app.run(interval = 0)
+		pyglet.app.run()
 
 
 
