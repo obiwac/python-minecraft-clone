@@ -218,16 +218,21 @@ class Entity:
 
 	def draw(self):
 		# compute transformation matrix
-
+		
 		transform = glm.mat4(1)
 
 		transform = glm.translate(transform, glm.vec3(*self.position))
 		transform = glm.rotate(transform, self.rotation[1], glm.vec3(1, 0, 0))
 		transform = glm.rotate(transform, self.rotation[0], glm.vec3(0, 1, 0))
-
+		skylight = self.world.get_skylight(tuple(round(t) for t in self.position))
+		light = self.world.get_light(tuple(round(t) for t in self.position))
+		
 		# actually draw entity
 
 		self.world.entity_shader.uniform_matrix(self.world.entity_shader_transform_matrix_location, transform)
 		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, self.world.mvp_matrix * transform)
+		self.world.entity_shader.uniform_float(self.world.entity_shader_lighting_location, 
+			max(0.8 ** (15 - skylight * self.world.daylight / 1800), 0.8 ** (15 - light))
+		)
 
 		self.entity_type.draw()

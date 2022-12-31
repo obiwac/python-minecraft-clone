@@ -69,6 +69,9 @@ class Shader:
 	def uniform_matrix(self, location, matrix):
 		gl.glUniformMatrix4fv(location, 1, gl.GL_FALSE, glm.value_ptr(matrix))
 
+	def uniform_float(self, location, value):
+		gl.glUniform1f(location, value)
+
 	def use(self):
 		gl.glUseProgram(self.program)
 

@@ -1,4 +1,5 @@
 transparent = True
+transparency = 2
 translucent = False
 is_cube = False
 glass = False

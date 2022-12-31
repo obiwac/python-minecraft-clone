@@ -144,7 +144,7 @@ Display: {gl.gl_info.get_renderer()}
 		for fence in self.fences:
 			gl.glDeleteSync(fence)
 
-		pyglet.app.exit()
+		self.close()
 
 	def update_f3(self, delta_time):
 		"""Update the F3 debug screen content"""
@@ -159,6 +159,7 @@ Display: {gl.gl_info.get_renderer()}
 f"""
 {round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
+E: {self.world.visible_entities} / {len(self.world.entities)}
 Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
 
 XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
@@ -170,13 +171,13 @@ Light: {max(self.world.get_light(self.player.rounded_position), self.world.get_s
 
 Renderer: {"OpenGL 3.3 VAOs" if not self.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.options.ADVANCED_OPENGL else ""}
 Buffers: {chunk_count}
-Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
-Visible Quads: {visible_quad_count}
+Chunk Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
+Chunk Visible Quads: {visible_quad_count}
 Buffer Uploading: Direct (glBufferSubData)
 """
 
 	def update(self, delta_time):
-		"""Every tick"""
+		# Every tick
 		if self.show_f3:
 			self.update_f3(delta_time)
 
