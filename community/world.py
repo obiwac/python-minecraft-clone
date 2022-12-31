@@ -48,7 +48,6 @@ class World:
 		self.incrementer = 0
 		self.time = 0
 		
-
 		# Compat
 		self.get_chunk_position = get_chunk_position
 		self.get_local_position = get_local_position

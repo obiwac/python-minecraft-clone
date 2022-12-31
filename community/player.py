@@ -101,8 +101,9 @@ class Player(entity.Entity):
 	def check_in_frustum(self, collider):
 		# Frustum check for AABB boxes
 
-		if collider.x1 is None or collider.y1 is None or collider.z1 is None \
-				or collider.x2 is None or collider.y2 is None or collider.z2 is None:
+		if (collider.x1 is None or collider.y1 is None or collider.z1 is None or
+			collider.x2 is None or collider.y2 is None or collider.z2 is None):
+
 			return 0
 
 		planes = (Frustum.left, Frustum.right, Frustum.bottom, Frustum.top, Frustum.near, Frustum.far)

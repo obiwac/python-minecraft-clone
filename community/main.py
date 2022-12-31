@@ -154,7 +154,7 @@ Display: {gl.gl_info.get_renderer()}
 		chunk_count = len(self.world.chunks)
 		visible_chunk_count = len(self.world.visible_chunks)
 		quad_count = sum(chunk.mesh_quad_count for chunk in self.world.chunks.values())
-		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks) 
+		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
 		self.f3.text = \
 f"""
 {round(pyglet.clock.get_fps())} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
