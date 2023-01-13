@@ -47,8 +47,7 @@ class World:
 		self.daylight = 1800
 		self.incrementer = 0
 		self.time = 0
-		self.c = 0
-
+		
 		# Compat
 		self.get_chunk_position = get_chunk_position
 		self.get_local_position = get_local_position
@@ -149,6 +148,8 @@ class World:
 
 			self.entity_types[name] = entity_type.Entity_type(self, name, texture, model, width, height)
 
+		gl.glBindVertexArray(0)
+		
 		indices = []
 
 		for nquad in range(chunk.CHUNK_WIDTH * chunk.CHUNK_HEIGHT * chunk.CHUNK_LENGTH * 8):
@@ -194,6 +195,7 @@ class World:
 		self.entity_shader_sampler_location = self.entity_shader.find_uniform(b"texture_sampler")
 		self.entity_shader_transform_matrix_location = self.entity_shader.find_uniform(b"transform_matrix")
 		self.entity_shader_matrix_location = self.entity_shader.find_uniform(b"matrix")
+		self.entity_shader_lighting_location = self.entity_shader.find_uniform(b"lighting")
 
 		# load the world
 
@@ -229,6 +231,7 @@ class World:
 
 		self.pending_chunk_update_count = 0
 		self.chunk_update_counter = 0
+		self.visible_entities = 0
 
 	def __del__(self):
 		gl.glDeleteBuffers(1, ctypes.byref(self.ibo))
@@ -271,7 +274,7 @@ class World:
 						chunk.update_at_position(neighbour_pos)
 
 	def init_skylight(self, pending_chunk):
-		""" Initializes the skylight of each chunks
+		"""Initializes the skylight of each chunks
 		To avoid unsufferable lag from propagating from the top of the chunks when
 		most of the heights would be air, it instead runs a simple algorithm
 		to check where the highest point of the chunk is and propagates skylight from
@@ -389,6 +392,7 @@ class World:
 	def propagate_skylight_decrease(self, light_update=True):
 		"""Similar to the block light algorithm, but
 		always unlight in the downward direction"""
+
 		while self.skylight_decrease_queue:
 			pos, light_level = self.skylight_decrease_queue.popleft()
 
@@ -463,7 +467,7 @@ class World:
 		if not block_type:
 			return 2
 
-		return block_type.transparent
+		return block_type.transparency
 
 	def is_opaque_block(self, position):
 		# get block type and check if it's opaque or not
@@ -554,7 +558,7 @@ class World:
 			self.incrementer = -1
 
 	def can_render_chunk(self, chunk_position):
-		return self.player.check_in_frustum(chunk_position) and math.dist(self.get_chunk_position(self.player.position), chunk_position) <= self.options.RENDER_DISTANCE
+		return self.player.check_chunk_in_frustum(chunk_position) and math.dist(self.get_chunk_position(self.player.position), chunk_position) <= self.options.RENDER_DISTANCE
 
 	def prepare_rendering(self):
 		self.visible_chunks = [self.chunks[chunk_position]
@@ -598,9 +602,12 @@ class World:
 	draw_translucent = draw_translucent_fancy if options.FANCY_TRANSLUCENCY else draw_translucent_fast
 
 	def draw(self):
+		# Debug variables
+
+		self.visible_entities = 0
+                
 		# daylight stuff
 
-		self.c = 0
 		daylight_multiplier = self.daylight / 1800
 		gl.glClearColor(0.5 * (daylight_multiplier - 0.26),
 				0.8 * (daylight_multiplier - 0.26),
@@ -633,10 +640,11 @@ class World:
 		for entity in self.entities:
 			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, self.player.position))))
 
-			if dist > 32:
+			if dist > 32 or not self.player.check_in_frustum(entity.collider):
 				continue
 
 			entity.draw()
+			self.visible_entities += 1
 
 		# draw translucent chunks
 

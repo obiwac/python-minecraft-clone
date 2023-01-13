@@ -11,6 +11,7 @@ class Block_type:
 		# create members based on model attributes
 
 		self.transparent = model.transparent
+		self.transparency = model.transparency
 		self.is_cube = model.is_cube
 		self.glass = model.glass
 		self.translucent = model.translucent
