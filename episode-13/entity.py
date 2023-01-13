@@ -217,11 +217,9 @@ class Entity:
 		transform.translate(*self.position)
 		transform.rotate_2d(*self.rotation)
 
-		_matrix = self.world.mvp_matrix * transform
-
 		# actually draw entity
 
 		self.world.entity_shader.uniform_matrix(self.world.entity_shader_transform_matrix_location, transform)
-		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, _matrix)
+		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, self.world.mvp_matrix * transform)
 
 		self.entity_type.draw()

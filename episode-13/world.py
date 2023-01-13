@@ -25,9 +25,8 @@ class World:
 
 		# parse block type data file
 
-		blocks_data_file = open("data/blocks.mcpy")
-		blocks_data = blocks_data_file.readlines()
-		blocks_data_file.close()
+		with open("data/blocks.mcpy") as f:
+			blocks_data = f.readlines()
 
 		for block in blocks_data:
 			if block[0] in ['\n', '#']: # skip if empty line or comment

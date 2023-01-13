@@ -10,7 +10,7 @@ class Save:
 		self.path = path
 
 	def chunk_position_to_path(self, chunk_position):
-		x, y, z = chunk_position
+		x, _, z = chunk_position
 
 		chunk_path = '/'.join((self.path,
 			base36.dumps(x % 64), base36.dumps(z % 64),
@@ -30,7 +30,7 @@ class Save:
 			return
 
 		blocks   = chunk_data["Level"]["Blocks"]
-		entities = chunk_data["Level"]["Entities"]
+		entities = [] # chunk_data["Level"]["Entities"]
 
 		# create chunk and fill it with the blocks from our chunk file
 

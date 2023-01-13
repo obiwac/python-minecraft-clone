@@ -9,6 +9,8 @@ class Entity_type:
 	def __init__(self, world, name = "unknown", texture = "pig", model = models.pig, width = 0.6, height = 1.8):
 		self.world = world
 
+		model = models.pig
+
 		self.name = name
 		self.model = model
 
@@ -39,14 +41,117 @@ class Entity_type:
 
 		gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
 
-		# convert model to arrays we can send to the GPU
+		# get total size of the models so we can create vertex buffers
 
-		self.vertices = sum(model.vertex_positions, [])
-		self.tex_coords = sum(model.tex_coords, [])
+		vertex_count = 0
+		tex_coord_count = 0
 
-		del self.tex_coords[2::3]
+		for bone in model.bones:
+			vertex_count += len(sum(bone["vertices"], [])) // 3
+			tex_coord_count += len(sum(bone["tex_coords"], [])) // 2
 
-		# get normal vector for each face
+		# create VAO/VBO/IBO
+
+		self.vao = gl.GLuint(0)
+		gl.glGenVertexArrays(1, self.vao)
+		gl.glBindVertexArray(self.vao)
+
+		# vertex positions
+
+		self.vertices_vbo = gl.GLuint(0)
+		gl.glGenBuffers(1, self.vertices_vbo)
+
+		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertices_vbo)
+		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * vertex_count * 3), 0, gl.GL_STREAM_DRAW)
+
+		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+		gl.glEnableVertexAttribArray(0)
+
+		# texture coordinates
+		# these can be filled in straight away as they won't change
+
+		self.tex_coords_vbo = gl.GLuint(0)
+		gl.glGenBuffers(1, self.tex_coords_vbo)
+
+		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.tex_coords_vbo)
+		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * tex_coord_count * 2), 0, gl.GL_STREAM_DRAW)
+
+		offset = 0
+
+		for bone in self.model.bones:
+			tex_coords = sum(bone["tex_coords"], [])
+
+			type_ = gl.GLfloat * len(tex_coords)
+			size = ctypes.sizeof(type_)
+
+			gl.glBufferSubData(
+				gl.GL_ARRAY_BUFFER, offset,
+				size, (type_) (*tex_coords))
+
+			offset += size
+
+		gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+		gl.glEnableVertexAttribArray(1)
+
+		"""
+		# normals
+
+		self.normals_vbo = gl.GLuint(0)
+		gl.glGenBuffers(1, self.normals_vbo)
+
+		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.normals_vbo)
+		gl.glVertexAttribPointer(2, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+		gl.glEnableVertexAttribArray(2)
+		"""
+
+		# compute indices
+
+		self.indices = []
+
+		for i in range(vertex_count):
+			self.indices.extend(x + i * 4 for x in (0, 1, 2, 0, 2, 3))
+
+		# indices
+		# these can be filled in straight away as they won't change
+
+		self.ibo = gl.GLuint(0)
+		gl.glGenBuffers(1, self.ibo)
+
+		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
+		gl.glBufferData(
+			gl.GL_ELEMENT_ARRAY_BUFFER,
+			ctypes.sizeof(gl.GLuint * len(self.indices)),
+			(gl.GLuint * len(self.indices)) (*self.indices),
+			gl.GL_STATIC_DRAW)
+
+		# initial fill
+
+		self.fill()
+
+	# fill in the vertex buffers with data!
+
+	def fill(self):
+		gl.glBindVertexArray(self.vao)
+
+		# upload vertex positions
+
+		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertices_vbo)
+		offset = 0
+
+		for bone in self.model.bones:
+			vertices = sum(bone["vertices"], [])
+
+			type_ = gl.GLfloat * len(vertices)
+			size = ctypes.sizeof(type_)
+
+			gl.glBufferSubData(
+				gl.GL_ARRAY_BUFFER, offset,
+				size, (type_) (*vertices))
+
+			offset += size
+
+		"""
+		# compute normals
 
 		self.normals = []
 
@@ -64,56 +169,7 @@ class Entity_type:
 
 			self.normals.extend(n * 4)
 
-		# compute indices
-
-		self.indices = []
-
-		for i in range(len(model.vertex_positions)):
-			self.indices.extend(x + i * 4 for x in (0, 1, 2, 0, 2, 3))
-
-		# create VAO/VBO/IBO
-
-		self.vao = gl.GLuint(0)
-		gl.glGenVertexArrays(1, self.vao)
-		gl.glBindVertexArray(self.vao)
-
-		# vertex positions
-
-		self.vertices_vbo = gl.GLuint(0)
-		gl.glGenBuffers(1, self.vertices_vbo)
-
-		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertices_vbo)
-		gl.glBufferData(
-			gl.GL_ARRAY_BUFFER,
-			ctypes.sizeof(gl.GLfloat * len(self.vertices)),
-			(gl.GLfloat * len(self.vertices)) (*self.vertices),
-			gl.GL_STATIC_DRAW)
-
-		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-		gl.glEnableVertexAttribArray(0)
-
-		# texture coordinates
-
-		self.tex_coords_vbo = gl.GLuint(0)
-		gl.glGenBuffers(1, self.tex_coords_vbo)
-
-		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.tex_coords_vbo)
-		gl.glBufferData(
-			gl.GL_ARRAY_BUFFER,
-			ctypes.sizeof(gl.GLfloat * len(self.tex_coords)),
-			(gl.GLfloat * len(self.tex_coords)) (*self.tex_coords),
-			gl.GL_STATIC_DRAW)
-
-		# texture coordinates are still 3D here even though we don't use texture arrays (as is the case with blocks)
-		# this is so that we can interchange block & entity models
-
-		gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-		gl.glEnableVertexAttribArray(1)
-
-		# normals
-
-		self.normals_vbo = gl.GLuint(0)
-		gl.glGenBuffers(1, self.normals_vbo)
+		# upload normals
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.normals_vbo)
 		gl.glBufferData(
@@ -121,21 +177,7 @@ class Entity_type:
 			ctypes.sizeof(gl.GLfloat * len(self.normals)),
 			(gl.GLfloat * len(self.normals)) (*self.normals),
 			gl.GL_STATIC_DRAW)
-
-		gl.glVertexAttribPointer(2, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-		gl.glEnableVertexAttribArray(2)
-
-		# indices
-
-		self.ibo = gl.GLuint(0)
-		gl.glGenBuffers(1, self.ibo)
-
-		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
-		gl.glBufferData(
-			gl.GL_ELEMENT_ARRAY_BUFFER,
-			ctypes.sizeof(gl.GLuint * len(self.indices)),
-			(gl.GLuint * len(self.indices)) (*self.indices),
-			gl.GL_STATIC_DRAW)
+		"""
 
 	def draw(self):
 		# bind textures
