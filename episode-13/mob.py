@@ -13,7 +13,7 @@ class Mob(entity.Entity):
 		self.reset()
 
 	def select_target(self):
-		self.target = [x + random.randint(-10, 10) for x in self.position]
+		self.target = [x + random.randint(-5, 5) for x in self.position]
 
 	def update(self, delta_time):
 		if not random.randint(0, int(3 / delta_time)): # change target every 3 seconds on average

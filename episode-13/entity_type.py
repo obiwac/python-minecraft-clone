@@ -127,7 +127,6 @@ class Entity_type:
 			gl.GL_STATIC_DRAW)
 
 	def animate(self, age, speed):
-		print(age, speed)
 		gl.glBindVertexArray(self.vao)
 
 		# compute & upload vertex positions
@@ -161,13 +160,26 @@ class Entity_type:
 			elif name == "leftLeg":
 				kind = "odd_leg"
 
+			elif name == "rightArm":
+				kind = "arm"
+
+			elif name == "leftArm":
+				kind = "odd_arm"
+
 			if kind is not None:
+				odd = "odd" in kind
+
 				if kind == "head":
 					anim.rotate_2d(math.sin(age) / 2, math.cos(age) / 2)
 
 				if "leg" in kind:
-					phase = math.tau / 2 * (kind == "odd_leg")
+					phase = math.tau / 2 * odd
 					anim.rotate_2d(0, math.sin(age * 10 + phase) * 15 * speed)
+
+				if "arm" in kind:
+					theta = (-age if odd else age) * 2
+					phase = math.tau / 2 * odd
+					anim.rotate_2d(math.sin(theta + phase) / 8, math.cos(theta + phase) / 8 - math.tau / 4)
 
 			anim.translate(*[-x for x in pivot])
 
