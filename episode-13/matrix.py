@@ -39,6 +39,13 @@ def multiply_matrix_vector(matrix, vector):
 
 	return result
 
+def cross_product(u, v):
+	return [
+		 u[1] * v[2] - u[2] * v[1],
+		-u[0] * v[2] + u[2] * v[0],
+		 u[0] * v[1] - u[1] * v[0],
+	]
+
 class Matrix:
 	def __init__(self, base = None):
 		if type(base) == Matrix: self.data = copy_matrix(base.data)

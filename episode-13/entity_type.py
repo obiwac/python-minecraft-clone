@@ -58,16 +58,24 @@ class Entity_type:
 		gl.glGenVertexArrays(1, self.vao)
 		gl.glBindVertexArray(self.vao)
 
-		# vertex positions
+		# vertex positions & normals
+		# we'll combine these two (6 floats per vertex, first 3 for position, next 3 for normal)
 
 		self.vertices_vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.vertices_vbo)
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertices_vbo)
-		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * vertex_count * 3), 0, gl.GL_STREAM_DRAW)
+		gl.glBufferData(gl.GL_ARRAY_BUFFER,
+			ctypes.sizeof(gl.GLfloat * vertex_count * 6),
+			0, gl.GL_STREAM_DRAW)
 
-		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+		size = ctypes.sizeof(gl.GLfloat * 3)
+
+		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, size * 2, size * 0)
 		gl.glEnableVertexAttribArray(0)
+
+		gl.glVertexAttribPointer(1, 3, gl.GL_FLOAT, gl.GL_FALSE, size * 2, size * 1)
+		gl.glEnableVertexAttribArray(1)
 
 		# texture coordinates
 		# these can be filled in straight away as they won't change
@@ -76,7 +84,7 @@ class Entity_type:
 		gl.glGenBuffers(1, self.tex_coords_vbo)
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.tex_coords_vbo)
-		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * tex_coord_count * 2), 0, gl.GL_STREAM_DRAW)
+		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * tex_coord_count * 2), 0, gl.GL_STATIC_DRAW)
 
 		offset = 0
 
@@ -92,19 +100,8 @@ class Entity_type:
 
 			offset += size
 
-		gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
-		gl.glEnableVertexAttribArray(1)
-
-		"""
-		# normals
-
-		self.normals_vbo = gl.GLuint(0)
-		gl.glGenBuffers(1, self.normals_vbo)
-
-		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.normals_vbo)
-		gl.glVertexAttribPointer(2, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
+		gl.glVertexAttribPointer(2, 2, gl.GL_FLOAT, gl.GL_FALSE, 0, 0)
 		gl.glEnableVertexAttribArray(2)
-		"""
 
 		# compute indices
 
@@ -138,6 +135,7 @@ class Entity_type:
 			name = bone["name"]
 			pivot = bone["pivot"]
 			vertices = sum(bone["vertices"], [])
+			buffer = vertices * 2 # we want our buffer to hold both vertex positions & normals
 
 			# compute animation transformation matrix
 
@@ -183,49 +181,35 @@ class Entity_type:
 
 			anim.translate(*[-x for x in pivot])
 
-			for i in range(len(vertices))[::3]:
+			for i in range(0, len(vertices), 3):
 				vector = vertices[i: i + 3] + [1]
-				vertices[i: i + 3] = matrix.multiply_matrix_vector(anim, vector)[:3]
+				buffer[i * 2: i * 2 + 3] = matrix.multiply_matrix_vector(anim, vector)[:3]
 
-			# upload vertex positions
+			# compute normals
 
-			type_ = gl.GLfloat * len(vertices)
+			for i in range(0, len(buffer), 24):
+				# take the cross product between two vectors we know are on the plane the face belongs to
+
+				n = matrix.cross_product(
+					[buffer[i + 0] - buffer[i + 6], buffer[i + 1] - buffer[i + 7], buffer[i + 2] - buffer[i + 8]],
+					[buffer[i + 0] - buffer[i + 12], buffer[i + 1] - buffer[i + 13], buffer[i + 2] - buffer[i + 14]]
+				)
+
+				# each vertex of a face will have the same normal, so we can simply copy it 4 times
+
+				for j in range(4):
+					buffer[i + j * 6 + 3: i + j * 6 + 6] = n
+
+			# upload vertex buffer section
+
+			type_ = gl.GLfloat * len(buffer)
 			size = ctypes.sizeof(type_)
 
 			gl.glBufferSubData(
 				gl.GL_ARRAY_BUFFER, offset,
-				size, (type_) (*vertices))
+				size, (type_) (*buffer))
 
 			offset += size
-
-		"""
-		# compute normals
-
-		self.normals = []
-
-		for face in model.vertex_positions:
-			# take the cross product between two vectors we know are on the plane the face belongs to
-
-			u = [face[0] - face[3], face[1] - face[4], face[2] - face[5]]
-			v = [face[0] - face[6], face[1] - face[7], face[2] - face[8]]
-
-			n = [
-				 u[1] * v[2] - u[2] * v[1],
-				-u[0] * v[2] + u[2] * v[0],
-				 u[0] * v[1] - u[1] * v[0],
-			]
-
-			self.normals.extend(n * 4)
-
-		# upload normals
-
-		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.normals_vbo)
-		gl.glBufferData(
-			gl.GL_ARRAY_BUFFER,
-			ctypes.sizeof(gl.GLfloat * len(self.normals)),
-			(gl.GLfloat * len(self.normals)) (*self.normals),
-			gl.GL_STATIC_DRAW)
-		"""
 
 	def draw(self):
 		# bind textures
