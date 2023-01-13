@@ -17,9 +17,9 @@ void main(void) {
 	interpolated_tex_coords = tex_coords;
 
 	vec3 adjusted_normal = (vec4(normal, 1.0) * transform_matrix).xyz;
-	vec3 sunlight = vec3(0.0, 0.0, 1.0);
+	vec3 sunlight = vec3(0.0, 2.0, 1.0);
 
-	shading = 1.0 - 0.4 * abs(dot(normalize(adjusted_normal), normalize(sunlight)));
+	shading = 0.6 + 0.4 * abs(dot(normalize(adjusted_normal), normalize(sunlight)));
 
 	gl_Position = matrix * vec4(vertex_position, 1.0);
 }
