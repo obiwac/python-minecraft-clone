@@ -40,7 +40,7 @@ class Bone:
 		if bone is None:
 			return
 
-		self.pivot = bone["pivot"]
+		self.pivot = [x * PIXEL_SIZE for x in bone["pivot"]]
 		cubes = bone["cubes"]
 
 		for cube in cubes:

@@ -1,15 +1,17 @@
 import ctypes
+import math
+
 import pyglet
 
 import pyglet.gl as gl
+
+import matrix
 
 import models.pig # default model
 
 class Entity_type:
 	def __init__(self, world, name = "unknown", texture = "pig", model = models.pig, width = 0.6, height = 1.8):
 		self.world = world
-
-		model = models.pig
 
 		self.name = name
 		self.model = model
@@ -124,22 +126,56 @@ class Entity_type:
 			(gl.GLuint * len(self.indices)) (*self.indices),
 			gl.GL_STATIC_DRAW)
 
-		# initial fill
-
-		self.fill()
-
-	# fill in the vertex buffers with data!
-
-	def fill(self):
+	def animate(self, age, speed):
+		print(age, speed)
 		gl.glBindVertexArray(self.vao)
 
-		# upload vertex positions
+		# compute & upload vertex positions
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vertices_vbo)
 		offset = 0
 
 		for bone in self.model.bones:
+			name = bone["name"]
+			pivot = bone["pivot"]
 			vertices = sum(bone["vertices"], [])
+
+			# compute animation transformation matrix
+
+			anim = matrix.Matrix()
+			anim.load_identity()
+
+			anim.translate(*pivot)
+
+			kind = None
+
+			if name == "head":
+				kind = "head"
+
+			elif name[:3] == "leg":
+				kind = "odd_" * (int(name[3:]) in (1, 2)) + "leg"
+
+			elif name == "rightLeg":
+				kind = "leg"
+
+			elif name == "leftLeg":
+				kind = "odd_leg"
+
+			if kind is not None:
+				if kind == "head":
+					anim.rotate_2d(math.sin(age) / 2, math.cos(age) / 2)
+
+				if "leg" in kind:
+					phase = math.tau / 2 * (kind == "odd_leg")
+					anim.rotate_2d(0, math.sin(age * 10 + phase) * 15 * speed)
+
+			anim.translate(*[-x for x in pivot])
+
+			for i in range(len(vertices))[::3]:
+				vector = vertices[i: i + 3] + [1]
+				vertices[i: i + 3] = matrix.multiply_matrix_vector(anim, vector)[:3]
+
+			# upload vertex positions
 
 			type_ = gl.GLfloat * len(vertices)
 			size = ctypes.sizeof(type_)

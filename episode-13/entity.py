@@ -22,6 +22,8 @@ class Entity:
 		self.world = world
 		self.entity_type = entity_type
 
+		self.age = 0
+
 		# physical variables
 
 		self.jump_height = 1.25
@@ -177,6 +179,8 @@ class Entity:
 			self.grounded = True
 
 	def update(self, delta_time):
+		initial_pos = tuple(self.position)
+
 		# apply input acceleration, and adjust for friction/drag
 
 		self.velocity = [v + a * f * delta_time for v, a, f in zip(self.velocity, self.accel, self.friction)]
@@ -207,6 +211,15 @@ class Entity:
 		# make sure we can rely on the entity's collider outside of this function
 
 		self.update_collider()
+
+		# animate the entity
+
+		dx = self.position[0] - initial_pos[0]
+		dz = self.position[2] - initial_pos[2]
+
+		speed = math.sqrt(dx ** 2 + dz ** 2)
+		self.age += delta_time
+		self.entity_type.animate(self.age, speed)
 
 	def draw(self):
 		# compute transformation matrix
