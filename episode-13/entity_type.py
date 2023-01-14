@@ -182,7 +182,7 @@ class Entity_type:
 
 				if "leg" in kind:
 					phase = math.tau / 2 * odd
-					anim.rotate_2d(0, math.sin(age * 7 + phase) * 10 * speed)
+					anim.rotate_2d(0, math.sin(age * 7 + phase) / 5 * speed)
 
 				if "arm" in kind:
 					theta = (-age if odd else age) * 2

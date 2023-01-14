@@ -219,7 +219,7 @@ class Entity:
 
 		speed = math.sqrt(dx ** 2 + dz ** 2)
 		self.age += delta_time
-		self.entity_type.animate(self.age, speed, self.position, self.rotation)
+		self.entity_type.animate(self.age, speed / delta_time, self.position, self.rotation)
 
 	def draw(self):
 		# compute MVP matrix
