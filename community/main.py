@@ -200,9 +200,7 @@ Buffer Uploading: Direct (glBufferSubData)
 
 		# update other entities
 
-		entities = sorted(self.world.entities, key = lambda e: math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(e.position, self.player.position)))))
-
-		for entity in entities[:5]:
+		for entity in self.world.entities:
 			entity.update(delta_time)
 
 	def on_draw(self):

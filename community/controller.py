@@ -58,7 +58,8 @@ class Controller:
 			self.game.holding = random.randint(1, len(self.game.world.block_types) - 1)
 
 		elif mode == self.MiscMode.SPAWN:
-			_mob = mob.Mob(self.game.world, random.choice([*self.game.world.entity_types.values()]))
+			# _mob = mob.Mob(self.game.world, random.choice([*self.game.world.entity_types.values()]))
+			_mob = mob.Mob(self.game.world, random.choice([self.game.world.entity_types["Zombie"], self.game.world.entity_types["Creeper"], self.game.world.entity_types["Skeleton"]]))
 			self.game.world.entities.append(_mob)
 
 			_mob.teleport(self.game.player.position)

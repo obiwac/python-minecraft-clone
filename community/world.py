@@ -160,6 +160,8 @@ class World:
 			indices.append(4 * nquad + 3)
 			indices.append(4 * nquad + 0)
 
+		gl.glBindVertexArray(0)
+
 		self.ibo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.ibo)
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.ibo)
@@ -193,7 +195,7 @@ class World:
 
 		self.entity_shader = shader.Shader("shaders/entity/vert.glsl", "shaders/entity/frag.glsl")
 		self.entity_shader_sampler_location = self.entity_shader.find_uniform(b"texture_sampler")
-		self.entity_shader_transform_matrix_location = self.entity_shader.find_uniform(b"transform_matrix")
+		self.entity_shader_inverse_transform_matrix_location = self.entity_shader.find_uniform(b"inverse_transform_matrix")
 		self.entity_shader_matrix_location = self.entity_shader.find_uniform(b"matrix")
 		self.entity_shader_lighting_location = self.entity_shader.find_uniform(b"lighting")
 
