@@ -222,17 +222,23 @@ class Entity:
 		self.entity_type.animate(self.age, speed, self.position, self.rotation)
 
 	def draw(self):
-		# compute transformation matrix
+		# compute MVP matrix
 
-		transform = matrix.Matrix()
-		transform.load_identity()
+		mvp = matrix.copy_matrix(self.world.mvp_matrix)
 
-		transform.translate(*self.position)
-		transform.rotate_2d(*self.rotation)
+		mvp.translate(*self.position)
+		mvp.rotate_2d(self.rotation[0], 0)
+
+		# compute inverse transformation matrix
+
+		inverse = matrix.Matrix()
+		inverse.load_identity()
+
+		inverse.rotate_2d(-self.rotation[0], 0)
 
 		# actually draw entity
 
-		self.world.entity_shader.uniform_matrix(self.world.entity_shader_transform_matrix_location, transform)
-		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, self.world.mvp_matrix * transform)
+		self.world.entity_shader.uniform_matrix(self.world.entity_shader_inverse_transform_matrix_location, inverse)
+		self.world.entity_shader.uniform_matrix(self.world.entity_shader_matrix_location, mvp)
 
 		self.entity_type.draw()

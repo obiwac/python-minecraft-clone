@@ -132,7 +132,7 @@ class World:
 
 		self.entity_shader = shader.Shader("shaders/entity/vert.glsl", "shaders/entity/frag.glsl")
 		self.entity_shader_sampler_location = self.entity_shader.find_uniform(b"texture_sampler")
-		self.entity_shader_transform_matrix_location = self.entity_shader.find_uniform(b"transform_matrix")
+		self.entity_shader_inverse_transform_matrix_location = self.entity_shader.find_uniform(b"inverse_transform_matrix")
 		self.entity_shader_matrix_location = self.entity_shader.find_uniform(b"matrix")
 
 		# load the world
@@ -264,8 +264,6 @@ class World:
 
 		self.entity_shader.use()
 		gl.glDisable(gl.GL_CULL_FACE)
-
-		self.player.draw()
 
 		for entity in self.entities:
 			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, self.player.position))))
