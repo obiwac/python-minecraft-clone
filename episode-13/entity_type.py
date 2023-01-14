@@ -123,7 +123,7 @@ class Entity_type:
 			(gl.GLuint * len(self.indices)) (*self.indices),
 			gl.GL_STATIC_DRAW)
 
-	def animate(self, age, speed):
+	def animate(self, age, speed, position, rotation):
 		gl.glBindVertexArray(self.vao)
 
 		# compute & upload vertex positions
@@ -168,11 +168,21 @@ class Entity_type:
 				odd = "odd" in kind
 
 				if kind == "head":
-					anim.rotate_2d(math.sin(age) / 2, math.cos(age) / 2)
+					x, y, z = self.world.player.position
+
+					dx = x - position[0]
+					dy = y - position[1]
+					dz = z - position[2]
+
+					theta = -rotation[0] - math.atan2(dz, dx) - math.tau / 4
+					iota = -math.atan2(dy, math.sqrt(dx ** 2 + dz ** 2))
+
+					anim.rotate_2d(theta, 0)
+					anim.rotate_2d(0, iota)
 
 				if "leg" in kind:
 					phase = math.tau / 2 * odd
-					anim.rotate_2d(0, math.sin(age * 10 + phase) * 15 * speed)
+					anim.rotate_2d(0, math.sin(age * 7 + phase) * 10 * speed)
 
 				if "arm" in kind:
 					theta = (-age if odd else age) * 2

@@ -8,6 +8,7 @@ import shader
 import block_type
 import texture_manager
 
+import player
 import entity_type
 
 import pyglet.gl as gl
@@ -17,7 +18,7 @@ import pyglet.gl as gl
 import models
 
 class World:
-	def __init__(self):
+	def __init__(self, width, height):
 		self.texture_manager = texture_manager.Texture_manager(16, 16, 256)
 		self.block_types = [None]
 
@@ -147,6 +148,10 @@ class World:
 			self.chunks[chunk_position].update_subchunk_meshes()
 			self.chunks[chunk_position].update_mesh()
 
+		# create player
+
+		self.player = player.Player(self, width, height)
+
 	def get_chunk_position(self, position):
 		x, y, z = position
 
@@ -236,7 +241,7 @@ class World:
 
 		self.set_block(pos, num)
 
-	def draw(self, player):
+	def draw(self):
 		# setup block shader
 
 		self.block_shader.use()
@@ -260,8 +265,10 @@ class World:
 		self.entity_shader.use()
 		gl.glDisable(gl.GL_CULL_FACE)
 
+		self.player.draw()
+
 		for entity in self.entities:
-			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, player.position))))
+			dist = math.sqrt(sum(map(lambda x: (x[0] - x[1]) ** 2, zip(entity.position, self.player.position))))
 
 			if dist > 32:
 				continue
