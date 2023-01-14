@@ -20,7 +20,9 @@ void main(void) {
 	vec3 sunlight = vec3(0.0, 2.0, 1.0);
 
 	vec3 xz_absolute_normal = vec3(abs(transformed_normal.x), transformed_normal.y, abs(transformed_normal.z));
-	shading = 0.6 + 0.4 * dot(normalize(xz_absolute_normal), normalize(sunlight));
+	float facing = dot(normalize(xz_absolute_normal), normalize(sunlight));
+
+	shading = max(0.4, (1. + facing) / 2);
 
 	gl_Position = matrix * vec4(vertex_position, 1.0);
 }
