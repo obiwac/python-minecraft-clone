@@ -3,8 +3,7 @@ import pyglet.window
 import controller
 import math
 
-W_pressed = False
-LCTRL_pressed = False
+W_pressed = LCTRL_pressed = False
 
 class Keyboard_Mouse(controller.Controller):
 	def __init__(self, game):
