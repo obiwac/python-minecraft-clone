@@ -3,6 +3,9 @@ import pyglet.window
 import controller
 import math
 
+W_pressed = False
+LCTRL_pressed = False
+
 class Keyboard_Mouse(controller.Controller):
 	def __init__(self, game):
 		super().__init__(game)
@@ -38,17 +41,25 @@ class Keyboard_Mouse(controller.Controller):
 		self.on_mouse_motion(x, y, delta_x, delta_y)
 
 	def on_key_press(self, key, modifiers):
+		global W_pressed, LCTRL_pressed
+
 		if not self.game.mouse_captured:
 			return
 
 		if key == pyglet.window.key.D: self.start_move(self.MoveMode.RIGHT)
 		elif key == pyglet.window.key.A: self.start_move(self.MoveMode.LEFT)
-		elif key == pyglet.window.key.W: self.start_move(self.MoveMode.FORWARD)
+		elif key == pyglet.window.key.W:
+			W_pressed = True
+			self.start_move(self.MoveMode.FORWARD)
+			if LCTRL_pressed:
+				self.start_modifier(self.ModifierMode.SPRINT)
 		elif key == pyglet.window.key.S: self.start_move(self.MoveMode.BACKWARD)
 		elif key == pyglet.window.key.SPACE : self.start_move(self.MoveMode.UP)
 		elif key == pyglet.window.key.LSHIFT: self.start_move(self.MoveMode.DOWN)
 
-		elif key == pyglet.window.key.LCTRL : self.start_modifier(self.ModifierMode.SPRINT)
+		elif key == pyglet.window.key.LCTRL:
+			LCTRL_pressed = True
+			self.start_modifier(self.ModifierMode.SPRINT)
 
 		elif key == pyglet.window.key.E: self.misc(self.MiscMode.SPAWN)
 		elif key == pyglet.window.key.F: self.misc(self.MiscMode.FLY)
@@ -62,14 +73,22 @@ class Keyboard_Mouse(controller.Controller):
 		elif key == pyglet.window.key.F10: self.misc(self.MiscMode.TOGGLE_AO)
 
 	def on_key_release(self, key, modifiers):
+		global W_pressed, LCTRL_pressed
+
 		if not self.game.mouse_captured:
 			return
 
 		if key == pyglet.window.key.D: self.end_move(self.MoveMode.RIGHT)
 		elif key == pyglet.window.key.A: self.end_move(self.MoveMode.LEFT)
-		elif key == pyglet.window.key.W: self.end_move(self.MoveMode.FORWARD)
+		elif key == pyglet.window.key.W:
+			W_pressed = False
+			self.end_move(self.MoveMode.FORWARD)
+			self.end_modifier(self.ModifierMode.SPRINT)
 		elif key == pyglet.window.key.S: self.end_move(self.MoveMode.BACKWARD)
 		elif key == pyglet.window.key.SPACE : self.end_move(self.MoveMode.UP)
 		elif key == pyglet.window.key.LSHIFT: self.end_move(self.MoveMode.DOWN)
 
-		elif key == pyglet.window.key.LCTRL : self.end_modifier(self.ModifierMode.SPRINT)
+		elif key == pyglet.window.key.LCTRL:
+			LCTRL_pressed = False
+			if not W_pressed:
+				self.end_modifier(self.ModifierMode.SPRINT)
