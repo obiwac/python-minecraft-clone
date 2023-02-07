@@ -59,7 +59,8 @@ class Keyboard_Mouse(controller.Controller):
 
 		elif key == pyglet.window.key.LCTRL:
 			LCTRL_pressed = True
-			self.start_modifier(self.ModifierMode.SPRINT)
+			if W_pressed:
+				self.start_modifier(self.ModifierMode.SPRINT)
 
 		elif key == pyglet.window.key.E: self.misc(self.MiscMode.SPAWN)
 		elif key == pyglet.window.key.F: self.misc(self.MiscMode.FLY)
