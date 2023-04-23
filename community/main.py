@@ -22,7 +22,7 @@ import world
 import options
 import time
 
-import joystick
+import controller
 import keyboard_mouse
 from collections import deque
 
@@ -125,7 +125,7 @@ Display: {gl.gl_info.get_renderer()}
 		self.controls = [0, 0, 0]
 
 		# joystick stuff
-		self.joystick_controller = joystick.Joystick_controller(self)
+		self.controller = controller.Controller(self)
 
 		# mouse and keyboard stuff
 		self.keyboard_mouse = keyboard_mouse.Keyboard_Mouse(self)
@@ -209,7 +209,7 @@ Buffer Uploading: Direct (glBufferSubData)
 		if not self.mouse_captured:
 			self.player.input = [0, 0, 0]
 
-		self.joystick_controller.update_controller()
+		self.controller.update_controller(delta_time)
 		self.player.update(delta_time)
 
 		self.world.tick(delta_time)

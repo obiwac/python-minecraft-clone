@@ -1,9 +1,9 @@
 import pyglet.window
 
-import controller
+import baseinput
 import math
 
-class Keyboard_Mouse(controller.Controller):
+class Keyboard_Mouse(baseinput.BaseInput):
 	def __init__(self, game):
 		super().__init__(game)
 

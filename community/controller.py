@@ -1,124 +1,95 @@
-import random
+import pyglet.input
+
+import baseinput
 import player
-import chunk
-import hit
+import math
+import time
 
-from enum import IntEnum
-
-class Controller:
-	class InteractMode(IntEnum):
-		PLACE = 0
-		BREAK = 1
-		PICK = 2
-
-	class MiscMode(IntEnum):
-		RANDOM = 0
-		SAVE = 1
-		ESCAPE = 2
-		SPEED_TIME = 3
-		FULLSCREEN = 4
-		FLY = 5
-		TELEPORT = 6
-		TOGGLE_F3 = 7
-		TOGGLE_AO = 8
-
-	class MoveMode(IntEnum):
-		LEFT = 0
-		RIGHT = 1
-		DOWN = 2
-		UP = 3
-		BACKWARD = 4
-		FORWARD = 5
-
-	class ModifierMode(IntEnum):
-		SPRINT = 0
-
+class Controller(baseinput.BaseInput):
 	def __init__(self, game):
-		self.game = game
+		super().__init__(game)
+		self.controller_manager = pyglet.input.ControllerManager()
 
-	def interact(self, mode):
-		def hit_callback(current_block, next_block):
-			if mode == self.InteractMode.PLACE: self.game.world.try_set_block(current_block, self.game.holding, self.game.player.collider)
-			elif mode == self.InteractMode.BREAK: self.game.world.set_block(next_block, 0)
-			elif mode == self.InteractMode.PICK: self.game.holding = self.game.world.get_block_number(next_block)
+		self.camera_sensitivity = 2.5
+		self.joystick_deadzone = 0.25
+		self.update_delay = 0.15
+		self.last_update = 0
 
-		x, y, z = self.game.player.position
-		y += self.game.player.eyelevel
+		self.joystick_move = [0, 0]
+		self.joystick_look = [0, 0]
+		self.joystick_interact = [0, 0]
 
-		hit_ray = hit.Hit_ray(self.game.world, self.game.player.rotation, (x, y, z))
+		self.main_controller = None
+		self.try_get_main_controller()
 
-		while hit_ray.distance < hit.HIT_RANGE:
-			if hit_ray.step(hit_callback):
-				break
+		@self.controller_manager.event
+		def on_connect(controller):
+			if self.main_controller is None:
+				self.new_main_controller(controller)
 
-	def misc(self, mode):
-		if mode == self.MiscMode.RANDOM:
-			self.game.holding = random.randint(1, len(self.game.world.block_types) - 1)
-		elif mode == self.MiscMode.SAVE:
-			self.game.world.save.save()
-		elif mode == self.MiscMode.ESCAPE:
-			self.game.mouse_captured = False
-			self.game.set_exclusive_mouse(False)
-		elif mode == self.MiscMode.SPEED_TIME:
-			self.game.world.speed_daytime()
-		elif mode == self.MiscMode.FULLSCREEN:
-			self.game.toggle_fullscreen()
-		elif mode == self.MiscMode.FLY:
-			self.game.player.flying = not self.game.player.flying
-		elif mode == self.MiscMode.TELEPORT:
-			# how large is the world?
+			print("Connect:", controller)
 
-			max_y = 0
+		@self.controller_manager.event
+		def on_disconnect(controller):
+			if self.main_controller == controller:
+				self.main_controller = None
+				self.try_get_main_controller()
 
-			max_x, max_z = (0, 0)
-			min_x, min_z = (0, 0)
+			print("Disconnect:", controller)
 
-			for pos in self.game.world.chunks:
-				x, y, z = pos
+	def try_get_main_controller(self):
+		if self.main_controller is None:
+			if len(self.controller_manager.get_controllers()) > 0:
+				self.new_main_controller(self.controller_manager.get_controllers()[0])
 
-				max_y = max(max_y, (y + 1) * chunk.CHUNK_HEIGHT)
+	def new_main_controller(self, controller):
+		self.main_controller = controller
+		self.main_controller.open()
 
-				max_x = max(max_x, (x + 1) * chunk.CHUNK_WIDTH)
-				min_x = min(min_x,  x      * chunk.CHUNK_WIDTH)
+		@self.main_controller.event
+		def on_stick_motion(controller, stick, x, y):
+			if controller == self.main_controller:
+				if stick == "left":
+					self.joystick_move = [x, y]
+				elif stick == "right":
+					self.joystick_look = [x, y]
 
-				max_z = max(max_z, (z + 1) * chunk.CHUNK_LENGTH)
-				min_z = min(min_z,  z      * chunk.CHUNK_LENGTH)
+	def update_controller(self, delta_time):
+		if not self.game.mouse_captured or self.main_controller is None:
+			return
 
-			# get random X & Z coordinates to teleport the player to
+		self.joystick_move = self.apply_deadzone([self.main_controller.leftx, self.main_controller.lefty])
+		self.joystick_look = self.apply_deadzone([self.main_controller.rightx, self.main_controller.righty])
+		self.joystick_interact = [self.main_controller.lefttrigger, self.main_controller.righttrigger]
 
-			x = random.randint(min_x, max_x)
-			z = random.randint(min_z, max_z)
+		self.game.player.rotation[0] += self.joystick_look[0] * self.camera_sensitivity * delta_time
+		self.game.player.rotation[1] += self.joystick_look[1] * self.camera_sensitivity * delta_time
 
-			# find height at which to teleport to, by finding the first non-air block from the top of the world
+		self.game.player.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.game.player.rotation[1]))
 
-			for y in range(chunk.CHUNK_HEIGHT - 1,  -1, -1):
-				if not self.game.world.get_block_number((x, y, z)):
-					continue
+		if round(max(self.joystick_interact)) > 0 and (self.last_update + self.update_delay) <= time.process_time():
+			if round(self.joystick_interact[0]) > 0:
+				if self.interact(self.InteractMode.BREAK):
+					self.main_controller.rumble_play_weak(1, duration=0.05)
+			if round(self.joystick_interact[1]) > 0: self.interact(self.InteractMode.PLACE)
 
-				self.game.player.teleport((x, y + 1, z))
-				break
-		elif mode == self.MiscMode.TOGGLE_F3:
-			self.game.show_f3 = not self.game.show_f3
-		elif mode == self.MiscMode.TOGGLE_AO:
-			self.game.world.toggle_AO()
+			self.last_update = time.process_time()
 
-	def update_move(self, axis):
-		self.game.player.input[axis] = round(max(-1, min(self.game.controls[axis], 1)))
+		if self.main_controller.x: self.interact(self.InteractMode.PICK)
+		if self.main_controller.y: self.misc(self.MiscMode.RANDOM)
+		if self.main_controller.b: self.misc(self.MiscMode.SAVE)
 
-	def start_move(self, mode):
-		axis = int((mode if mode % 2 == 0 else mode - 1) / 2)
-		self.game.controls[axis] += (-1 if mode % 2 == 0 else 1)
-		self.update_move(axis)
+		if self.main_controller.leftstick:
+			if self.game.player.target_speed == player.SPRINTING_SPEED: self.end_modifier(self.ModifierMode.SPRINT)
+			elif self.game.player.target_speed == player.WALKING_SPEED: self.start_modifier(self.ModifierMode.SPRINT)
 
-	def end_move(self, mode):
-		axis = int((mode if mode % 2 == 0 else mode - 1) / 2)
-		self.game.controls[axis] -= (-1 if mode % 2 == 0 else 1)
-		self.update_move(axis)
+		self.game.controls[0] = round(self.joystick_move[0])
+		self.game.controls[1] = round(int(self.main_controller.a == True) - int(self.main_controller.rightstick == True))
+		self.game.controls[2] = round(self.joystick_move[1])
 
-	def start_modifier(self, mode):
-		if mode == self.ModifierMode.SPRINT:
-			self.game.player.target_speed = player.SPRINTING_SPEED
+		for axis in range(3): self.update_move(axis)
 
-	def end_modifier(self, mode):
-		if mode == self.ModifierMode.SPRINT:
-			self.game.player.target_speed = player.WALKING_SPEED
+	def apply_deadzone(self, value):
+		if abs(value[0]) < self.joystick_deadzone: value[0] = 0
+		if abs(value[1]) < self.joystick_deadzone: value[1] = 0
+		return value
