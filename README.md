@@ -62,3 +62,4 @@ The community has several features and options that can be toggled in `options.p
 - **C++ implementation:** https://github.com/Jukitsu/CppMinecraft-clone
 - **Odin implementation:** https://github.com/anthony-63/lvo
 - **Lua implementation:** https://github.com/brennop/lunarcraft
+- **Javascript implementation:** https://github.com/drakeerv/js-minecraft-clone ([Demo](https://drakeerv.github.io/js-minecraft-clone/))
