@@ -123,4 +123,4 @@ class BaseInput:
 	def end_modifier(self, mode):
 		if mode == self.ModifierMode.SPRINT:
 			self.game.player.target_speed = player.WALKING_SPEED
-			
+		

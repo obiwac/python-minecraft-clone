@@ -93,3 +93,4 @@ class Controller(baseinput.BaseInput):
 		if abs(value[0]) < self.joystick_deadzone: value[0] = 0
 		if abs(value[1]) < self.joystick_deadzone: value[1] = 0
 		return value
+		
