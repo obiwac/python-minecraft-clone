@@ -1,7 +1,6 @@
 from util import *
 import glm
 from functools import lru_cache as cache
-from concurrent.futures import ThreadPoolExecutor
 
 SUBCHUNK_WIDTH  = 4
 SUBCHUNK_HEIGHT = 4
@@ -198,9 +197,7 @@ class Subchunk:
 	def update_mesh(self):
 		self.mesh = []
 		self.translucent_mesh = []
-		
-		tasks = []
-		
+
 		for local_x in range(SUBCHUNK_WIDTH):
 			for local_y in range(SUBCHUNK_HEIGHT):
 				for local_z in range(SUBCHUNK_LENGTH):
@@ -214,69 +211,27 @@ class Subchunk:
 
 					if block_number:
 						block_type = self.world.block_types[block_number]
-						
-						x, y, z = pos = glm.ivec3(
-                            self.position[0] + local_x,
-                            self.position[1] + local_y,
-                            self.position[2] + local_z)
 
-                        # number of opaque neighbours which allows for an early exit
+						x, y, z = pos = glm.ivec3(
+							self.position[0] + local_x,
+							self.position[1] + local_y,
+							self.position[2] + local_z)
+
+						# number of opaque neighbours which allows for an early exit
 						opaque_neighbours = all(self.world.is_opaque_block(pos + direction) for direction in DIRECTIONS)
 
-                        # if block is cube, we want it to check neighbouring blocks so that we don't uselessly render faces
-                        # if block isn't a cube, we just want to render all faces, regardless of neighbouring blocks
-                        # since the vast majority of blocks are probably anyway going to be cubes, this won't impact performance all that much; the amount of useless faces drawn is going to be minimal
+						# if block is cube, we want it to check neighbouring blocks so that we don't uselessly render faces
+						# if block isn't a cube, we just want to render all faces, regardless of neighbouring blocks
+						# since the vast majority of blocks are probably anyway going to be cubes, this won't impact performance all that much; the amount of useless faces drawn is going to be minimal
 						if block_type.is_cube:
-                            # early exit if all neighbours are opaque
+							# early exit if all neighbours are opaque
 							if opaque_neighbours:
 								continue
-
 							for face, direction in enumerate(DIRECTIONS):
 								npos = pos + direction
 								if self.can_render_face(block_type, block_number, npos):
-									tasks.append((face, pos, parent_lpos, block_number, block_type, npos))
+									self.add_face(face, pos, parent_lpos, block_number, block_type, npos)
 
 						else:
 							for i in range(len(block_type.vertex_positions)):
-								tasks.append((i, pos, parent_lpos, block_number, block_type))
-
-		with ThreadPoolExecutor() as executor:
-			results = executor.map(self.render_face, tasks)
-
-		for mesh, translucent in results:
-			self.mesh += mesh
-			self.translucent_mesh += translucent
-
-	def render_face(self, args):
-		face, pos, lpos, block, block_type = args[:5]
-		npos = args[5] if len(args) > 5 else None
-		lx, ly, lz = lpos
-		vertex_positions = block_type.vertex_positions[face]
-		tex_index = block_type.tex_indices[face]
-		shading = self.get_shading(block, block_type, face, npos)
-		lights = self.get_light(block, face, pos, npos)
-		skylights = self.get_skylight(block, face, pos, npos)
-
-		mesh = []
-
-		if block_type.model.translucent:
-			for i in range(4):
-				mesh += [vertex_positions[i * 3 + 0] + lx, 
-						vertex_positions[i * 3 + 1] + ly, 
-						vertex_positions[i * 3 + 2] + lz,
-						tex_index * 4 + i,
-						shading[i],
-						lights[i],
-						skylights[i]]
-			translucent = mesh
-		else:
-			for i in range(4):
-				mesh += [vertex_positions[i * 3 + 0] + lx, 
-						vertex_positions[i * 3 + 1] + ly, 
-						vertex_positions[i * 3 + 2] + lz,
-						tex_index * 4 + i,
-						shading[i],
-						lights[i],
-						skylights[i]]
-			translucent = []
-		return mesh, translucent
+								self.add_face(i, pos, parent_lpos, block_number, block_type)
