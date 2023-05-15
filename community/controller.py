@@ -132,3 +132,8 @@ class Controller:
 	def end_modifier(self, mode):
 		if mode == self.ModifierMode.SPRINT:
 			self.game.player.target_speed = player.WALKING_SPEED
+
+	def apply_deadzone(self, value):
+		if abs(value[0]) < self.joystick_deadzone: value[0] = 0
+		if abs(value[1]) < self.joystick_deadzone: value[1] = 0
+		return value

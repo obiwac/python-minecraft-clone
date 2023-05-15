@@ -60,4 +60,6 @@ The community has several features and options that can be toggled in `options.p
 - **Nim implementation:** https://github.com/phargobikcin/nim-minecraft-clone
 - **Java implementation:** https://github.com/StartForKillerMC/JavaMinecraft
 - **C++ implementation:** https://github.com/Jukitsu/CppMinecraft-clone
-- **Lighting test:** https://github.com/Jukitsu/python-minecraft-clone-ep10-lighting
+- **Odin implementation:** https://github.com/anthony-63/lvo
+- **Lua implementation:** https://github.com/brennop/lunarcraft
+- **Javascript implementation:** https://github.com/drakeerv/js-minecraft-clone ([Demo](https://drakeerv.github.io/js-minecraft-clone/))
