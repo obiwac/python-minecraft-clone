@@ -3,3 +3,4 @@
 *.log
 .vscode
 *.ogg
+*.sw[nop]
