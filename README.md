@@ -1,32 +1,35 @@
-# python-minecraft-clone
+# MCPY
+
 Source code for each episode of my Minecraft clone in Python YouTube tutorial series.
 
 ## Introduction
+
 Click on the thumbnail below to watch the introduction video:
 
 [<img alt = "Introduction" src = "https://i.imgur.com/gMBuSJb.png" width = 25% />](https://youtu.be/YgvNuY8Iq6Q?list=PL6_bLxRDFzoKjaa3qCGkwR5L_ouSreaVP)
 
 ## Prerequisites
+
 Here is the setup video for Windows 10:
 
 [<img alt = "Setup: Windows 10" src = "https://i.imgur.com/VVQrYbG.png" width = 25% />](https://youtu.be/lrAIYPlvMZw?list=PL6_bLxRDFzoKjaa3qCGkwR5L_ouSreaVP)
 
-and for Debian-based Linux distros:
+And for Debian-based Linux distros:
 
 [<img alt = "Setup: Linux" src = "https://i.imgur.com/9rZiv4B.png" width = 25% />](https://youtu.be/TtkTkfwwefA?list=PL6_bLxRDFzoKjaa3qCGkwR5L_ouSreaVP)
 
 The `pyglet` module is a necessary dependency for all episodes, the `nbtlib` & `base36` modules are necessary dependencies for all episodes starting with 11, and the `pyglm` module is necessary for the `community` directory. You can install them with PIP by issuing:
 
-```shell
-$ pip install --user pyglet nbtlib base36 pyglm
+```console
+pip install --user pyglet nbtlib base36 pyglm
 ```
 
 ## Running
 
 Run the following command in the directory of any episode to run the result from that episode:
 
-```shell
-$ python3 main.py
+```console
+python3 main.py
 ```
 
 This tutorial requires Python version 3.8 minimum (#56, with only a few changes though, it can run on versions much lower).
