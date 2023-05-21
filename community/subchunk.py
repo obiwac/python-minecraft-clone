@@ -216,19 +216,22 @@ class Subchunk:
 							self.position[0] + local_x,
 							self.position[1] + local_y,
 							self.position[2] + local_z)
-						
+
+						# number of opaque neighbours which allows for an early exit
+						opaque_neighbours = all(self.world.is_opaque_block(pos + direction) for direction in DIRECTIONS)
 
 						# if block is cube, we want it to check neighbouring blocks so that we don't uselessly render faces
 						# if block isn't a cube, we just want to render all faces, regardless of neighbouring blocks
 						# since the vast majority of blocks are probably anyway going to be cubes, this won't impact performance all that much; the amount of useless faces drawn is going to be minimal
-
 						if block_type.is_cube:
+							# early exit if all neighbours are opaque
+							if opaque_neighbours:
+								continue
 							for face, direction in enumerate(DIRECTIONS):
 								npos = pos + direction
 								if self.can_render_face(block_type, block_number, npos):
 									self.add_face(face, pos, parent_lpos, block_number, block_type, npos)
-														
+
 						else:
 							for i in range(len(block_type.vertex_positions)):
 								self.add_face(i, pos, parent_lpos, block_number, block_type)
-
