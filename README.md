@@ -2,6 +2,8 @@
 
 Source code for each episode of my Minecraft clone in Python YouTube tutorial series.
 
+![Screenshot from the community directory](eyecandy/creeper.png)
+
 ## Introduction
 
 Click on the thumbnail below to watch the introduction video:
