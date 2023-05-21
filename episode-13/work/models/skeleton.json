@@ -1,0 +1,304 @@
+{
+    "geometry.skeleton": {
+        "textureheight": 16,
+        "texturewidth": 120,
+        "bones": [
+            {
+                "name": "body",
+                "pivot": [
+                    0,
+                    24,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "material": "alpha",
+                "cubes": [
+                    {
+                        "origin": [
+                            -4,
+                            12,
+                            -2
+                        ],
+                        "pivot": [
+                            0,
+                            24,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            -2
+                        ],
+                        "size": [
+                            8,
+                            12,
+                            4
+                        ],
+                        "uv": [
+                            0,
+                            0
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "head",
+                "pivot": [
+                    0,
+                    24,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "cubes": [
+                    {
+                        "origin": [
+                            -4,
+                            24,
+                            -4
+                        ],
+                        "pivot": [
+                            0,
+                            24,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            -4
+                        ],
+                        "size": [
+                            8,
+                            8,
+                            8
+                        ],
+                        "uv": [
+                            24,
+                            0
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "hat",
+                "pivot": [
+                    0,
+                    24,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "neverRender": true,
+                "cubes": [
+                    {
+                        "origin": [
+                            -4,
+                            24,
+                            -4
+                        ],
+                        "pivot": [
+                            0,
+                            24,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            -4
+                        ],
+                        "size": [
+                            8,
+                            8,
+                            8
+                        ],
+                        "uv": [
+                            56,
+                            0
+                        ],
+                        "inflate": 0.5
+                    }
+                ]
+            },
+            {
+                "name": "rightArm",
+                "pivot": [
+                    -5,
+                    22,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "reset": "true",
+                "cubes": [
+                    {
+                        "origin": [
+                            -6,
+                            12,
+                            -1
+                        ],
+                        "pivot": [
+                            -5,
+                            22,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            -1
+                        ],
+                        "size": [
+                            2,
+                            12,
+                            2
+                        ],
+                        "uv": [
+                            88,
+                            0
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "leftArm",
+                "pivot": [
+                    5,
+                    22,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "reset": "true",
+                "mirror": true,
+                "cubes": [
+                    {
+                        "origin": [
+                            4,
+                            12,
+                            -1
+                        ],
+                        "pivot": [
+                            5,
+                            22,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            -1
+                        ],
+                        "size": [
+                            2,
+                            12,
+                            2
+                        ],
+                        "uv": [
+                            96,
+                            0
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "rightLeg",
+                "pivot": [
+                    -2,
+                    12,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "reset": "true",
+                "cubes": [
+                    {
+                        "origin": [
+                            -3,
+                            0,
+                            -1
+                        ],
+                        "pivot": [
+                            -2,
+                            12,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            -1
+                        ],
+                        "size": [
+                            2,
+                            12,
+                            2
+                        ],
+                        "uv": [
+                            104,
+                            0
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "leftLeg",
+                "pivot": [
+                    2,
+                    12,
+                    0
+                ],
+                "rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "reset": "true",
+                "mirror": true,
+                "cubes": [
+                    {
+                        "origin": [
+                            1,
+                            0,
+                            -1
+                        ],
+                        "pivot": [
+                            2,
+                            12,
+                            0
+                        ],
+                        "rotation": [
+                            0,
+                            0,
+                            -1
+                        ],
+                        "size": [
+                            2,
+                            12,
+                            2
+                        ],
+                        "uv": [
+                            112,
+                            0
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

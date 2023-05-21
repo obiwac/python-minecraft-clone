@@ -3,7 +3,7 @@ from collections import deque
 
 import pyglet.gl as gl
 
-import subchunk 
+import subchunk
 
 import options
 
@@ -14,8 +14,7 @@ CHUNK_LENGTH = 16
 class Chunk:
 	def __init__(self, world, chunk_position):
 		self.world = world
-		self.shader_chunk_offset_location = self.world.shader.find_uniform(b"u_ChunkPosition")
-		
+
 		self.modified = False
 		self.chunk_position = chunk_position
 
@@ -23,7 +22,7 @@ class Chunk:
 			self.chunk_position[0] * CHUNK_WIDTH,
 			self.chunk_position[1] * CHUNK_HEIGHT,
 			self.chunk_position[2] * CHUNK_LENGTH)
-		
+
 		self.blocks = [[[0 for z in range(CHUNK_LENGTH)]
 							for y in range(CHUNK_HEIGHT)]
 							for x in range(CHUNK_WIDTH)]
@@ -31,10 +30,10 @@ class Chunk:
 		self.lightmap = [[[0 for z in range(CHUNK_LENGTH)]
 							for y in range(CHUNK_HEIGHT)]
 							for x in range(CHUNK_WIDTH)]
-		
+
 		self.subchunks = {}
 		self.chunk_update_queue = deque()
-		
+
 		for x in range(int(CHUNK_WIDTH / subchunk.SUBCHUNK_WIDTH)):
 			for y in range(int(CHUNK_HEIGHT / subchunk.SUBCHUNK_HEIGHT)):
 				for z in range(int(CHUNK_LENGTH / subchunk.SUBCHUNK_LENGTH)):
@@ -53,48 +52,48 @@ class Chunk:
 		self.vao = gl.GLuint(0)
 		gl.glGenVertexArrays(1, self.vao)
 		gl.glBindVertexArray(self.vao)
-		
+
 		self.vbo = gl.GLuint(0)
 		gl.glGenBuffers(1, self.vbo)
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 		gl.glBufferData(gl.GL_ARRAY_BUFFER, ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 7), None, gl.GL_DYNAMIC_DRAW)
 
-		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, 
+		gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT,
 				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 0)
 		gl.glEnableVertexAttribArray(0)
-		gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, 
+		gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT,
 				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 3 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(1)
-		gl.glVertexAttribPointer(2, 1, gl.GL_FLOAT, 
+		gl.glVertexAttribPointer(2, 1, gl.GL_FLOAT,
 				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 4 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(2)
-		gl.glVertexAttribPointer(3, 1, gl.GL_FLOAT, 
+		gl.glVertexAttribPointer(3, 1, gl.GL_FLOAT,
 				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 5 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(3)
-		gl.glVertexAttribPointer(4, 1, gl.GL_FLOAT, 
+		gl.glVertexAttribPointer(4, 1, gl.GL_FLOAT,
 				gl.GL_FALSE, 7 * ctypes.sizeof(gl.GLfloat), 6 * ctypes.sizeof(gl.GLfloat))
 		gl.glEnableVertexAttribArray(4)
-		
+
 
 
 		gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, world.ibo)
-		
+
 		if self.world.options.INDIRECT_RENDERING:
 			self.indirect_command_buffer = gl.GLuint(0)
 			gl.glGenBuffers(1, self.indirect_command_buffer)
 			gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
 			gl.glBufferData(
-				gl.GL_DRAW_INDIRECT_BUFFER, 
+				gl.GL_DRAW_INDIRECT_BUFFER,
 				ctypes.sizeof(gl.GLuint * 10),
 				None,
 				gl.GL_DYNAMIC_DRAW
-			)	
+			)
 
 		self.draw_commands = []
 
 		self.occlusion_query = gl.GLuint(0)
 		gl.glGenQueries(1, self.occlusion_query)
-		
+
 
 	def __del__(self):
 		gl.glDeleteQueries(1, self.occlusion_query)
@@ -132,20 +131,20 @@ class Chunk:
 
 		if not block_type:
 			return 2
-		
+
 		return block_type.transparent
 
 	def is_opaque_block(self, position):
 		# get block type and check if it's opaque or not
 		# air counts as a transparent block, so test for that too
-		
+
 		block_type = self.world.block_types[self.get_block_number(position)]
-		
+
 		if not block_type:
 			return False
-		
+
 		return not block_type.transparent
-	
+
 	def update_subchunk_meshes(self):
 		self.chunk_update_queue.clear()
 		for subchunk in self.subchunks.values():
@@ -193,7 +192,7 @@ class Chunk:
 
 	def update_mesh(self):
 		# combine all the small subchunk meshes into one big chunk mesh
-		
+
 		for subchunk in self.subchunks.values():
 			self.mesh += subchunk.mesh
 			self.translucent_mesh += subchunk.translucent_mesh
@@ -208,7 +207,7 @@ class Chunk:
 
 		self.mesh = []
 		self.translucent_mesh = []
-	
+
 	def send_mesh_data_to_gpu(self): # pass mesh data to gpu
 		if not self.mesh_quad_count:
 			return
@@ -217,8 +216,8 @@ class Chunk:
 
 		gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 		gl.glBufferData(gl.GL_ARRAY_BUFFER, # Orphaning
-			ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 7), 
-			None, 
+			ctypes.sizeof(gl.GLfloat * CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 7),
+			None,
 			gl.GL_DYNAMIC_DRAW
 		)
 		gl.glBufferSubData(
@@ -236,7 +235,7 @@ class Chunk:
 
 		if not self.world.options.INDIRECT_RENDERING:
 			return
-		
+
 		self.draw_commands = [
 			# Index Count                    Instance Count  Base Index     Base Vertex               Base Instance
 			self.mesh_quad_count        * 6,       1,            0,              0,                        0,     # Opaque mesh commands
@@ -255,7 +254,7 @@ class Chunk:
 		if not self.mesh_quad_count:
 			return
 		gl.glBindVertexArray(self.vao)
-		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+		gl.glUniform2i(self.world.block_shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 		gl.glDrawElements(
 			mode,
 			self.mesh_quad_count * 6,
@@ -269,7 +268,7 @@ class Chunk:
 
 		gl.glBindVertexArray(self.vao)
 		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
-		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+		gl.glUniform2i(self.world.block_shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glDrawElementsIndirect(
 			mode,
@@ -282,7 +281,7 @@ class Chunk:
 			return
 
 		gl.glBindVertexArray(self.vao)
-		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+		gl.glUniform2i(self.world.block_shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glBeginQuery(gl.GL_ANY_SAMPLES_PASSED, self.occlusion_query)
 		gl.glDrawElements(
@@ -293,7 +292,7 @@ class Chunk:
 		)
 		gl.glEndQuery(gl.GL_ANY_SAMPLES_PASSED)
 
-		
+
 		gl.glBeginConditionalRender(self.occlusion_query, gl.GL_QUERY_BY_REGION_WAIT)
 		gl.glDrawElements(
 			mode,
@@ -309,7 +308,7 @@ class Chunk:
 
 		gl.glBindVertexArray(self.vao)
 		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
-		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+		gl.glUniform2i(self.world.block_shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glBeginQuery(gl.GL_ANY_SAMPLES_PASSED, self.occlusion_query)
 		gl.glDrawElementsIndirect(
@@ -319,7 +318,7 @@ class Chunk:
 		)
 		gl.glEndQuery(gl.GL_ANY_SAMPLES_PASSED)
 
-		
+
 		gl.glBeginConditionalRender(self.occlusion_query, gl.GL_QUERY_BY_REGION_WAIT)
 		gl.glDrawElementsIndirect(
 			mode,
@@ -335,9 +334,9 @@ class Chunk:
 	def draw_translucent_direct(self, mode):
 		if not self.mesh_quad_count:
 			return
-		
+
 		gl.glBindVertexArray(self.vao)
-		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+		gl.glUniform2i(self.world.block_shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glDrawElementsBaseVertex(
 			mode,
@@ -350,10 +349,10 @@ class Chunk:
 	def draw_translucent_indirect(self, mode):
 		if not self.translucent_quad_count:
 			return
-		
+
 		gl.glBindVertexArray(self.vao)
 		gl.glBindBuffer(gl.GL_DRAW_INDIRECT_BUFFER, self.indirect_command_buffer)
-		gl.glUniform2i(self.shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
+		gl.glUniform2i(self.world.block_shader_chunk_offset_location, self.chunk_position[0], self.chunk_position[2])
 
 		gl.glMemoryBarrier(gl.GL_COMMAND_BARRIER_BIT)
 
@@ -364,4 +363,4 @@ class Chunk:
 		)
 
 	draw_translucent = draw_translucent_indirect if options.INDIRECT_RENDERING else draw_translucent_direct
-		
+

@@ -1,7 +1,6 @@
 import models.cube # default model
 
 class Block_type:
-	# new optional model argument (cube model by default)
 	def __init__(self, texture_manager, name = "unknown", block_face_textures = {"all": "cobblestone"}, model = models.cube):
 		self.name = name
 
@@ -10,7 +9,7 @@ class Block_type:
 		self.transparent = model.transparent
 		self.is_cube = model.is_cube
 
-		# replace data contained in numbers.py with model specific data
+		# get model specific data
 
 		self.vertex_positions = model.vertex_positions
 		self.tex_coords = model.tex_coords.copy()
@@ -18,6 +17,7 @@ class Block_type:
 
 		def set_block_face(face, texture):
 			# make sure we don't add inexistent faces
+
 			if face > len(self.tex_coords) - 1:
 				return
 

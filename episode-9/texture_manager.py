@@ -25,14 +25,16 @@ class Texture_manager:
 			0, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, None)
 	
 	def generate_mipmaps(self):
+		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.texture_array)
 		gl.glGenerateMipmap(gl.GL_TEXTURE_2D_ARRAY)
 	
 	def add_texture(self, texture):
+		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.texture_array)
+
 		if not texture in self.textures:
 			self.textures.append(texture)
 
 			texture_image = pyglet.image.load(f"textures/{texture}.png").get_image_data()
-			gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.texture_array)
 
 			gl.glTexSubImage3D(
 				gl.GL_TEXTURE_2D_ARRAY, 0,
