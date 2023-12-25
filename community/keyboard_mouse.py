@@ -8,18 +8,18 @@ class Keyboard_Mouse(controller.Controller):
 	def __init__(self, game):
 		super().__init__(game)
 
-		self.game.on_mouse_press = self.on_mouse_press
-		self.game.on_mouse_motion = self.on_mouse_motion
-		self.game.on_mouse_drag = self.on_mouse_drag
+		self.game.window.on_mouse_press = self.on_mouse_press
+		self.game.window.on_mouse_motion = self.on_mouse_motion
+		self.game.window.on_mouse_drag = self.on_mouse_drag
 
-		self.game.on_key_press = self.on_key_press
-		self.game.on_key_release = self.on_key_release
+		self.game.window.on_key_press = self.on_key_press
+		self.game.window.on_key_release = self.on_key_release
 
 	def on_mouse_press(self, x, y, button, modifiers):
 		if not imgui.get_io().want_capture_mouse:
-			if not self.game.mouse_captured:
-				self.game.mouse_captured = True
-				self.game.set_exclusive_mouse(True)
+			if not self.game.window.mouse_captured:
+				self.game.window.mouse_captured = True
+				self.game.window.set_exclusive_mouse(True)
 
 				return
 
@@ -29,7 +29,7 @@ class Keyboard_Mouse(controller.Controller):
 
 	def on_mouse_motion(self, x, y, delta_x, delta_y):
 		if not imgui.get_io().want_capture_mouse:
-			if self.game.mouse_captured:
+			if self.game.window.mouse_captured:
 				sensitivity = 0.004
 
 				self.game.player.rotation[0] += delta_x * sensitivity
@@ -43,7 +43,7 @@ class Keyboard_Mouse(controller.Controller):
 
 	def on_key_press(self, key, modifiers):
 		if not imgui.get_io().want_capture_keyboard:
-			if not self.game.mouse_captured:
+			if not self.game.window.mouse_captured:
 				return
 
 			if key == pyglet.window.key.D: self.start_move(self.MoveMode.RIGHT)
@@ -67,7 +67,7 @@ class Keyboard_Mouse(controller.Controller):
 
 	def on_key_release(self, key, modifiers):
 		if not imgui.get_io().want_capture_keyboard:
-			if not self.game.mouse_captured:
+			if not self.game.window.mouse_captured:
 				return
 
 			if key == pyglet.window.key.D: self.end_move(self.MoveMode.RIGHT)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import platform
 import ctypes
 import logging
@@ -47,37 +49,34 @@ class InternalConfig:
 		self.ANTIALIASING = options.ANTIALIASING
 
 
-class Window(pyglet.window.Window):
-	def __init__(self, **args):
-		super().__init__(**args)
+class Scene():
+	def __init__(self, window: Window) -> None:
+		self.window = window
 
-		# Options
-		self.options = InternalConfig(options)
+	def on_close(self):
+		pass
 
-		if self.options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
-			raise RuntimeError("""Indirect Rendering is not supported on your hardware
-			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
-			Please disable "INDIRECT_RENDERING" in options.py""")
-	
+	def on_draw(self):
+		pass
+
+	def on_resize(self, width, height):
+		pass
+
+	def update(self, delta_time):
+		pass
+
+	def update_ui(self):
+		pass
+
+
+class GameScene(Scene):
+	def __init__(self, window: Window) -> None:
+		super().__init__(window)
+		logging.info("Loading game scene")
+
 		# F3 Debug Screen
 
 		self.show_f3 = False
-		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
-System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
-CPU: {platform.processor()}
-Display: {gl.gl_info.get_renderer()} 
-{gl.gl_info.get_version()}"""
-
-		logging.info(f"System Info: {self.system_info}")
-		# create shader
-
-		logging.info("Compiling Shaders")
-		if not self.options.COLORED_LIGHTING:
-			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
-		else:
-			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
-		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
-		self.shader.use()
 
 		# create textures
 		logging.info("Creating Texture Array")
@@ -85,18 +84,17 @@ Display: {gl.gl_info.get_renderer()}
 
 		# create world
 
-		self.world = world.World(self.shader, None, self.texture_manager, self.options)
+		self.world = world.World(self.window.shader, None, self.texture_manager, self.window.options)
 
 		# player stuff
 
 		logging.info("Setting up player & camera")
-		self.player = player.Player(self.world, self.shader, self.width, self.height)
+		self.player = player.Player(self.world, self.window.shader, self.window.width, self.window.height)
 		self.world.player = self.player
 
 		# pyglet stuff
 		pyglet.clock.schedule(self.player.update_interpolation)
 		pyglet.clock.schedule_interval(self.update, 1 / 60)
-		self.mouse_captured = False
 
 		# misc stuff
 
@@ -106,18 +104,7 @@ Display: {gl.gl_info.get_renderer()}
 
 		gl.glActiveTexture(gl.GL_TEXTURE0)
 		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
-		gl.glUniform1i(self.shader_sampler_location, 0)
-
-		# enable cool stuff
-
-		gl.glEnable(gl.GL_DEPTH_TEST)
-		gl.glEnable(gl.GL_CULL_FACE)
-		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-		
-		if self.options.ANTIALIASING:
-			gl.glEnable(gl.GL_MULTISAMPLE)
-			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
-			gl.glSampleCoverage(0.5, gl.GL_TRUE)
+		gl.glUniform1i(self.window.shader_sampler_location, 0)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
@@ -147,21 +134,10 @@ Display: {gl.gl_info.get_renderer()}
 
 		self.media_player.next_time = 0
 
-		# GPU command syncs
-		self.fences = deque()
-
-		# ui stuff
-		imgui.create_context()
-		self.impl = create_renderer(self)
-		self.delta_time = 0
-		
-	def toggle_fullscreen(self):
-		self.set_fullscreen(not self.fullscreen)
-
 	def on_close(self):
 		logging.info("Deleting media player")
 		self.media_player.delete()
-		for fence in self.fences:
+		for fence in self.window.fences:
 			gl.glDeleteSync(fence)
 
 		super().on_close()
@@ -190,18 +166,18 @@ Display: {gl.gl_info.get_renderer()}
 			imgui.WINDOW_NO_NAV
 		):
 			imgui.text(f"""
-{round(1 / self.delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
+{round(1 / self.window.delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.window.options.VSYNC else "vsync"}{"ao" if self.window.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
-Client Singleplayer @{round(self.delta_time * 1000)} ms tick {round(1 / self.delta_time)} TPS
+Client Singleplayer @{round(self.window.delta_time * 1000)} ms tick {round(1 / self.window.delta_time)} TPS
 
 XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
 Block: {self.player.rounded_position[0]} {self.player.rounded_position[1]} {self.player.rounded_position[2]}
 Chunk: {player_local_pos[0]} {player_local_pos[1]} {player_local_pos[2]} in {player_chunk_pos[0]} {player_chunk_pos[1]} {player_chunk_pos[2]}
 Light: {max(self.world.get_light(self.player.rounded_position), self.world.get_skylight(self.player.rounded_position))} ({self.world.get_skylight(self.player.rounded_position)} sky, {self.world.get_light(self.player.rounded_position)} block)
 
-{self.system_info}
+{self.window.system_info}
 
-Renderer: {"OpenGL 3.3 VAOs" if not self.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.options.ADVANCED_OPENGL else ""}
+Renderer: {"OpenGL 3.3 VAOs" if not self.window.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.window.options.ADVANCED_OPENGL else ""}
 Buffers: {chunk_count}
 Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
 Visible Quads: {visible_quad_count}
@@ -209,14 +185,7 @@ Buffer Uploading: Direct (glBufferSubData)
 			""")
 		imgui.end()
 
-	def update_ui(self):
-		if self.show_f3:
-			self.update_f3()
-
 	def update(self, delta_time):
-		"""Every tick"""
-		self.impl.process_inputs()
-
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
 				self.media_player.standby = True
@@ -226,36 +195,132 @@ Buffer Uploading: Direct (glBufferSubData)
 				self.media_player.queue(random.choice(self.music))
 				self.media_player.play()
 
-		if not self.mouse_captured:
+		if not self.window.mouse_captured:
 			self.player.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
 		self.player.update(delta_time)
 
 		self.world.tick(delta_time)
-		self.delta_time = delta_time
+
+	def update_ui(self):
+		if self.show_f3:
+			self.update_f3()
 
 	def on_draw(self):
 		gl.glEnable(gl.GL_DEPTH_TEST)
-		self.shader.use()
+		self.window.shader.use()
 		self.player.update_matrices()
 
-		while len(self.fences) > self.options.MAX_CPU_AHEAD_FRAMES:
-			fence = self.fences.popleft()
+		while len(self.window.fences) > self.window.options.MAX_CPU_AHEAD_FRAMES:
+			fence = self.window.fences.popleft()
 			gl.glClientWaitSync(fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 2147483647)
 			gl.glDeleteSync(fence)
 
-		self.clear()
+		self.window.clear()
 		self.world.prepare_rendering()
 		self.world.draw()
 
 		# CPU - GPU Sync
-		if not self.options.SMOOTH_FPS:
+		if not self.window.options.SMOOTH_FPS:
 			# self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
 			# Broken in pyglet 2; glFenceSync is missing
 			pass
 		else:
 			gl.glFinish()
+
+	def on_resize(self, width, height):
+		logging.info(f"Resize {width} * {height}")
+		gl.glViewport(0, 0, width, height)
+
+		self.player.view_width = width
+		self.player.view_height = height
+
+
+class MenuScene(Scene):
+	def __init__(self, window: Window) -> None:
+		super().__init__(window)
+
+	def update(self, delta_time):
+		pass
+
+	def update_ui(self):
+		pass
+
+	def on_draw(self):
+		pass
+
+
+class Window(pyglet.window.Window):
+	def __init__(self, **args):
+		super().__init__(**args)
+
+		# Options
+		self.options = InternalConfig(options)
+
+		if self.options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
+			raise RuntimeError("""Indirect Rendering is not supported on your hardware
+			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
+			Please disable "INDIRECT_RENDERING" in options.py""")
+	
+		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
+System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
+CPU: {platform.processor()}
+Display: {gl.gl_info.get_renderer()} 
+{gl.gl_info.get_version()}"""
+
+		logging.info(f"System Info: {self.system_info}")
+		# create shader
+
+		logging.info("Compiling Shaders")
+		if not self.options.COLORED_LIGHTING:
+			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
+		else:
+			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
+		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
+		self.shader.use()
+
+		# set scene
+		self.scene = GameScene(self)
+		self.mouse_captured = False
+
+		# enable cool stuff
+
+		gl.glEnable(gl.GL_DEPTH_TEST)
+		gl.glEnable(gl.GL_CULL_FACE)
+		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+		
+		if self.options.ANTIALIASING:
+			gl.glEnable(gl.GL_MULTISAMPLE)
+			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
+			gl.glSampleCoverage(0.5, gl.GL_TRUE)
+
+		# GPU command syncs
+		self.fences = deque()
+
+		# ui stuff
+		imgui.create_context()
+		self.impl = create_renderer(self)
+		self.delta_time = 1
+		
+	def toggle_fullscreen(self):
+		self.set_fullscreen(not self.fullscreen)
+
+	def on_close(self):
+		self.scene.on_close()
+		super().on_close()
+
+	def update_ui(self):
+		self.scene.update_ui()
+
+	def update(self, delta_time):
+		"""Every tick"""
+		self.impl.process_inputs()
+		self.delta_time = delta_time
+		self.scene.update(delta_time)
+
+	def on_draw(self):
+		self.scene.on_draw()
 		
 		# Handle UI
 		imgui.new_frame()
@@ -266,11 +331,7 @@ Buffer Uploading: Direct (glBufferSubData)
 	# input functions
 
 	def on_resize(self, width, height):
-		logging.info(f"Resize {width} * {height}")
-		gl.glViewport(0, 0, width, height)
-
-		self.player.view_width = width
-		self.player.view_height = height
+		self.scene.on_resize(width, height)
 
 
 class Game:
