@@ -26,6 +26,10 @@ import joystick
 import keyboard_mouse
 from collections import deque
 
+import imgui
+from imgui.integrations.pyglet import create_renderer
+
+
 class InternalConfig:
 	def __init__(self, options):
 		self.RENDER_DISTANCE = options.RENDER_DISTANCE
@@ -58,12 +62,6 @@ class Window(pyglet.window.Window):
 		# F3 Debug Screen
 
 		self.show_f3 = False
-		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
-				font_size = 16,
-				color = (255, 255, 255, 255),
-				width = self.width // 3,
-				multiline = True
-		)
 		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
 System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
 CPU: {platform.processor()}
@@ -151,6 +149,11 @@ Display: {gl.gl_info.get_renderer()}
 
 		# GPU command syncs
 		self.fences = deque()
+
+		# ui stuff
+		imgui.create_context()
+		self.impl = create_renderer(self)
+		self.delta_time = 0
 		
 	def toggle_fullscreen(self):
 		self.set_fullscreen(not self.fullscreen)
@@ -163,8 +166,11 @@ Display: {gl.gl_info.get_renderer()}
 
 		super().on_close()
 
-	def update_f3(self, delta_time):
+	def update_f3(self):
 		"""Update the F3 debug screen content"""
+		imgui.set_next_window_position(5, 5)
+		imgui.set_next_window_bg_alpha(0.175)
+		imgui.get_io().ini_file_name = None
 
 		player_chunk_pos = world.get_chunk_position(self.player.position)
 		player_local_pos = world.get_local_position(self.player.position)
@@ -172,11 +178,21 @@ Display: {gl.gl_info.get_renderer()}
 		visible_chunk_count = len(self.world.visible_chunks)
 		quad_count = sum(chunk.mesh_quad_count for chunk in self.world.chunks.values())
 		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
-		self.f3.text = \
-f"""
-{round(1 / delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
+
+		if imgui.begin(
+			"F3 Debug Screen",
+			self.show_f3,
+			flags=
+			imgui.WINDOW_NO_DECORATION |
+			imgui.WINDOW_ALWAYS_AUTO_RESIZE |
+			imgui.WINDOW_NO_SAVED_SETTINGS|
+			imgui.WINDOW_NO_FOCUS_ON_APPEARING |
+			imgui.WINDOW_NO_NAV
+		):
+			imgui.text(f"""
+{round(1 / self.delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
-Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
+Client Singleplayer @{round(self.delta_time * 1000)} ms tick {round(1 / self.delta_time)} TPS
 
 XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
 Block: {self.player.rounded_position[0]} {self.player.rounded_position[1]} {self.player.rounded_position[2]}
@@ -190,12 +206,16 @@ Buffers: {chunk_count}
 Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
 Visible Quads: {visible_quad_count}
 Buffer Uploading: Direct (glBufferSubData)
-"""
+			""")
+		imgui.end()
+
+	def update_ui(self):
+		if self.show_f3:
+			self.update_f3()
 
 	def update(self, delta_time):
 		"""Every tick"""
-		if self.show_f3:
-			self.update_f3(delta_time)
+		self.impl.process_inputs()
 
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
@@ -213,6 +233,7 @@ Buffer Uploading: Direct (glBufferSubData)
 		self.player.update(delta_time)
 
 		self.world.tick(delta_time)
+		self.delta_time = delta_time
 
 	def on_draw(self):
 		gl.glEnable(gl.GL_DEPTH_TEST)
@@ -228,10 +249,6 @@ Buffer Uploading: Direct (glBufferSubData)
 		self.world.prepare_rendering()
 		self.world.draw()
 
-		# Draw the F3 Debug screen
-		if self.show_f3:
-			self.f3.draw()
-
 		# CPU - GPU Sync
 		if not self.options.SMOOTH_FPS:
 			# self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
@@ -239,6 +256,12 @@ Buffer Uploading: Direct (glBufferSubData)
 			pass
 		else:
 			gl.glFinish()
+		
+		# Handle UI
+		imgui.new_frame()
+		self.update_ui()
+		imgui.render()
+		self.impl.render(imgui.get_draw_data())
 
 	# input functions
 
@@ -248,8 +271,7 @@ Buffer Uploading: Direct (glBufferSubData)
 
 		self.player.view_width = width
 		self.player.view_height = height
-		self.f3.y = self.height - 10
-		self.f3.width = self.width // 3
+
 
 class Game:
 	def __init__(self):
@@ -260,7 +282,6 @@ class Game:
 
 	def run(self): 
 		pyglet.app.run(interval = 0)
-
 
 
 def init_logger():
@@ -276,8 +297,6 @@ def init_logger():
 
 	logging.basicConfig(level=logging.INFO, filename=log_path, 
 		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
-
-
 
 
 def main():
