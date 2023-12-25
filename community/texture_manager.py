@@ -1,3 +1,4 @@
+import ctypes
 import options
 import pyglet
 import logging
@@ -44,3 +45,12 @@ class TextureManager:
 				self.texture_width, self.texture_height, 1,
 				gl.GL_RGBA, gl.GL_UNSIGNED_BYTE,
 				texture_image.get_data("RGBA", texture_image.width * 4))
+
+	def load_texture(self, texture):
+		logging.debug(f"Loading texture textures/{texture}.png")
+
+		image = pyglet.image.load(f"textures/{texture}.png")
+		width = image.width
+		height = image.height
+
+		return image.get_texture(), width, height

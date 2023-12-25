@@ -82,14 +82,24 @@ class GameScene(Scene):
 		logging.info("Creating Texture Array")
 		self.texture_manager = texture_manager.TextureManager(16, 16, 256)
 
+		# create shader
+
+		logging.info("Compiling Shaders")
+		if not self.options.COLORED_LIGHTING:
+			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
+		else:
+			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
+		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
+		self.shader.use()
+
 		# create world
 
-		self.world = world.World(self.window.shader, None, self.texture_manager, self.window.options)
+		self.world = world.World(self.shader, None, self.texture_manager, self.window.options)
 
 		# player stuff
 
 		logging.info("Setting up player & camera")
-		self.player = player.Player(self.world, self.window.shader, self.window.width, self.window.height)
+		self.player = player.Player(self.world, self.shader, self.window.width, self.window.height)
 		self.world.player = self.player
 
 		# pyglet stuff
@@ -104,7 +114,7 @@ class GameScene(Scene):
 
 		gl.glActiveTexture(gl.GL_TEXTURE0)
 		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
-		gl.glUniform1i(self.window.shader_sampler_location, 0)
+		gl.glUniform1i(self.shader_sampler_location, 0)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
@@ -135,12 +145,11 @@ class GameScene(Scene):
 		self.media_player.next_time = 0
 
 	def on_close(self):
+		super().on_close(self)
 		logging.info("Deleting media player")
 		self.media_player.delete()
 		for fence in self.window.fences:
 			gl.glDeleteSync(fence)
-
-		super().on_close()
 
 	def update_f3(self):
 		"""Update the F3 debug screen content"""
@@ -161,7 +170,7 @@ class GameScene(Scene):
 			flags=
 			imgui.WINDOW_NO_DECORATION |
 			imgui.WINDOW_ALWAYS_AUTO_RESIZE |
-			imgui.WINDOW_NO_SAVED_SETTINGS|
+			imgui.WINDOW_NO_SAVED_SETTINGS |
 			imgui.WINDOW_NO_FOCUS_ON_APPEARING |
 			imgui.WINDOW_NO_NAV
 		):
@@ -186,6 +195,7 @@ Buffer Uploading: Direct (glBufferSubData)
 		imgui.end()
 
 	def update(self, delta_time):
+		super().update(delta_time)
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
 				self.media_player.standby = True
@@ -204,12 +214,14 @@ Buffer Uploading: Direct (glBufferSubData)
 		self.world.tick(delta_time)
 
 	def update_ui(self):
+		super().update_ui()
 		if self.show_f3:
 			self.update_f3()
 
 	def on_draw(self):
+		super().on_draw()
 		gl.glEnable(gl.GL_DEPTH_TEST)
-		self.window.shader.use()
+		self.shader.use()
 		self.player.update_matrices()
 
 		while len(self.window.fences) > self.window.options.MAX_CPU_AHEAD_FRAMES:
@@ -230,6 +242,7 @@ Buffer Uploading: Direct (glBufferSubData)
 			gl.glFinish()
 
 	def on_resize(self, width, height):
+		super().on_resize(width, height)
 		logging.info(f"Resize {width} * {height}")
 		gl.glViewport(0, 0, width, height)
 
@@ -240,15 +253,102 @@ Buffer Uploading: Direct (glBufferSubData)
 class MenuScene(Scene):
 	def __init__(self, window: Window) -> None:
 		super().__init__(window)
+		self.texture_manager = texture_manager.TextureManager(0, 0, 0)
 
-	def update(self, delta_time):
-		pass
-
-	def update_ui(self):
-		pass
+		self.icon = self.texture_manager.load_texture("dirt")
+		self.logo = self.texture_manager.load_texture("logo")
 
 	def on_draw(self):
-		pass
+		super().on_draw()
+		gl.glEnable(gl.GL_TEXTURE_2D)
+		self.window.clear()
+
+	def update_ui(self):
+		super().update_ui()
+		io = imgui.get_io()
+		imgui.set_next_window_size(io.display_size.x, io.display_size.y)
+		imgui.set_next_window_position(0, 0)
+		imgui.push_style_var(imgui.STYLE_WINDOW_BORDERSIZE, 0.0)
+		imgui.push_style_var(imgui.STYLE_WINDOW_PADDING, (0.0, 0.0))
+
+		if imgui.begin(
+			"MC PY",
+			True,
+			flags=
+			imgui.WINDOW_NO_DECORATION |
+			imgui.WINDOW_ALWAYS_AUTO_RESIZE |
+			imgui.WINDOW_NO_SAVED_SETTINGS |
+			imgui.WINDOW_NO_NAV
+		):
+			# Get the draw list
+			draw_list = imgui.get_window_draw_list()
+
+			# Tile the image across the window
+			for x in range(0, int(io.display_size.x), self.icon[1]):
+				for y in range(0, int(io.display_size.y), self.icon[2]):
+					draw_list.add_image(self.icon[0].id, (x, y), (x + self.icon[1], y + self.icon[2]))
+
+			# Draw a semi-transparent overlay to darken the background
+			overlay_color = imgui.get_color_u32_rgba(0, 0, 0, 0.75)
+			draw_list.add_rect_filled(0, 0, io.display_size.x, io.display_size.y, overlay_color)
+
+
+			# Calculate the position to horizontally center the image
+			image_width = self.logo[1] / 2.5
+			image_height = self.logo[2] / 2.5
+
+			# Set the cursor position to the calculated center position
+			imgui.set_cursor_pos(((io.display_size.x - image_width) / 2, 50))
+
+			# Draw the image at the calculated position
+			imgui.image(self.logo[0].id, image_width, image_height, (0, 1), (1, 0))
+
+			# Calculate the position to horizontally center the buttons
+			button_width = 300  # Adjust button width as needed
+			button_height = 30  # Adjust button height as needed
+			button_x = (io.display_size.x - button_width) / 2
+			button_y = imgui.get_cursor_pos().y + image_height - 50
+
+			# Set the cursor position to the calculated center position for buttons
+			imgui.set_cursor_pos((button_x, button_y))
+
+			# Add buttons under the logo
+			if imgui.button("Singleplayer", width=button_width, height=button_height):
+				# Handle button 1 click
+				pass
+
+			imgui.set_cursor_pos((button_x, imgui.get_cursor_pos().y + 10))
+
+			if imgui.button("Multiplayer", width=button_width, height=button_height):
+				# Handle button 2 click
+				pass
+
+			imgui.set_cursor_pos((button_x, imgui.get_cursor_pos().y + 10))
+
+			if imgui.button("Play tutorial level", width=button_width, height=button_height):
+				# Handle button 2 click
+				pass
+
+			imgui.set_cursor_pos((button_x, imgui.get_cursor_pos().y + 20))
+
+			if imgui.button("Options", width=button_width, height=button_height):
+				# Handle button 2 click
+				pass
+
+			text = "Copyright MC PY contributors. MC PY is licensed under the MIT."
+			# Calculate the position to render the text in the bottom right
+			text_width, text_height = imgui.calc_text_size(text)
+			text_x = io.display_size.x - text_width
+			text_y = io.display_size.y - text_height
+
+			# Set the cursor position to the calculated position for the text
+			imgui.set_cursor_pos((text_x, text_y))
+
+			# Render the text in the bottom right
+			imgui.text(text)
+		imgui.end()
+		imgui.pop_style_var()
+		imgui.pop_style_var()
 
 
 class Window(pyglet.window.Window):
@@ -270,18 +370,9 @@ Display: {gl.gl_info.get_renderer()}
 {gl.gl_info.get_version()}"""
 
 		logging.info(f"System Info: {self.system_info}")
-		# create shader
-
-		logging.info("Compiling Shaders")
-		if not self.options.COLORED_LIGHTING:
-			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
-		else:
-			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
-		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
-		self.shader.use()
 
 		# set scene
-		self.scene = GameScene(self)
+		self.scene = MenuScene(self)
 		self.mouse_captured = False
 
 		# enable cool stuff
