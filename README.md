@@ -1,4 +1,4 @@
-<!-- markdownlint-disable MD001 MD033 -->
+<!-- markdownlint-disable MD033 -->
 # MCPY
 
 Source code for each episode of my Minecraft clone in Python YouTube tutorial series.
