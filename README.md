@@ -43,7 +43,19 @@ It more generally extends the project with functionality I've yet to cover in a 
 Characteristic contributions are contributions which *add* something to the code.
 Contributions which *fix* something are still merged on the source of all episodes.
 
+The community version requires some additional dependencies, below is a list of them all:
+
+- `pyglet`
+- `nbtlib`
+- `base36`
+- `pyglm`
+- `numpy`
+- `imgui[pyglet]`
+
+These can be installed with the standard pip.
+
 The community has several features and options that can be toggled in `options.py`:
+
 - Render Distance: At what distance (in chunks) should chunks stop being rendered
 - FOV: Camera field of view
 
@@ -59,6 +71,7 @@ The community has several features and options that can be toggled in `options.p
 - Mipmap (minification filtering): Texture filtering used on higher distances. Default is `GL_NEAREST` (no filtering) (more info in `options.py`)
 - Colored lighting: Uses an alternative shader program to achieve a more colored lighting; it aims to look similar to Beta 1.8+ (no performance loss should be incurred)
 - Antialiasing: Experimental feature
+- A main menu / UI system: Uses PyImGUI to create a menu system which appears when the game loads instead of loading the world straight away.
 
 ## List of projects based on this
 
