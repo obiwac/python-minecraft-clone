@@ -21,10 +21,18 @@ And for Debian-based Linux distros:
 
 [<img alt = "Setup: Linux" src = "https://i.imgur.com/9rZiv4B.png" width = 25% />](https://youtu.be/TtkTkfwwefA?list=PL6_bLxRDFzoKjaa3qCGkwR5L_ouSreaVP)
 
-The `pyglet` module is a necessary dependency for all episodes, the `nbtlib` & `base36` modules are necessary dependencies for all episodes starting with 11, and the `pyglm` module is necessary for the `community` directory. You can install them with PIP by issuing:
+The `pyglet` module is a necessary dependency for all episodes, the `nbtlib` & `base36` modules are necessary dependencies for all episodes starting with 11, the `pyglm` and PyImGUI modules are necessary for the `community` directory. You can install them with PIP by issuing:
+
+- Without community additions:
 
 ```console
 pip install --user -r requirements.txt`.
+```
+
+- With community additions:
+
+```console
+pip install --user -r community/requirements.txt`.
 ```
 
 ## Running
@@ -43,8 +51,6 @@ The `community` directory is for experiments & contributions made by other peopl
 It more generally extends the project with functionality I've yet to cover in a tutorial or that I don't intend on covering at all.
 Characteristic contributions are contributions which *add* something to the code.
 Contributions which *fix* something are still merged on the source of all episodes.
-
-The community version requires some additional dependencies, these can be installed with `pip install --user -r community/requirements.txt`.
 
 The community has several features and options that can be toggled in `options.py`:
 
