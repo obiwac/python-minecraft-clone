@@ -1,0 +1,5 @@
+pyglet >= 2.0.10
+nbtlib >= 2.0.4
+base36 >= 0.1.1
+pyglm >= 2.7.1
+numpy >= 1.26.2

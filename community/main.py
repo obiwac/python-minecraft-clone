@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import platform
 import ctypes
 import logging
@@ -26,6 +28,10 @@ import joystick
 import keyboard_mouse
 from collections import deque
 
+import imgui
+from imgui.integrations.pyglet import create_renderer
+
+
 class InternalConfig:
 	def __init__(self, options):
 		self.RENDER_DISTANCE = options.RENDER_DISTANCE
@@ -43,62 +49,61 @@ class InternalConfig:
 		self.ANTIALIASING = options.ANTIALIASING
 
 
-class Window(pyglet.window.Window):
-	def __init__(self, **args):
-		super().__init__(**args)
+class Scene():
+	def __init__(self, window: Window) -> None:
+		self.window = window
 
-		# Options
-		self.options = InternalConfig(options)
+	def on_close(self):
+		pass
 
-		if self.options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
-			raise RuntimeError("""Indirect Rendering is not supported on your hardware
-			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
-			Please disable "INDIRECT_RENDERING" in options.py""")
-	
+	def on_draw(self):
+		pass
+
+	def on_resize(self, width, height):
+		pass
+
+	def update(self, delta_time):
+		pass
+
+	def update_ui(self):
+		pass
+
+
+class GameScene(Scene):
+	def __init__(self, window: Window, path) -> None:
+		super().__init__(window)
+		logging.info("Loading game scene")
+
 		# F3 Debug Screen
 
 		self.show_f3 = False
-		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
-				font_size = 16,
-				color = (255, 255, 255, 255),
-				width = self.width // 3,
-				multiline = True
-		)
-		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
-System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
-CPU: {platform.processor()}
-Display: {gl.gl_info.get_renderer()} 
-{gl.gl_info.get_version()}"""
 
-		logging.info(f"System Info: {self.system_info}")
+		# create textures
+		logging.info("Creating Texture Array")
+		self.texture_manager = texture_manager.TextureManager(16, 16, 256)
+
 		# create shader
 
 		logging.info("Compiling Shaders")
-		if not self.options.COLORED_LIGHTING:
+		if not self.window.options.COLORED_LIGHTING:
 			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
 		else:
 			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
 		self.shader_sampler_location = self.shader.find_uniform(b"u_TextureArraySampler")
 		self.shader.use()
 
-		# create textures
-		logging.info("Creating Texture Array")
-		self.texture_manager = texture_manager.TextureManager(16, 16, 256)
-
 		# create world
 
-		self.world = world.World(self.shader, None, self.texture_manager, self.options)
+		self.world = world.World(path, self.shader, None, self.texture_manager, self.window.options)
 
 		# player stuff
 
 		logging.info("Setting up player & camera")
-		self.player = player.Player(self.world, self.shader, self.width, self.height)
+		self.player = player.Player(self.world, self.shader, self.window.width, self.window.height)
 		self.world.player = self.player
 
 		# pyglet stuff
 		pyglet.clock.schedule(self.player.update_interpolation)
-		pyglet.clock.schedule_interval(self.update, 1 / 60)
-		self.mouse_captured = False
 
 		# misc stuff
 
@@ -109,17 +114,6 @@ Display: {gl.gl_info.get_renderer()}
 		gl.glActiveTexture(gl.GL_TEXTURE0)
 		gl.glBindTexture(gl.GL_TEXTURE_2D_ARRAY, self.world.texture_manager.texture_array)
 		gl.glUniform1i(self.shader_sampler_location, 0)
-
-		# enable cool stuff
-
-		gl.glEnable(gl.GL_DEPTH_TEST)
-		gl.glEnable(gl.GL_CULL_FACE)
-		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-		
-		if self.options.ANTIALIASING:
-			gl.glEnable(gl.GL_MULTISAMPLE)
-			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
-			gl.glSampleCoverage(0.5, gl.GL_TRUE)
 
 		# controls stuff
 		self.controls = [0, 0, 0]
@@ -149,22 +143,18 @@ Display: {gl.gl_info.get_renderer()}
 
 		self.media_player.next_time = 0
 
-		# GPU command syncs
-		self.fences = deque()
-		
-	def toggle_fullscreen(self):
-		self.set_fullscreen(not self.fullscreen)
-
 	def on_close(self):
+		super().on_close()
 		logging.info("Deleting media player")
 		self.media_player.delete()
-		for fence in self.fences:
+		for fence in self.window.fences:
 			gl.glDeleteSync(fence)
 
-		super().on_close()
-
-	def update_f3(self, delta_time):
+	def update_f3(self):
 		"""Update the F3 debug screen content"""
+		imgui.set_next_window_position(5, 5)
+		imgui.set_next_window_bg_alpha(0.175)
+		imgui.get_io().ini_file_name = None
 
 		player_chunk_pos = world.get_chunk_position(self.player.position)
 		player_local_pos = world.get_local_position(self.player.position)
@@ -172,31 +162,39 @@ Display: {gl.gl_info.get_renderer()}
 		visible_chunk_count = len(self.world.visible_chunks)
 		quad_count = sum(chunk.mesh_quad_count for chunk in self.world.chunks.values())
 		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
-		self.f3.text = \
-f"""
-{round(1 / delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
+
+		if imgui.begin(
+			"F3 Debug Screen",
+			self.show_f3,
+			flags=
+			imgui.WINDOW_NO_DECORATION |
+			imgui.WINDOW_ALWAYS_AUTO_RESIZE |
+			imgui.WINDOW_NO_SAVED_SETTINGS |
+			imgui.WINDOW_NO_FOCUS_ON_APPEARING |
+			imgui.WINDOW_NO_NAV
+		):
+			imgui.text(f"""
+{round(1 / self.window.delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.window.options.VSYNC else "vsync"}{"ao" if self.window.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
-Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
+Client Singleplayer @{round(self.window.delta_time * 1000)} ms tick {round(1 / self.window.delta_time)} TPS
 
 XYZ: ( X: {round(self.player.position[0], 3)} / Y: {round(self.player.position[1], 3)} / Z: {round(self.player.position[2], 3)} )
 Block: {self.player.rounded_position[0]} {self.player.rounded_position[1]} {self.player.rounded_position[2]}
 Chunk: {player_local_pos[0]} {player_local_pos[1]} {player_local_pos[2]} in {player_chunk_pos[0]} {player_chunk_pos[1]} {player_chunk_pos[2]}
 Light: {max(self.world.get_light(self.player.rounded_position), self.world.get_skylight(self.player.rounded_position))} ({self.world.get_skylight(self.player.rounded_position)} sky, {self.world.get_light(self.player.rounded_position)} block)
 
-{self.system_info}
+{self.window.system_info}
 
-Renderer: {"OpenGL 3.3 VAOs" if not self.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.options.ADVANCED_OPENGL else ""}
+Renderer: {"OpenGL 3.3 VAOs" if not self.window.options.INDIRECT_RENDERING else "OpenGL 4.0 VAOs Indirect"} {"Conditional" if self.window.options.ADVANCED_OPENGL else ""}
 Buffers: {chunk_count}
 Vertex Data: {round(quad_count * 28 * ctypes.sizeof(gl.GLfloat) / 1048576, 3)} MiB ({quad_count} Quads)
 Visible Quads: {visible_quad_count}
 Buffer Uploading: Direct (glBufferSubData)
-"""
+			""")
+		imgui.end()
 
 	def update(self, delta_time):
-		"""Every tick"""
-		if self.show_f3:
-			self.update_f3(delta_time)
-
+		super().update(delta_time)
 		if not self.media_player.source and len(self.music) > 0:
 			if not self.media_player.standby:
 				self.media_player.standby = True
@@ -206,7 +204,7 @@ Buffer Uploading: Direct (glBufferSubData)
 				self.media_player.queue(random.choice(self.music))
 				self.media_player.play()
 
-		if not self.mouse_captured:
+		if not self.window.mouse_captured:
 			self.player.input = [0, 0, 0]
 
 		self.joystick_controller.update_controller()
@@ -214,42 +212,240 @@ Buffer Uploading: Direct (glBufferSubData)
 
 		self.world.tick(delta_time)
 
+	def update_ui(self):
+		super().update_ui()
+		if self.show_f3:
+			self.update_f3()
+
 	def on_draw(self):
+		super().on_draw()
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		self.shader.use()
 		self.player.update_matrices()
 
-		while len(self.fences) > self.options.MAX_CPU_AHEAD_FRAMES:
-			fence = self.fences.popleft()
+		while len(self.window.fences) > self.window.options.MAX_CPU_AHEAD_FRAMES:
+			fence = self.window.fences.popleft()
 			gl.glClientWaitSync(fence, gl.GL_SYNC_FLUSH_COMMANDS_BIT, 2147483647)
 			gl.glDeleteSync(fence)
 
-		self.clear()
+		self.window.clear()
 		self.world.prepare_rendering()
 		self.world.draw()
 
-		# Draw the F3 Debug screen
-		if self.show_f3:
-			self.f3.draw()
-
 		# CPU - GPU Sync
-		if not self.options.SMOOTH_FPS:
+		if not self.window.options.SMOOTH_FPS:
 			# self.fences.append(gl.glFenceSync(gl.GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
 			# Broken in pyglet 2; glFenceSync is missing
 			pass
 		else:
 			gl.glFinish()
 
-	# input functions
-
 	def on_resize(self, width, height):
+		super().on_resize(width, height)
 		logging.info(f"Resize {width} * {height}")
 		gl.glViewport(0, 0, width, height)
 
 		self.player.view_width = width
 		self.player.view_height = height
-		self.f3.y = self.height - 10
-		self.f3.width = self.width // 3
+
+
+class MenuScene(Scene):
+	def __init__(self, window: Window) -> None:
+		super().__init__(window)
+		self.texture_manager = texture_manager.TextureManager(0, 0, 0)
+
+		self.icon = self.texture_manager.load_texture("dirt", use_pyglet_gl=False)
+		self.logo = self.texture_manager.load_texture("logo", use_pyglet_gl=False)
+
+	def on_draw(self):
+		super().on_draw()
+		gl.glEnable(gl.GL_TEXTURE_2D)
+		self.window.clear()
+
+	def update_ui(self):
+		super().update_ui()
+		io = imgui.get_io()
+		imgui.set_next_window_size(io.display_size.x, io.display_size.y)
+		imgui.set_next_window_position(0, 0)
+		imgui.push_style_var(imgui.STYLE_WINDOW_BORDERSIZE, 0.0)
+		imgui.push_style_var(imgui.STYLE_WINDOW_PADDING, (0.0, 0.0))
+
+		if imgui.begin(
+			"MCPY",
+			True,
+			flags=
+			imgui.WINDOW_NO_DECORATION |
+			imgui.WINDOW_ALWAYS_AUTO_RESIZE |
+			imgui.WINDOW_NO_SAVED_SETTINGS |
+			imgui.WINDOW_NO_NAV
+		):
+			# Get the draw list
+			draw_list = imgui.get_window_draw_list()
+
+			# Tile the image across the window
+			for x in range(0, int(io.display_size.x), self.icon.width):
+				for y in range(0, int(io.display_size.y), self.icon.height):
+					draw_list.add_image(self.icon.id, (x, y), (x + self.icon.width, y + self.icon.height), self.logo.uv0, self.logo.uv1)
+
+			# Draw a semi-transparent overlay to darken the background
+			overlay_color = imgui.get_color_u32_rgba(0, 0, 0, 0.75)
+			draw_list.add_rect_filled(0, 0, io.display_size.x, io.display_size.y, overlay_color)
+
+
+			# Calculate the position to horizontally center the image
+			image_width = self.logo.width / 2.5
+			image_height = self.logo.height / 2.5
+
+			# Set the cursor position to the calculated center position
+			imgui.set_cursor_pos(((io.display_size.x - image_width) / 2, 50))
+
+			# Draw the image at the calculated position
+			imgui.image(self.logo.id, image_width, image_height, self.logo.uv0, self.logo.uv1)
+
+			# Calculate the position to horizontally center the buttons
+			button_width = 300  # Adjust button width as needed
+			button_height = 30  # Adjust button height as needed
+			button_x = (io.display_size.x - button_width) / 2
+			button_y = imgui.get_cursor_pos().y + image_height - 50
+
+			# Set the cursor position to the calculated center position for buttons
+			imgui.set_cursor_pos((button_x, button_y))
+
+			# Add buttons under the logo
+			if imgui.button("Singleplayer", width=button_width, height=button_height):
+				# Handle button 1 click
+				pass
+
+			imgui.set_cursor_pos((button_x, imgui.get_cursor_pos().y + 10))
+
+			if imgui.button("Multiplayer", width=button_width, height=button_height):
+				# Handle button 2 click
+				pass
+
+			imgui.set_cursor_pos((button_x, imgui.get_cursor_pos().y + 10))
+
+			if imgui.button("Play tutorial level", width=button_width, height=button_height):
+				scene = GameScene(self.window, "save")
+				self.window.push_scene(scene)
+
+			imgui.set_cursor_pos((button_x, imgui.get_cursor_pos().y + 20))
+
+			if imgui.button("Options", width=button_width, height=button_height):
+				# Handle button 2 click
+				pass
+
+			text = "Copyright MCPY contributors. MCPY is licensed under the MIT."
+			# Calculate the position to render the text in the bottom right
+			text_width, text_height = imgui.calc_text_size(text)
+			text_x = io.display_size.x - text_width
+			text_y = io.display_size.y - text_height
+
+			# Set the cursor position to the calculated position for the text
+			imgui.set_cursor_pos((text_x, text_y))
+
+			# Render the text in the bottom right
+			imgui.text(text)
+		imgui.end()
+		imgui.pop_style_var()
+		imgui.pop_style_var()
+
+
+class Window(pyglet.window.Window):
+	def __init__(self, **args):
+		super().__init__(**args)
+
+		# Options
+		self.options = InternalConfig(options)
+
+		if self.options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
+			raise RuntimeError("""Indirect Rendering is not supported on your hardware
+			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
+			Please disable "INDIRECT_RENDERING" in options.py""")
+	
+		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
+System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
+CPU: {platform.processor()}
+Display: {gl.gl_info.get_renderer()} 
+{gl.gl_info.get_version()}"""
+
+		logging.info(f"System Info: {self.system_info}")
+
+		# set scene
+		self.scenes = [MenuScene(self)]
+		self.current_scene = self.scenes[0]
+		self.go_next_scene = False
+		self.mouse_captured = False
+
+		# enable cool stuff
+
+		gl.glEnable(gl.GL_DEPTH_TEST)
+		gl.glEnable(gl.GL_CULL_FACE)
+		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+		
+		if self.options.ANTIALIASING:
+			gl.glEnable(gl.GL_MULTISAMPLE)
+			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
+			gl.glSampleCoverage(0.5, gl.GL_TRUE)
+
+		# GPU command syncs
+		self.fences = deque()
+
+		# ui stuff
+		imgui.create_context()
+		self.impl = create_renderer(self)
+		self.delta_time = 1
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
+		
+	def toggle_fullscreen(self):
+		self.set_fullscreen(not self.fullscreen)
+
+	def on_close(self):
+		self.current_scene.on_close()
+		super().on_close()
+
+	def update_ui(self):
+		self.current_scene.update_ui()
+
+	def update(self, delta_time):
+		"""Every tick"""
+		self.impl.process_inputs()
+		self.delta_time = delta_time
+		self.current_scene.update(delta_time)
+		self.try_next_scene()
+
+	def on_draw(self):
+		self.current_scene.on_draw()
+		
+		# Handle UI
+		imgui.new_frame()
+		self.update_ui()
+		imgui.render()
+		self.impl.render(imgui.get_draw_data())
+
+	# input functions
+
+	def on_resize(self, width, height):
+		self.current_scene.on_resize(width, height)
+
+	# scene functions
+
+	def push_scene(self, scene):
+		self.scenes.append(scene)
+		self.go_next_scene = True
+
+	def pop_scene(self):
+		return self.scenes.pop(len(self.scenes) - 1)
+
+	def try_next_scene(self):
+		if self.go_next_scene:
+			try:
+				scene = self.scenes[len(self.scenes) - 1]
+				if scene != self.current_scene:
+					self.current_scene = self.pop_scene()
+					self.go_next_scene = False
+			except IndexError:
+				pass # do nothing because there are no other scenes to switch to.
+
 
 class Game:
 	def __init__(self):
@@ -260,7 +456,6 @@ class Game:
 
 	def run(self): 
 		pyglet.app.run(interval = 0)
-
 
 
 def init_logger():
@@ -276,8 +471,6 @@ def init_logger():
 
 	logging.basicConfig(level=logging.INFO, filename=log_path, 
 		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
-
-
 
 
 def main():
