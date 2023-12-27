@@ -34,7 +34,7 @@ pip install --user pyglet nbtlib base36 pyglm
 - With community additions:
 
 ```console
-pip install --user -r community/requirements.txt`.
+pip install --user -r community/requirements.txt
 ```
 
 ## Running
