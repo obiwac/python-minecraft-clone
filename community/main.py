@@ -272,7 +272,7 @@ class MenuScene(Scene):
 		imgui.push_style_var(imgui.STYLE_WINDOW_PADDING, (0.0, 0.0))
 
 		if imgui.begin(
-			"MC PY",
+			"MCPY",
 			True,
 			flags=
 			imgui.WINDOW_NO_DECORATION |
@@ -335,7 +335,7 @@ class MenuScene(Scene):
 				# Handle button 2 click
 				pass
 
-			text = "Copyright MC PY contributors. MC PY is licensed under the MIT."
+			text = "Copyright MCPY contributors. MCPY is licensed under the MIT."
 			# Calculate the position to render the text in the bottom right
 			text_width, text_height = imgui.calc_text_size(text)
 			text_x = io.display_size.x - text_width
