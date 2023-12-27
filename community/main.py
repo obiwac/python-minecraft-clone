@@ -254,8 +254,8 @@ class MenuScene(Scene):
 		super().__init__(window)
 		self.texture_manager = texture_manager.TextureManager(0, 0, 0)
 
-		self.icon = self.texture_manager.load_texture("dirt")
-		self.logo = self.texture_manager.load_texture("logo")
+		self.icon = self.texture_manager.load_texture("dirt", use_pyglet_gl=False)
+		self.logo = self.texture_manager.load_texture("logo", use_pyglet_gl=False)
 
 	def on_draw(self):
 		super().on_draw()
@@ -283,9 +283,9 @@ class MenuScene(Scene):
 			draw_list = imgui.get_window_draw_list()
 
 			# Tile the image across the window
-			for x in range(0, int(io.display_size.x), self.icon[1]):
-				for y in range(0, int(io.display_size.y), self.icon[2]):
-					draw_list.add_image(self.icon[0].id, (x, y), (x + self.icon[1], y + self.icon[2]))
+			for x in range(0, int(io.display_size.x), self.icon.width):
+				for y in range(0, int(io.display_size.y), self.icon.height):
+					draw_list.add_image(self.icon.id, (x, y), (x + self.icon.width, y + self.icon.height), self.logo.uv0, self.logo.uv1)
 
 			# Draw a semi-transparent overlay to darken the background
 			overlay_color = imgui.get_color_u32_rgba(0, 0, 0, 0.75)
@@ -293,14 +293,14 @@ class MenuScene(Scene):
 
 
 			# Calculate the position to horizontally center the image
-			image_width = self.logo[1] / 2.5
-			image_height = self.logo[2] / 2.5
+			image_width = self.logo.width / 2.5
+			image_height = self.logo.height / 2.5
 
 			# Set the cursor position to the calculated center position
 			imgui.set_cursor_pos(((io.display_size.x - image_width) / 2, 50))
 
 			# Draw the image at the calculated position
-			imgui.image(self.logo[0].id, image_width, image_height, (0, 1), (1, 0))
+			imgui.image(self.logo.id, image_width, image_height, self.logo.uv0, self.logo.uv1)
 
 			# Calculate the position to horizontally center the buttons
 			button_width = 300  # Adjust button width as needed
