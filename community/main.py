@@ -70,7 +70,7 @@ class Scene():
 
 
 class GameScene(Scene):
-	def __init__(self, window: Window) -> None:
+	def __init__(self, window: Window, path) -> None:
 		super().__init__(window)
 		logging.info("Loading game scene")
 
@@ -85,7 +85,7 @@ class GameScene(Scene):
 		# create shader
 
 		logging.info("Compiling Shaders")
-		if not self.options.COLORED_LIGHTING:
+		if not self.window.options.COLORED_LIGHTING:
 			self.shader = shader.Shader("shaders/alpha_lighting/vert.glsl", "shaders/alpha_lighting/frag.glsl")
 		else:
 			self.shader = shader.Shader("shaders/colored_lighting/vert.glsl", "shaders/colored_lighting/frag.glsl")
@@ -94,7 +94,7 @@ class GameScene(Scene):
 
 		# create world
 
-		self.world = world.World(self.shader, None, self.texture_manager, self.window.options)
+		self.world = world.World(path, self.shader, None, self.texture_manager, self.window.options)
 
 		# player stuff
 
@@ -104,7 +104,6 @@ class GameScene(Scene):
 
 		# pyglet stuff
 		pyglet.clock.schedule(self.player.update_interpolation)
-		pyglet.clock.schedule_interval(self.update, 1 / 60)
 
 		# misc stuff
 
@@ -145,7 +144,7 @@ class GameScene(Scene):
 		self.media_player.next_time = 0
 
 	def on_close(self):
-		super().on_close(self)
+		super().on_close()
 		logging.info("Deleting media player")
 		self.media_player.delete()
 		for fence in self.window.fences:
@@ -326,8 +325,8 @@ class MenuScene(Scene):
 			imgui.set_cursor_pos((button_x, imgui.get_cursor_pos().y + 10))
 
 			if imgui.button("Play tutorial level", width=button_width, height=button_height):
-				# Handle button 2 click
-				pass
+				scene = GameScene(self.window, "save")
+				self.window.push_scene(scene)
 
 			imgui.set_cursor_pos((button_x, imgui.get_cursor_pos().y + 20))
 
@@ -372,7 +371,9 @@ Display: {gl.gl_info.get_renderer()}
 		logging.info(f"System Info: {self.system_info}")
 
 		# set scene
-		self.scene = MenuScene(self)
+		self.scenes = [MenuScene(self)]
+		self.current_scene = self.scenes[0]
+		self.go_next_scene = False
 		self.mouse_captured = False
 
 		# enable cool stuff
@@ -393,25 +394,27 @@ Display: {gl.gl_info.get_renderer()}
 		imgui.create_context()
 		self.impl = create_renderer(self)
 		self.delta_time = 1
+		pyglet.clock.schedule_interval(self.update, 1 / 60)
 		
 	def toggle_fullscreen(self):
 		self.set_fullscreen(not self.fullscreen)
 
 	def on_close(self):
-		self.scene.on_close()
+		self.current_scene.on_close()
 		super().on_close()
 
 	def update_ui(self):
-		self.scene.update_ui()
+		self.current_scene.update_ui()
 
 	def update(self, delta_time):
 		"""Every tick"""
 		self.impl.process_inputs()
 		self.delta_time = delta_time
-		self.scene.update(delta_time)
+		self.current_scene.update(delta_time)
+		self.try_next_scene()
 
 	def on_draw(self):
-		self.scene.on_draw()
+		self.current_scene.on_draw()
 		
 		# Handle UI
 		imgui.new_frame()
@@ -422,7 +425,26 @@ Display: {gl.gl_info.get_renderer()}
 	# input functions
 
 	def on_resize(self, width, height):
-		self.scene.on_resize(width, height)
+		self.current_scene.on_resize(width, height)
+
+	# scene functions
+
+	def push_scene(self, scene):
+		self.scenes.append(scene)
+		self.go_next_scene = True
+
+	def pop_scene(self):
+		return self.scenes.pop(len(self.scenes) - 1)
+
+	def try_next_scene(self):
+		if self.go_next_scene:
+			try:
+				scene = self.scenes[len(self.scenes) - 1]
+				if scene != self.current_scene:
+					self.current_scene = self.pop_scene()
+					self.go_next_scene = False
+			except IndexError:
+				pass # do nothing because there are no other scenes to switch to.
 
 
 class Game:

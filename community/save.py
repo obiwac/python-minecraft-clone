@@ -6,7 +6,7 @@ import chunk
 import glm
 
 class Save:
-	def __init__(self, world, path = "save"):
+	def __init__(self, world, path):
 		self.world = world
 		self.path = path
 	

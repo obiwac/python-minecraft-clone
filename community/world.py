@@ -35,7 +35,7 @@ def get_local_position(position):
 
 
 class World:
-	def __init__(self, shader, player, texture_manager, options):
+	def __init__(self, path, shader, player, texture_manager, options):
 		self.options = options
 		self.shader = shader
 		self.player = player
@@ -134,7 +134,7 @@ class World:
 
 		# load the world
 
-		self.save = save.Save(self)
+		self.save = save.Save(self, path)
 
 		self.chunks = {}
 		self.sorted_chunks = []
