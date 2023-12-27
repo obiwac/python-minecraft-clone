@@ -28,7 +28,7 @@ The `pyglm` and PyImGUI modules are necessary for the `community` directory. You
 - Without community additions:
 
 ```console
-pip install --user -r requirements.txt`.
+pip install --user pyglet nbtlib base36 pyglm
 ```
 
 - With community additions:
