@@ -2,6 +2,7 @@ import math
 
 HIT_RANGE = 3
 
+
 class Hit_ray:
 	def __init__(self, world, rotation, starting_position):
 		self.world = world
@@ -12,8 +13,9 @@ class Hit_ray:
 		self.vector = (
 			math.cos(rotation[0]) * math.cos(rotation[1]),
 			math.sin(rotation[1]),
-			math.sin(rotation[0]) * math.cos(rotation[1]))
-		
+			math.sin(rotation[0]) * math.cos(rotation[1]),
+		)
+
 		# point position
 		self.position = list(starting_position)
 
@@ -22,17 +24,17 @@ class Hit_ray:
 
 		# current distance the point has travelled
 		self.distance = 0
-	
+
 	# 'check' and 'step' both return 'True' if something is hit, and 'False' if not
 
 	def check(self, hit_callback, distance, current_block, next_block):
 		if self.world.get_block_number(next_block):
 			hit_callback(current_block, next_block)
 			return True
-		
+
 		else:
 			self.position = list(map(lambda x: self.position[x] + self.vector[x] * distance, range(3)))
-			
+
 			self.block = next_block
 			self.distance += distance
 
@@ -48,14 +50,14 @@ class Hit_ray:
 		# this is also cool because it means we don't need to take into account the sign of our ray vector
 		# we do need to remember which components were negative for later on, however
 
-		sign = [1, 1, 1] # '1' for positive, '-1' for negative
+		sign = [1, 1, 1]  # '1' for positive, '-1' for negative
 		absolute_vector = list(self.vector)
 
 		for component, element in enumerate(self.vector):
 			sign[component] = 2 * (element >= 0) - 1
 			absolute_vector[component] *= sign[component]
 			local_position[component] *= sign[component]
-		
+
 		lx, ly, lz = local_position
 		vx, vy, vz = absolute_vector
 
@@ -78,7 +80,7 @@ class Hit_ray:
 
 			if y >= -0.5 and y <= 0.5 and z >= -0.5 and z <= 0.5:
 				distance = math.sqrt((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2)
-				
+
 				# we can return straight away here
 				# if we intersect with one face, we know for a fact we're not intersecting with any of the others
 
@@ -92,7 +94,7 @@ class Hit_ray:
 			if x >= -0.5 and x <= 0.5 and z >= -0.5 and z <= 0.5:
 				distance = math.sqrt((x - lx) ** 2 + (y - ly) ** 2 + (z - lz) ** 2)
 				return self.check(hit_callback, distance, (bx, by, bz), (bx, by + sign[1], bz))
-		
+
 		if vz:
 			x = (0.5 - lz) / vz * vx + lx
 			y = (0.5 - lz) / vz * vy + ly

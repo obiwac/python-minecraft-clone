@@ -20,11 +20,11 @@ import texture_manager
 import world
 
 import options
-import time
 
 import joystick
 import keyboard_mouse
 from collections import deque
+
 
 class InternalConfig:
 	def __init__(self, options):
@@ -51,18 +51,23 @@ class Window(pyglet.window.Window):
 		self.options = InternalConfig(options)
 
 		if self.options.INDIRECT_RENDERING and not gl.gl_info.have_version(4, 2):
-			raise RuntimeError("""Indirect Rendering is not supported on your hardware
+			raise RuntimeError(
+				"""Indirect Rendering is not supported on your hardware
 			This feature is only supported on OpenGL 4.2+, but your driver doesnt seem to support it, 
-			Please disable "INDIRECT_RENDERING" in options.py""")
-	
+			Please disable "INDIRECT_RENDERING" in options.py"""
+			)
+
 		# F3 Debug Screen
 
 		self.show_f3 = False
-		self.f3 = pyglet.text.Label("", x = 10, y = self.height - 10,
-				font_size = 16,
-				color = (255, 255, 255, 255),
-				width = self.width // 3,
-				multiline = True
+		self.f3 = pyglet.text.Label(
+			"",
+			x=10,
+			y=self.height - 10,
+			font_size=16,
+			color=(255, 255, 255, 255),
+			width=self.width // 3,
+			multiline=True,
 		)
 		self.system_info = f"""Python: {platform.python_implementation()} {platform.python_version()}
 System: {platform.machine()} {platform.system()} {platform.release()} {platform.version()}
@@ -115,7 +120,7 @@ Display: {gl.gl_info.get_renderer()}
 		gl.glEnable(gl.GL_DEPTH_TEST)
 		gl.glEnable(gl.GL_CULL_FACE)
 		gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-		
+
 		if self.options.ANTIALIASING:
 			gl.glEnable(gl.GL_MULTISAMPLE)
 			gl.glEnable(gl.GL_SAMPLE_ALPHA_TO_COVERAGE)
@@ -133,8 +138,12 @@ Display: {gl.gl_info.get_renderer()}
 		# music stuff
 		logging.info("Loading audio")
 		try:
-			self.music = [pyglet.media.load(os.path.join("audio/music", file)) for file in os.listdir("audio/music") if os.path.isfile(os.path.join("audio/music", file))]
-		except:
+			self.music = [
+				pyglet.media.load(os.path.join("audio/music", file))
+				for file in os.listdir("audio/music")
+				if os.path.isfile(os.path.join("audio/music", file))
+			]
+		except FileNotFoundError:
 			self.music = []
 
 		self.media_player = pyglet.media.Player()
@@ -151,7 +160,7 @@ Display: {gl.gl_info.get_renderer()}
 
 		# GPU command syncs
 		self.fences = deque()
-		
+
 	def toggle_fullscreen(self):
 		self.set_fullscreen(not self.fullscreen)
 
@@ -172,8 +181,7 @@ Display: {gl.gl_info.get_renderer()}
 		visible_chunk_count = len(self.world.visible_chunks)
 		quad_count = sum(chunk.mesh_quad_count for chunk in self.world.chunks.values())
 		visible_quad_count = sum(chunk.mesh_quad_count for chunk in self.world.visible_chunks)
-		self.f3.text = \
-f"""
+		self.f3.text = f"""
 {round(1 / delta_time)} FPS ({self.world.chunk_update_counter} Chunk Updates) {"inf" if not self.options.VSYNC else "vsync"}{"ao" if self.options.SMOOTH_LIGHTING else ""}
 C: {visible_chunk_count} / {chunk_count} pC: {self.world.pending_chunk_update_count} pU: {len(self.world.chunk_building_queue)} aB: {chunk_count}
 Client Singleplayer @{round(delta_time * 1000)} ms tick {round(1 / delta_time)} TPS
@@ -251,16 +259,23 @@ Buffer Uploading: Direct (glBufferSubData)
 		self.f3.y = self.height - 10
 		self.f3.width = self.width // 3
 
+
 class Game:
 	def __init__(self):
-		self.config = gl.Config(double_buffer = True,
-				major_version = 3, minor_version = 3,
-				depth_size = 16, sample_buffers=bool(options.ANTIALIASING), samples=options.ANTIALIASING)
-		self.window = Window(config = self.config, width = 852, height = 480, caption = "Minecraft clone", resizable = True, vsync = options.VSYNC)
+		self.config = gl.Config(
+			double_buffer=True,
+			major_version=3,
+			minor_version=3,
+			depth_size=16,
+			sample_buffers=bool(options.ANTIALIASING),
+			samples=options.ANTIALIASING,
+		)
+		self.window = Window(
+			config=self.config, width=852, height=480, caption="Minecraft clone", resizable=True, vsync=options.VSYNC
+		)
 
-	def run(self): 
-		pyglet.app.run(interval = 0)
-
+	def run(self):
+		pyglet.app.run(interval=0)
 
 
 def init_logger():
@@ -271,19 +286,21 @@ def init_logger():
 	if not os.path.isdir(log_folder):
 		os.mkdir(log_folder)
 
-	with open(log_path, 'x') as file:
+	with open(log_path, "x") as file:
 		file.write("[LOGS]\n")
 
-	logging.basicConfig(level=logging.INFO, filename=log_path, 
-		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s")
-
-
+	logging.basicConfig(
+		level=logging.INFO,
+		filename=log_path,
+		format="[%(asctime)s] [%(processName)s/%(threadName)s/%(levelname)s] (%(module)s.py/%(funcName)s) %(message)s",
+	)
 
 
 def main():
 	init_logger()
 	game = Game()
 	game.run()
+
 
 if __name__ == "__main__":
 	main()

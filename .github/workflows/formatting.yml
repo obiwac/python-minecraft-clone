@@ -1,0 +1,29 @@
+name: Check formatting and linting
+
+on: push
+
+jobs:
+  check_formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Create and activate venv
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+      - name: Install dependencies
+        run: pip install tan ruff
+      - name: Cache venv
+        uses: actions/cache@v3
+        with:
+          path: ./.venv
+          key: venv-${{ runner.os }}
+      - name: Run formatter
+        run: |
+          tan --check . --use-tabs --line-length 120 --verbose
+      - name: Run linter
+        run: |
+          ruff check . --ignore E402 --ignore F405 --ignore F403

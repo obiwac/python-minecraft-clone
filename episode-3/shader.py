@@ -1,9 +1,11 @@
 import ctypes
 import pyglet.gl as gl
 
+
 class Shader_error(Exception):
 	def __init__(self, message):
 		self.message = message
+
 
 def create_shader(target, source_path):
 	# read shader source
@@ -16,8 +18,8 @@ def create_shader(target, source_path):
 	source_buffer = ctypes.create_string_buffer(source)
 
 	buffer_pointer = ctypes.cast(
-		ctypes.pointer(ctypes.pointer(source_buffer)),
-		ctypes.POINTER(ctypes.POINTER(ctypes.c_char)))
+		ctypes.pointer(ctypes.pointer(source_buffer)), ctypes.POINTER(ctypes.POINTER(ctypes.c_char))
+	)
 
 	# compile shader
 
@@ -28,12 +30,13 @@ def create_shader(target, source_path):
 
 	log_length = gl.GLint(0)
 	gl.glGetShaderiv(target, gl.GL_INFO_LOG_LENGTH, ctypes.byref(log_length))
-	
+
 	log_buffer = ctypes.create_string_buffer(log_length.value)
 	gl.glGetShaderInfoLog(target, log_length, None, log_buffer)
 
 	if log_length.value > 1:
 		raise Shader_error(str(log_buffer.value))
+
 
 class Shader:
 	def __init__(self, vert_path, frag_path):
@@ -57,9 +60,9 @@ class Shader:
 
 		gl.glDeleteShader(self.vert_shader)
 		gl.glDeleteShader(self.frag_shader)
-	
-	def __del__(self): # don't forget to delete the program when the Shader object is deleted!
+
+	def __del__(self):  # don't forget to delete the program when the Shader object is deleted!
 		gl.glDeleteProgram(self.program)
-	
+
 	def use(self):
 		gl.glUseProgram(self.program)

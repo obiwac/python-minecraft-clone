@@ -1,7 +1,8 @@
 import numbers
 
+
 class Block_type:
-	def __init__(self, texture_manager, name = "unknown", block_face_textures = {"all": "cobblestone"}):
+	def __init__(self, texture_manager, name="unknown", block_face_textures={"all": "cobblestone"}):
 		self.name = name
 
 		self.vertex_positions = numbers.vertex_positions
@@ -27,12 +28,12 @@ class Block_type:
 				set_block_face(3, texture_index)
 				set_block_face(4, texture_index)
 				set_block_face(5, texture_index)
-			
+
 			elif face == "sides":
 				set_block_face(0, texture_index)
 				set_block_face(1, texture_index)
 				set_block_face(4, texture_index)
 				set_block_face(5, texture_index)
-			
+
 			else:
 				set_block_face(["right", "left", "top", "bottom", "front", "back"].index(face), texture_index)

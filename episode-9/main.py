@@ -1,6 +1,4 @@
-
 import math
-import ctypes
 import pyglet
 
 pyglet.options["shadow_window"] = False
@@ -8,14 +6,12 @@ pyglet.options["debug_gl"] = False
 
 import pyglet.gl as gl
 
-import matrix
 import shader
 import camera
 
-import block_type
-import texture_manager
 
 import world
+
 
 class Window(pyglet.window.Window):
 	def __init__(self, **args):
@@ -24,7 +20,7 @@ class Window(pyglet.window.Window):
 		# create world
 
 		self.world = world.World()
-		
+
 		# create shader
 
 		self.shader = shader.Shader("vert.glsl", "frag.glsl")
@@ -39,7 +35,7 @@ class Window(pyglet.window.Window):
 		# camera stuff
 
 		self.camera = camera.Camera(self.shader, self.width, self.height)
-	
+
 	def update(self, delta_time):
 		print(f"FPS: {1.0 / delta_time}")
 
@@ -47,7 +43,7 @@ class Window(pyglet.window.Window):
 			self.camera.input = [0, 0, 0]
 
 		self.camera.update_camera(delta_time)
-	
+
 	def on_draw(self):
 		self.camera.update_matrices()
 
@@ -67,7 +63,7 @@ class Window(pyglet.window.Window):
 		self.world.draw()
 
 		gl.glFinish()
-	
+
 	# input functions
 
 	def on_resize(self, width, height):
@@ -76,11 +72,11 @@ class Window(pyglet.window.Window):
 
 		self.camera.width = width
 		self.camera.height = height
-	
+
 	def on_mouse_press(self, x, y, button, modifiers):
 		self.mouse_captured = not self.mouse_captured
 		self.set_exclusive_mouse(self.mouse_captured)
-	
+
 	def on_mouse_motion(self, x, y, delta_x, delta_y):
 		if self.mouse_captured:
 			sensitivity = 0.004
@@ -89,38 +85,54 @@ class Window(pyglet.window.Window):
 			self.camera.rotation[1] += delta_y * sensitivity
 
 			self.camera.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.camera.rotation[1]))
-	
+
 	def on_key_press(self, key, modifiers):
 		if not self.mouse_captured:
 			return
 
-		if   key == pyglet.window.key.D: self.camera.input[0] += 1
-		elif key == pyglet.window.key.A: self.camera.input[0] -= 1
-		elif key == pyglet.window.key.W: self.camera.input[2] += 1
-		elif key == pyglet.window.key.S: self.camera.input[2] -= 1
+		if key == pyglet.window.key.D:
+			self.camera.input[0] += 1
+		elif key == pyglet.window.key.A:
+			self.camera.input[0] -= 1
+		elif key == pyglet.window.key.W:
+			self.camera.input[2] += 1
+		elif key == pyglet.window.key.S:
+			self.camera.input[2] -= 1
 
-		elif key == pyglet.window.key.SPACE : self.camera.input[1] += 1
-		elif key == pyglet.window.key.LSHIFT: self.camera.input[1] -= 1
-	
+		elif key == pyglet.window.key.SPACE:
+			self.camera.input[1] += 1
+		elif key == pyglet.window.key.LSHIFT:
+			self.camera.input[1] -= 1
+
 	def on_key_release(self, key, modifiers):
 		if not self.mouse_captured:
 			return
 
-		if   key == pyglet.window.key.D: self.camera.input[0] -= 1
-		elif key == pyglet.window.key.A: self.camera.input[0] += 1
-		elif key == pyglet.window.key.W: self.camera.input[2] -= 1
-		elif key == pyglet.window.key.S: self.camera.input[2] += 1
+		if key == pyglet.window.key.D:
+			self.camera.input[0] -= 1
+		elif key == pyglet.window.key.A:
+			self.camera.input[0] += 1
+		elif key == pyglet.window.key.W:
+			self.camera.input[2] -= 1
+		elif key == pyglet.window.key.S:
+			self.camera.input[2] += 1
 
-		elif key == pyglet.window.key.SPACE : self.camera.input[1] -= 1
-		elif key == pyglet.window.key.LSHIFT: self.camera.input[1] += 1
+		elif key == pyglet.window.key.SPACE:
+			self.camera.input[1] -= 1
+		elif key == pyglet.window.key.LSHIFT:
+			self.camera.input[1] += 1
+
 
 class Game:
 	def __init__(self):
-		self.config = gl.Config(double_buffer = True, major_version = 3, minor_version = 3, depth_size = 16)
-		self.window = Window(config = self.config, width = 800, height = 600, caption = "Minecraft clone", resizable = True, vsync = False)
-	
+		self.config = gl.Config(double_buffer=True, major_version=3, minor_version=3, depth_size=16)
+		self.window = Window(
+			config=self.config, width=800, height=600, caption="Minecraft clone", resizable=True, vsync=False
+		)
+
 	def run(self):
 		pyglet.app.run()
+
 
 if __name__ == "__main__":
 	game = Game()

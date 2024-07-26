@@ -22,7 +22,7 @@ __all__ = [
 	"button",
 	"snow",
 	"cactus",
-        "tinted_glass"
+	"tinted_glass",
 ]
 
 from . import *
