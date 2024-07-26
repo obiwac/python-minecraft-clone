@@ -23,7 +23,7 @@ jobs:
           key: venv-${{ runner.os }}
       - name: Run formatter
         run: |
-          poetry run tan --check . --use-tabs --line-length 120 --verbose
+          tan --check . --use-tabs --line-length 120 --verbose
       - name: Run linter
         run: |
-          poetry run ruff check . --ignore E402 --ignore F405 --ignore F403
+          ruff check . --ignore E402 --ignore F405 --ignore F403
