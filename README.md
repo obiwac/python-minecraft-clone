@@ -26,6 +26,12 @@ The `pyglet` module is a necessary dependency for all episodes, the `nbtlib` & `
 pip install --user pyglet nbtlib base36 pyglm
 ```
 
+Optionally (and this is the recommended for episodes 13 and above as well as the `community` directory), you can use [Poetry](https://python-poetry.org/) for dependency and virtual environment management:
+
+```console
+poetry install --no-root --with dev
+```
+
 ## Running
 
 Run the following command in the directory of any episode to run the result from that episode:
@@ -35,6 +41,12 @@ python3 main.py
 ```
 
 This tutorial requires Python version 3.8 minimum (#56, with only a few changes though, it can run on versions much lower).
+
+If you are using Poetry, you can run the following command:
+
+```console
+poetry run python main.py
+```
 
 ## Community
 
