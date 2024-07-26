@@ -1,4 +1,3 @@
-import ctypes
 import pyglet
 
 import pyglet.gl as gl
@@ -36,7 +35,7 @@ class Texture_manager:
 		gl.glGenerateMipmap(gl.GL_TEXTURE_2D_ARRAY)
 
 	def add_texture(self, texture):
-		if not texture in self.textures:
+		if texture not in self.textures:
 			self.textures.append(texture)
 
 			texture_image = pyglet.image.load(f"textures/{texture}.png").get_image_data()

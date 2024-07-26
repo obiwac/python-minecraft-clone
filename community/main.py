@@ -20,7 +20,6 @@ import texture_manager
 import world
 
 import options
-import time
 
 import joystick
 import keyboard_mouse

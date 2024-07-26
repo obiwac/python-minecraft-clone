@@ -41,7 +41,7 @@ class TextureManager:
 	def add_texture(self, texture):
 		logging.debug(f"Loading texture textures/{texture}.png")
 
-		if not texture in self.textures:
+		if texture not in self.textures:
 			self.textures.append(texture)
 
 			texture_image = pyglet.image.load(f"textures/{texture}.png").get_image_data()

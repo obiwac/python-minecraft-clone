@@ -66,7 +66,7 @@ class World:
 			math.floor(z / chunk.CHUNK_LENGTH),
 		)
 
-		if not chunk_position in self.chunks:  # return "air" if the chunk doesn't exist
+		if chunk_position not in self.chunks:  # return "air" if the chunk doesn't exist
 			return 0
 
 		# get the relative position of the block in the chunk

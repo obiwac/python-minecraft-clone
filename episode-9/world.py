@@ -85,7 +85,7 @@ class World:
 			math.floor(z / chunk.CHUNK_LENGTH),
 		)
 
-		if not chunk_position in self.chunks:
+		if chunk_position not in self.chunks:
 			return 0
 
 		local_x = int(x % chunk.CHUNK_WIDTH)

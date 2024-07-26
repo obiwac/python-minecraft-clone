@@ -1,5 +1,4 @@
 import math
-import ctypes
 import random
 import pyglet
 
@@ -8,12 +7,9 @@ pyglet.options["debug_gl"] = False
 
 import pyglet.gl as gl
 
-import matrix
 import shader
 import player
 
-import block_type
-import texture_manager
 
 import chunk
 import world

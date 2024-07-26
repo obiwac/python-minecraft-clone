@@ -1,5 +1,4 @@
 import math
-import ctypes
 import pyglet
 
 pyglet.options["shadow_window"] = False
@@ -7,12 +6,9 @@ pyglet.options["debug_gl"] = False
 
 import pyglet.gl as gl
 
-import matrix
 import shader
 import camera
 
-import block_type
-import texture_manager
 
 import world
 

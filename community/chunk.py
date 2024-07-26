@@ -167,7 +167,7 @@ class Chunk:
 
 		def try_update_subchunk_mesh(subchunk_position):
 			if subchunk_position in self.subchunks:
-				if not self.subchunks[subchunk_position] in self.chunk_update_queue:
+				if self.subchunks[subchunk_position] not in self.chunk_update_queue:
 					self.chunk_update_queue.append(self.subchunks[subchunk_position])
 
 		if lx == subchunk.SUBCHUNK_WIDTH - 1:

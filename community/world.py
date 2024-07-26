@@ -1,5 +1,4 @@
 import chunk
-import subchunk
 import ctypes
 import math
 import logging
@@ -382,7 +381,7 @@ class World:
 	def get_block_number(self, position):
 		chunk_position = get_chunk_position(position)
 
-		if not chunk_position in self.chunks:
+		if chunk_position not in self.chunks:
 			return 0
 
 		lx, ly, lz = get_local_position(position)
@@ -417,7 +416,7 @@ class World:
 		x, y, z = position
 		chunk_position = get_chunk_position(position)
 
-		if not chunk_position in self.chunks:  # if no chunks exist at this position, create a new one
+		if chunk_position not in self.chunks:  # if no chunks exist at this position, create a new one
 			if number == 0:
 				return  # no point in creating a whole new chunk if we're not gonna be adding anything
 
