@@ -3,7 +3,7 @@ from collections import deque
 
 import pyglet.gl as gl
 
-import subchunk
+from subchunk import SUBCHUNK_WIDTH, SUBCHUNK_HEIGHT, SUBCHUNK_LENGTH, Subchunk
 
 import options
 
@@ -33,10 +33,10 @@ class Chunk:
 		self.subchunks = {}
 		self.chunk_update_queue = deque()
 
-		for x in range(int(CHUNK_WIDTH / subchunk.SUBCHUNK_WIDTH)):
-			for y in range(int(CHUNK_HEIGHT / subchunk.SUBCHUNK_HEIGHT)):
-				for z in range(int(CHUNK_LENGTH / subchunk.SUBCHUNK_LENGTH)):
-					self.subchunks[(x, y, z)] = subchunk.Subchunk(self, (x, y, z))
+		for x in range(int(CHUNK_WIDTH / SUBCHUNK_WIDTH)):
+			for y in range(int(CHUNK_HEIGHT / SUBCHUNK_HEIGHT)):
+				for z in range(int(CHUNK_LENGTH / SUBCHUNK_LENGTH)):
+					self.subchunks[(x, y, z)] = Subchunk(self, (x, y, z))
 
 		# mesh variables
 
@@ -152,15 +152,15 @@ class Chunk:
 	def update_at_position(self, position):
 		x, y, z = position
 
-		lx = int(x % subchunk.SUBCHUNK_WIDTH)
-		ly = int(y % subchunk.SUBCHUNK_HEIGHT)
-		lz = int(z % subchunk.SUBCHUNK_LENGTH)
+		lx = int(x % SUBCHUNK_WIDTH)
+		ly = int(y % SUBCHUNK_HEIGHT)
+		lz = int(z % SUBCHUNK_LENGTH)
 
 		clx, cly, clz = self.world.get_local_position(position)
 
-		sx = clx // subchunk.SUBCHUNK_WIDTH
-		sy = cly // subchunk.SUBCHUNK_HEIGHT
-		sz = clz // subchunk.SUBCHUNK_LENGTH
+		sx = clx // SUBCHUNK_WIDTH
+		sy = cly // SUBCHUNK_HEIGHT
+		sz = clz // SUBCHUNK_LENGTH
 
 		if self.subchunks[(sx, sy, sz)] not in self.chunk_update_queue:
 			self.chunk_update_queue.append(self.subchunks[(sx, sy, sz)])
@@ -170,23 +170,23 @@ class Chunk:
 				if self.subchunks[subchunk_position] not in self.chunk_update_queue:
 					self.chunk_update_queue.append(self.subchunks[subchunk_position])
 
-		if lx == subchunk.SUBCHUNK_WIDTH - 1:
+		if lx == SUBCHUNK_WIDTH - 1:
 			try_update_subchunk_mesh((sx + 1, sy, sz))
 		if lx == 0:
 			try_update_subchunk_mesh((sx - 1, sy, sz))
 
-		if ly == subchunk.SUBCHUNK_HEIGHT - 1:
+		if ly == SUBCHUNK_HEIGHT - 1:
 			try_update_subchunk_mesh((sx, sy + 1, sz))
 		if ly == 0:
 			try_update_subchunk_mesh((sx, sy - 1, sz))
 
-		if lz == subchunk.SUBCHUNK_LENGTH - 1:
+		if lz == SUBCHUNK_LENGTH - 1:
 			try_update_subchunk_mesh((sx, sy, sz + 1))
 		if lz == 0:
 			try_update_subchunk_mesh((sx, sy, sz - 1))
 
 	def process_chunk_updates(self):
-		for i in range(self.world.options.CHUNK_UPDATES):
+		for _ in range(self.world.options.CHUNK_UPDATES):
 			if self.chunk_update_queue:
 				subchunk = self.chunk_update_queue.popleft()
 				subchunk.update_mesh()

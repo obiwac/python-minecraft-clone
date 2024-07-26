@@ -1,4 +1,3 @@
-import chunk
 import ctypes
 import math
 import logging
@@ -15,17 +14,19 @@ import models
 import save
 from util import DIRECTIONS
 
+from chunk import CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_LENGTH, Chunk
+
 
 def get_chunk_position(position):
 	x, y, z = position
 
-	return glm.ivec3((x // chunk.CHUNK_WIDTH), (y // chunk.CHUNK_HEIGHT), (z // chunk.CHUNK_LENGTH))
+	return glm.ivec3((x // CHUNK_WIDTH), (y // CHUNK_HEIGHT), (z // CHUNK_LENGTH))
 
 
 def get_local_position(position):
 	x, y, z = position
 
-	return glm.ivec3(int(x % chunk.CHUNK_WIDTH), int(y % chunk.CHUNK_HEIGHT), int(z % chunk.CHUNK_LENGTH))
+	return glm.ivec3(int(x % CHUNK_WIDTH), int(y % CHUNK_HEIGHT), int(z % CHUNK_LENGTH))
 
 
 class World:
@@ -105,7 +106,7 @@ class World:
 
 		indices = []
 
-		for nquad in range(chunk.CHUNK_WIDTH * chunk.CHUNK_HEIGHT * chunk.CHUNK_LENGTH * 8):
+		for nquad in range(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH * 8):
 			indices.append(4 * nquad + 0)
 			indices.append(4 * nquad + 1)
 			indices.append(4 * nquad + 2)
@@ -211,21 +212,21 @@ class World:
 
 		# Retrieve the highest chunk point
 		height = 0
-		for lx in range(chunk.CHUNK_WIDTH):
-			for lz in range(chunk.CHUNK_LENGTH):
-				for ly in range(chunk.CHUNK_HEIGHT - 1, -1, -1):
+		for lx in range(CHUNK_WIDTH):
+			for lz in range(CHUNK_LENGTH):
+				for ly in range(CHUNK_HEIGHT - 1, -1, -1):
 					if pending_chunk.blocks[lx][ly][lz]:
 						break
 				if ly > height:
 					height = ly
 
 		# Initialize skylight to 15 until that point and then queue a skylight propagation increase
-		for lx in range(chunk.CHUNK_WIDTH):
-			for lz in range(chunk.CHUNK_LENGTH):
-				for ly in range(chunk.CHUNK_HEIGHT - 1, height, -1):
+		for lx in range(CHUNK_WIDTH):
+			for lz in range(CHUNK_LENGTH):
+				for ly in range(CHUNK_HEIGHT - 1, height, -1):
 					pending_chunk.set_sky_light(glm.ivec3(lx, ly, lz), 15)
 
-				pos = glm.ivec3(chunk.CHUNK_WIDTH * chunk_pos[0] + lx, ly, chunk.CHUNK_LENGTH * chunk_pos[2] + lz)
+				pos = glm.ivec3(CHUNK_WIDTH * chunk_pos[0] + lx, ly, CHUNK_LENGTH * chunk_pos[2] + lz)
 				self.skylight_increase_queue.append((pos, 15))
 
 		self.propagate_skylight_increase(False)
@@ -238,7 +239,7 @@ class World:
 
 			for direction in DIRECTIONS:
 				neighbour_pos = pos + direction
-				if neighbour_pos.y > chunk.CHUNK_HEIGHT:
+				if neighbour_pos.y > CHUNK_HEIGHT:
 					continue
 
 				_chunk = self.chunks.get(get_chunk_position(neighbour_pos), None)
@@ -409,7 +410,7 @@ class World:
 		return not block_type.transparent
 
 	def create_chunk(self, chunk_position):
-		self.chunks[chunk_position] = chunk.Chunk(self, chunk_position)
+		self.chunks[chunk_position] = Chunk(self, chunk_position)
 		self.init_skylight(self.chunks[chunk_position])
 
 	def set_block(self, position, number):  # set number to 0 (air) to remove block
@@ -450,17 +451,17 @@ class World:
 			if chunk_position in self.chunks:
 				self.chunks[chunk_position].update_at_position(position)
 
-		if lx == chunk.CHUNK_WIDTH - 1:
+		if lx == CHUNK_WIDTH - 1:
 			try_update_chunk_at_position(glm.ivec3(cx + 1, cy, cz), (x + 1, y, z))
 		if lx == 0:
 			try_update_chunk_at_position(glm.ivec3(cx - 1, cy, cz), (x - 1, y, z))
 
-		if ly == chunk.CHUNK_HEIGHT - 1:
+		if ly == CHUNK_HEIGHT - 1:
 			try_update_chunk_at_position(glm.ivec3(cx, cy + 1, cz), (x, y + 1, z))
 		if ly == 0:
 			try_update_chunk_at_position(glm.ivec3(cx, cy - 1, cz), (x, y - 1, z))
 
-		if lz == chunk.CHUNK_LENGTH - 1:
+		if lz == CHUNK_LENGTH - 1:
 			try_update_chunk_at_position(glm.ivec3(cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0:
 			try_update_chunk_at_position(glm.ivec3(cx, cy, cz - 1), (x, y, z - 1))

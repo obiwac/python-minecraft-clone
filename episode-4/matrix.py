@@ -6,7 +6,7 @@ def copy_matrix(matrix):
 	return copy.deepcopy(matrix)  # we need to use deepcopy since we're dealing with 2D arrays
 
 
-clean_matrix = [[0.0 for x in range(4)] for x in range(4)]
+clean_matrix = [[0.0] * 4 for _ in range(4)]
 identity_matrix = copy_matrix(clean_matrix)
 
 identity_matrix[0][0] = 1.0
@@ -32,9 +32,9 @@ def multiply_matrices(x_matrix, y_matrix):
 
 class Matrix:
 	def __init__(self, base=None):
-		if type(base) == Matrix:
+		if isinstance(base, Matrix):
 			self.data = copy_matrix(base.data)
-		elif type(base) == list:
+		elif isinstance(base, list):
 			self.data = copy_matrix(base)
 		else:
 			self.data = copy_matrix(clean_matrix)

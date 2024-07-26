@@ -143,7 +143,7 @@ Display: {gl.gl_info.get_renderer()}
 				for file in os.listdir("audio/music")
 				if os.path.isfile(os.path.join("audio/music", file))
 			]
-		except:
+		except FileNotFoundError:
 			self.music = []
 
 		self.media_player = pyglet.media.Player()

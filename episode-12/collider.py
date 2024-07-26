@@ -28,7 +28,8 @@ class Collider:
 
 		vx, vy, vz = velocity
 
-		time = lambda x, y: x / y if y else float("-" * (x > 0) + "inf")
+		def time(x, y):
+			return x / y if y else float("-" * (x > 0) + "inf")
 
 		x_entry = time(collider.x1 - self.x2 if vx > 0 else collider.x2 - self.x1, vx)
 		x_exit = time(collider.x2 - self.x1 if vx > 0 else collider.x1 - self.x2, vx)
