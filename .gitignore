@@ -11,3 +11,4 @@
 *.cache
 dist
 build
+*.egg-info

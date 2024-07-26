@@ -13,7 +13,13 @@ authors = [
 	"anthony-63",
 ]
 readme = "README.md"
-build="setup.py"
+
+[build-system]
+requires = ["poetry-core", "setuptools", "cython"]
+
+[tool.poetry.build]
+script = "build.py"
+generate-setup-file = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -21,7 +27,6 @@ pyglet = "^2.0.16"
 nbtlib = "^2.0.4"
 base36 = "^0.1.1"
 pyglm = "^2.7.1"
-cython = "^3.0.10"
 pyright = "^1.1.373"
 
 [tool.poetry.group.dev.dependencies]
