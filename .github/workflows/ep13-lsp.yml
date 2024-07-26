@@ -5,14 +5,15 @@ on: push
 jobs:
   check_lsp:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: episode-13
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - uses: abatilo/actions-poetry@v2
-      - name: Change into episode 13 directory
-        run: cd episode-13
       - name: Install dependencies
         run: poetry install --no-root --with dev
       - name: Cache venv created by poetry (configured to be in '.venv')
