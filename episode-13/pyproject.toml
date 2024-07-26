@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "mcpy"
+version = "0.13.0"
+description = "Minecraft clone written in Python"
+authors = [
+	"obiwac",
+	"Jukitsu",
+	"drakeerv",
+	"abrha2020-smart",
+	"StartForKiller",
+	"Chubercik",
+	"brennop",
+	"anthony-63",
+]
+readme = "README.md"
+build="setup.py"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyglet = "^2.0.16"
+nbtlib = "^2.0.4"
+base36 = "^0.1.1"
+pyglm = "^2.7.1"
+cython = "^3.0.10"
+pyright = "^1.1.373"
+
+[tool.poetry.group.dev.dependencies]
+tan = "^23.7.0"
+ruff = "^0.5.5"
+
+[tool.pyright]
+exclude = [".venv"]
+venvPath = "."
+venv = ".venv"
+
+# For some reason, pyright thinks '__setitem__' is not defined on 'pyglet.options' when it totally is.
+
+reportIndexIssue = false
+
+# From https://github.com/obiwac/python-minecraft-clone/pull/107:
+# F405 * may be undefined, or defined from star imports: These are indeed defined from star imports. I guess we could import all the symbols in '__all__' explicitly, but if there's a mistake here and it causes a runtime error, that's not the end of the world.
+
+ignore = ["models/__init__.py"]
