@@ -1,8 +1,9 @@
-import models.cube # default model
+import models.cube  # default model
+
 
 class Block_type:
 	# new optional model argument (cube model by default)
-	def __init__(self, texture_manager, name = "unknown", block_face_textures = {"all": "cobblestone"}, model = models.cube):
+	def __init__(self, texture_manager, name="unknown", block_face_textures={"all": "cobblestone"}, model=models.cube):
 		self.name = name
 		self.block_face_textures = block_face_textures
 		self.model = model
@@ -38,17 +39,17 @@ class Block_type:
 			if face == "all":
 				for i in range(len(self.tex_coords)):
 					set_block_face(i, texture_index)
-			
+
 			elif face == "sides":
 				set_block_face(0, texture_index)
 				set_block_face(1, texture_index)
 				set_block_face(4, texture_index)
 				set_block_face(5, texture_index)
-			
+
 			elif face == "x":
 				set_block_face(0, texture_index)
 				set_block_face(1, texture_index)
-			
+
 			elif face == "y":
 				set_block_face(2, texture_index)
 				set_block_face(3, texture_index)
@@ -56,6 +57,6 @@ class Block_type:
 			elif face == "z":
 				set_block_face(4, texture_index)
 				set_block_face(5, texture_index)
-			
+
 			else:
 				set_block_face(["right", "left", "top", "bottom", "front", "back"].index(face), texture_index)

@@ -1,6 +1,7 @@
 import math
 import matrix
 
+
 class Camera:
 	def __init__(self, shader, width, height):
 		self.width = width
@@ -22,7 +23,7 @@ class Camera:
 
 		self.position = [0, 0, 0]
 		self.rotation = [-math.tau / 4, 0]
-	
+
 	def update_camera(self, delta_time):
 		speed = 7
 		multiplier = speed * delta_time
@@ -34,7 +35,7 @@ class Camera:
 
 			self.position[0] += math.cos(angle) * multiplier
 			self.position[2] += math.sin(angle) * multiplier
-	
+
 	def update_matrices(self):
 		# create projection matrix
 

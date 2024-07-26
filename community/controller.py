@@ -5,6 +5,7 @@ import hit
 
 from enum import IntEnum
 
+
 class Controller:
 	class InteractMode(IntEnum):
 		PLACE = 0
@@ -38,9 +39,12 @@ class Controller:
 
 	def interact(self, mode):
 		def hit_callback(current_block, next_block):
-			if mode == self.InteractMode.PLACE: self.game.world.try_set_block(current_block, self.game.holding, self.game.player.collider)
-			elif mode == self.InteractMode.BREAK: self.game.world.set_block(next_block, 0)
-			elif mode == self.InteractMode.PICK: self.game.holding = self.game.world.get_block_number(next_block)
+			if mode == self.InteractMode.PLACE:
+				self.game.world.try_set_block(current_block, self.game.holding, self.game.player.collider)
+			elif mode == self.InteractMode.BREAK:
+				self.game.world.set_block(next_block, 0)
+			elif mode == self.InteractMode.PICK:
+				self.game.holding = self.game.world.get_block_number(next_block)
 
 		x, y, z = self.game.player.position
 		y += self.game.player.eyelevel
@@ -79,10 +83,10 @@ class Controller:
 				max_y = max(max_y, (y + 1) * chunk.CHUNK_HEIGHT)
 
 				max_x = max(max_x, (x + 1) * chunk.CHUNK_WIDTH)
-				min_x = min(min_x,  x      * chunk.CHUNK_WIDTH)
+				min_x = min(min_x, x * chunk.CHUNK_WIDTH)
 
 				max_z = max(max_z, (z + 1) * chunk.CHUNK_LENGTH)
-				min_z = min(min_z,  z      * chunk.CHUNK_LENGTH)
+				min_z = min(min_z, z * chunk.CHUNK_LENGTH)
 
 			# get random X & Z coordinates to teleport the player to
 
@@ -91,7 +95,7 @@ class Controller:
 
 			# find height at which to teleport to, by finding the first non-air block from the top of the world
 
-			for y in range(chunk.CHUNK_HEIGHT - 1,  -1, -1):
+			for y in range(chunk.CHUNK_HEIGHT - 1, -1, -1):
 				if not self.game.world.get_block_number((x, y, z)):
 					continue
 
@@ -107,12 +111,12 @@ class Controller:
 
 	def start_move(self, mode):
 		axis = int((mode if mode % 2 == 0 else mode - 1) / 2)
-		self.game.controls[axis] += (-1 if mode % 2 == 0 else 1)
+		self.game.controls[axis] += -1 if mode % 2 == 0 else 1
 		self.update_move(axis)
 
 	def end_move(self, mode):
 		axis = int((mode if mode % 2 == 0 else mode - 1) / 2)
-		self.game.controls[axis] -= (-1 if mode % 2 == 0 else 1)
+		self.game.controls[axis] -= -1 if mode % 2 == 0 else 1
 		self.update_move(axis)
 
 	def start_modifier(self, mode):
@@ -124,6 +128,8 @@ class Controller:
 			self.game.player.target_speed = player.WALKING_SPEED
 
 	def apply_deadzone(self, value):
-		if abs(value[0]) < self.joystick_deadzone: value[0] = 0
-		if abs(value[1]) < self.joystick_deadzone: value[1] = 0
+		if abs(value[0]) < self.joystick_deadzone:
+			value[0] = 0
+		if abs(value[1]) < self.joystick_deadzone:
+			value[1] = 0
 		return value

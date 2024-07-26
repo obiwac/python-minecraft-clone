@@ -1,16 +1,17 @@
 import math
 import collider
 
-FLYING_ACCEL  = (0,   0, 0)
+FLYING_ACCEL = (0, 0, 0)
 GRAVITY_ACCEL = (0, -32, 0)
 
 # these values all come (losely) from Minecraft, but are multiplied by 20 (since Minecraft runs at 20 TPS)
 
-FRICTION  = ( 20,  20,  20)
+FRICTION = (20, 20, 20)
 
-DRAG_FLY  = (  5,   5,   5)
-DRAG_JUMP = (1.8,   0, 1.8)
+DRAG_FLY = (5, 5, 5)
+DRAG_JUMP = (1.8, 0, 1.8)
 DRAG_FALL = (1.8, 0.4, 1.8)
+
 
 class Entity:
 	def __init__(self, world):
@@ -54,9 +55,9 @@ class Entity:
 
 	def teleport(self, pos):
 		self.position = list(pos)
-		self.velocity = [0, 0, 0] # to prevent collisions
+		self.velocity = [0, 0, 0]  # to prevent collisions
 
-	def jump(self, height = None):
+	def jump(self, height=None):
 		# obviously, we can't initiate a jump while in mid-air
 
 		if not self.grounded:
@@ -83,7 +84,7 @@ class Entity:
 	def update(self, delta_time):
 		self.step = 1
 		self.old_position = tuple(self.position)
-	
+
 		# apply input acceleration, and adjust for friction/drag
 
 		self.velocity = [v + a * f * delta_time for v, a, f in zip(self.velocity, self.accel, self.friction)]
@@ -106,7 +107,7 @@ class Entity:
 			step_z = 1 if vz > 0 else -1
 
 			steps_xz = int(self.width / 2)
-			steps_y  = int(self.height)
+			steps_y = int(self.height)
 
 			x, y, z = map(int, self.position)
 			cx, cy, cz = [int(x + v) for x, v in zip(self.position, adjusted_velocity)]
@@ -135,13 +136,13 @@ class Entity:
 			if not potential_collisions:
 				break
 
-			entry_time, normal = min(potential_collisions, key = lambda x: x[0])
+			entry_time, normal = min(potential_collisions, key=lambda x: x[0])
 			entry_time -= 0.001
 
 			if normal[0]:
 				self.velocity[0] = 0
 				self.position[0] += vx * entry_time
-			
+
 			if normal[1]:
 				self.velocity[1] = 0
 				self.position[1] += vy * entry_time
@@ -162,7 +163,7 @@ class Entity:
 
 		# apply friction/drag
 
-		self.velocity = [v - min(v * f * delta_time, v, key = abs) for v, f in zip(self.velocity, self.friction)]
+		self.velocity = [v - min(v * f * delta_time, v, key=abs) for v, f in zip(self.velocity, self.friction)]
 
 		# make sure we can rely on the entity's collider outside of this function
 

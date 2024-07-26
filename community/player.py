@@ -5,7 +5,8 @@ import options
 import chunk
 
 WALKING_SPEED = 4.317
-SPRINTING_SPEED = 7 # faster than in Minecraft, feels better
+SPRINTING_SPEED = 7  # faster than in Minecraft, feels better
+
 
 class Frustum:
 	left = glm.vec4(1.0)
@@ -14,6 +15,7 @@ class Frustum:
 	bottom = glm.vec4(1.0)
 	near = glm.vec4(1.0)
 	far = glm.vec4(1.0)
+
 
 def normalize(plane):
 	return plane / glm.length(plane.xyz)
@@ -36,7 +38,6 @@ class Player(entity.Entity):
 		self.shader = shader
 
 		self.mvp_matrix_location = self.shader.find_uniform(b"u_MVPMatrix")
-		
 
 		# camera variables
 
@@ -53,9 +54,11 @@ class Player(entity.Entity):
 	def update(self, delta_time):
 		# process input
 
-		self.view_ray = glm.vec3(glm.cos(self.rotation[0]) * glm.cos(self.rotation[1]), 
-						glm.sin(self.rotation[1]),
-						glm.sin(self.rotation[0]) * glm.cos(self.rotation[1]))
+		self.view_ray = glm.vec3(
+			glm.cos(self.rotation[0]) * glm.cos(self.rotation[1]),
+			glm.sin(self.rotation[1]),
+			glm.sin(self.rotation[0]) * glm.cos(self.rotation[1]),
+		)
 
 		if delta_time * 20 > 1:
 			self.speed = self.target_speed
@@ -82,76 +85,123 @@ class Player(entity.Entity):
 		super().update(delta_time)
 
 		self.rounded_position = [round(i) for i in self.position]
-	
+
 	def update_interpolation(self, delta_time):
 		self.interpolated_position = glm.mix(glm.vec3(self.position), glm.vec3(self.old_position), self.step)
 		self.step -= delta_time
 
 	def update_frustum(self, mat):
 		mat = glm.transpose(mat)
-		for i in range(4): 
-			Frustum.left[i]      = mat[3][i] + mat[0][i]
-			Frustum.right[i]     = mat[3][i] - mat[0][i]
-			Frustum.bottom[i]    = mat[3][i] + mat[1][i]
-			Frustum.top[i]       = mat[3][i] - mat[1][i]
-			Frustum.near[i]      = mat[3][i] + mat[2][i]
-			Frustum.far[i]       = mat[3][i] - mat[2][i]
-			
+		for i in range(4):
+			Frustum.left[i] = mat[3][i] + mat[0][i]
+			Frustum.right[i] = mat[3][i] - mat[0][i]
+			Frustum.bottom[i] = mat[3][i] + mat[1][i]
+			Frustum.top[i] = mat[3][i] - mat[1][i]
+			Frustum.near[i] = mat[3][i] + mat[2][i]
+			Frustum.far[i] = mat[3][i] - mat[2][i]
+
 		Frustum.left = normalize(Frustum.left)
 		Frustum.right = normalize(Frustum.right)
 		Frustum.bottom = normalize(Frustum.bottom)
 		Frustum.top = normalize(Frustum.top)
 		Frustum.near = normalize(Frustum.near)
 		Frustum.far = normalize(Frustum.far)
-		
+
 	def check_in_frustum(self, chunk_pos):
 		"""Frustum check of each chunk. If the chunk is not in the view frustum, it is discarded"""
 		planes = (Frustum.left, Frustum.right, Frustum.bottom, Frustum.top, Frustum.near, Frustum.far)
 		result = 2
-		center = glm.vec3(chunk_pos * glm.ivec3(chunk.CHUNK_WIDTH, 0, chunk.CHUNK_LENGTH)
-									+ glm.ivec3(chunk.CHUNK_WIDTH / 2, 
-												chunk.CHUNK_HEIGHT / 2,
-												chunk.CHUNK_LENGTH / 2))
-
+		center = glm.vec3(
+			chunk_pos * glm.ivec3(chunk.CHUNK_WIDTH, 0, chunk.CHUNK_LENGTH)
+			+ glm.ivec3(chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)
+		)
 
 		for plane in planes:
 			_in = 0
 			_out = 0
 			normal = plane.xyz
 			w = plane.w
-			if glm.dot(normal, center + glm.vec3(chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)) + w < 0:
+			if (
+				glm.dot(
+					normal, center + glm.vec3(chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)
+				)
+				+ w
+				< 0
+			):
 				_out += 1
 			else:
 				_in += 1
-			if glm.dot(normal, center + glm.vec3(-chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)) + w < 0:
+			if (
+				glm.dot(
+					normal, center + glm.vec3(-chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)
+				)
+				+ w
+				< 0
+			):
 				_out += 1
 			else:
 				_in += 1
-			if glm.dot(normal, center + glm.vec3(chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, -chunk.CHUNK_LENGTH / 2)) + w < 0:
+			if (
+				glm.dot(
+					normal, center + glm.vec3(chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, -chunk.CHUNK_LENGTH / 2)
+				)
+				+ w
+				< 0
+			):
 				_out += 1
 			else:
 				_in += 1
-			if glm.dot(normal, center + glm.vec3(-chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, -chunk.CHUNK_LENGTH / 2)) + w < 0:
+			if (
+				glm.dot(
+					normal, center + glm.vec3(-chunk.CHUNK_WIDTH / 2, chunk.CHUNK_HEIGHT / 2, -chunk.CHUNK_LENGTH / 2)
+				)
+				+ w
+				< 0
+			):
 				_out += 1
 			else:
 				_in += 1
-			if glm.dot(normal, center + glm.vec3(chunk.CHUNK_WIDTH / 2, -chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)) + w < 0:
+			if (
+				glm.dot(
+					normal, center + glm.vec3(chunk.CHUNK_WIDTH / 2, -chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)
+				)
+				+ w
+				< 0
+			):
 				_out += 1
 			else:
 				_in += 1
-			if glm.dot(normal, center + glm.vec3(-chunk.CHUNK_WIDTH / 2, -chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)) + w < 0:
+			if (
+				glm.dot(
+					normal, center + glm.vec3(-chunk.CHUNK_WIDTH / 2, -chunk.CHUNK_HEIGHT / 2, chunk.CHUNK_LENGTH / 2)
+				)
+				+ w
+				< 0
+			):
 				_out += 1
 			else:
 				_in += 1
-			if glm.dot(normal, center + glm.vec3(chunk.CHUNK_WIDTH / 2, -chunk.CHUNK_HEIGHT / 2, -chunk.CHUNK_LENGTH / 2)) + w < 0:
+			if (
+				glm.dot(
+					normal, center + glm.vec3(chunk.CHUNK_WIDTH / 2, -chunk.CHUNK_HEIGHT / 2, -chunk.CHUNK_LENGTH / 2)
+				)
+				+ w
+				< 0
+			):
 				_out += 1
 			else:
 				_in += 1
-			if glm.dot(normal, center + glm.vec3(-chunk.CHUNK_WIDTH / 2, -chunk.CHUNK_HEIGHT / 2, -chunk.CHUNK_LENGTH / 2)) + w < 0:
+			if (
+				glm.dot(
+					normal, center + glm.vec3(-chunk.CHUNK_WIDTH / 2, -chunk.CHUNK_HEIGHT / 2, -chunk.CHUNK_LENGTH / 2)
+				)
+				+ w
+				< 0
+			):
 				_out += 1
 			else:
 				_in += 1
-			
+
 			if not _in:
 				return 0
 			elif _out:
@@ -160,10 +210,13 @@ class Player(entity.Entity):
 
 	def update_matrices(self):
 		# create projection matrix
-		
+
 		self.p_matrix = glm.perspective(
 			glm.radians(options.FOV + 10 * (self.speed - WALKING_SPEED) / (SPRINTING_SPEED - WALKING_SPEED)),
-			float(self.view_width) / self.view_height, 0.1, 500)
+			float(self.view_width) / self.view_height,
+			0.1,
+			500,
+		)
 
 		# create modelview matrix
 
@@ -171,7 +224,9 @@ class Player(entity.Entity):
 		self.mv_matrix = glm.rotate(self.mv_matrix, self.rotation[1], -glm.vec3(1.0, 0.0, 0.0))
 		self.mv_matrix = glm.rotate(self.mv_matrix, self.rotation[0] + math.tau / 4, glm.vec3(0.0, 1.0, 0.0))
 
-		self.mv_matrix = glm.translate(self.mv_matrix, -glm.vec3(*self.interpolated_position) - glm.vec3(0, self.eyelevel, 0))
+		self.mv_matrix = glm.translate(
+			self.mv_matrix, -glm.vec3(*self.interpolated_position) - glm.vec3(0, self.eyelevel, 0)
+		)
 
 		# modelviewprojection matrix
 
