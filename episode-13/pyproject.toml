@@ -28,6 +28,7 @@ nbtlib = "^2.0.4"
 base36 = "^0.1.1"
 pyglm = "^2.7.1"
 pyright = "^1.1.373"
+cython = "^3.0.10"
 
 [tool.poetry.group.dev.dependencies]
 tan = "^23.7.0"
