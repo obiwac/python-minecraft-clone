@@ -14,7 +14,7 @@ poetry install
 ```
 
 This will also build the Cython extensions.
-If you ever need to re-build them, you can do:
+If you ever need to rebuild them, you can do:
 
 ```console
 poetry build
