@@ -1,11 +1,11 @@
-import collider
-
+from typing import Any
+from src.physics.collider import Collider
 import models.cube  # default model
 
 
-class Block_type:
+class BlockType:
 	# new optional model argument (cube model by default)
-	def __init__(self, texture_manager, name="unknown", block_face_textures={"all": "cobblestone"}, model=models.cube):
+	def __init__(self, texture_manager, name="unknown", block_face_textures={"all": "cobblestone"}, model: Any=models.cube):
 		self.name = name
 		self.block_face_textures = block_face_textures
 		self.model = model
@@ -21,7 +21,7 @@ class Block_type:
 		self.colliders = []
 
 		for _collider in model.colliders:
-			self.colliders.append(collider.Collider(*_collider))
+			self.colliders.append(Collider(*_collider))
 
 		# replace data contained in numbers.py with model specific data
 

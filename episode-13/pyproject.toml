@@ -31,3 +31,12 @@ ruff = "^0.5.5"
 exclude = [".venv"]
 venvPath = "."
 venv = ".venv"
+
+# For some reason, pyright thinks '__setitem__' is not defined on 'pyglet.options' when it totally is.
+
+reportIndexIssue = false
+
+# From https://github.com/obiwac/python-minecraft-clone/pull/107:
+# F405 * may be undefined, or defined from star imports: These are indeed defined from star imports. I guess we could import all the symbols in '__all__' explicitly, but if there's a mistake here and it causes a runtime error, that's not the end of the world.
+
+ignore = ["models/__init__.py"]

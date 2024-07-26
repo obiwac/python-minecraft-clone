@@ -1,10 +1,8 @@
 import math
-
-import save
-import chunk
-
-import block_type
-import texture_manager
+from src.chunk.chunk import CHUNK_HEIGHT, CHUNK_LENGTH, CHUNK_WIDTH, Chunk
+from src.save import Save
+from src.renderer.block_type import BlockType
+from src.renderer.texture_manager import TextureManager
 
 # import custom block models
 
@@ -13,14 +11,13 @@ import models
 
 class World:
 	def __init__(self):
-		self.texture_manager = texture_manager.Texture_manager(16, 16, 256)
-		self.block_types = [None]
+		self.texture_manager = TextureManager(16, 16, 256)
+		self.block_types: list[BlockType | None] = [None]
 
 		# parse block type data file
 
-		blocks_data_file = open("data/blocks.mcpy")
-		blocks_data = blocks_data_file.readlines()
-		blocks_data_file.close()
+		with open("data/blocks.mcpy") as f:
+			blocks_data = f.readlines()
 
 		for block in blocks_data:
 			if block[0] in ["\n", "#"]:  # skip if empty line or comment
@@ -43,10 +40,12 @@ class World:
 
 				if prop[0] == "sameas":
 					sameas_number = int(prop[1])
+					sameas = self.block_types[sameas_number]
 
-					name = self.block_types[sameas_number].name
-					texture = self.block_types[sameas_number].block_face_textures
-					model = self.block_types[sameas_number].model
+					if sameas is not None:
+						name = sameas.name
+						texture = sameas.block_face_textures
+						model = sameas.model
 
 				elif prop[0] == "name":
 					name = eval(prop[1])
@@ -60,19 +59,19 @@ class World:
 
 			# add block type
 
-			_block_type = block_type.Block_type(self.texture_manager, name, texture, model)
+			block_type = BlockType(self.texture_manager, name, texture, model)
 
 			if number < len(self.block_types):
-				self.block_types[number] = _block_type
+				self.block_types[number] = block_type
 
 			else:
-				self.block_types.append(_block_type)
+				self.block_types.append(block_type)
 
 		self.texture_manager.generate_mipmaps()
 
 		# load the world
 
-		self.save = save.Save(self)
+		self.save = Save(self)
 
 		self.chunks = {}
 		self.save.load()
@@ -85,18 +84,17 @@ class World:
 		x, y, z = position
 
 		return (
-			math.floor(x / chunk.CHUNK_WIDTH),
-			math.floor(y / chunk.CHUNK_HEIGHT),
-			math.floor(z / chunk.CHUNK_LENGTH),
+			math.floor(x / CHUNK_WIDTH),
+			math.floor(y / CHUNK_HEIGHT),
+			math.floor(z / CHUNK_LENGTH),
 		)
 
 	def get_local_position(self, position):
 		x, y, z = position
 
-		return (int(x % chunk.CHUNK_WIDTH), int(y % chunk.CHUNK_HEIGHT), int(z % chunk.CHUNK_LENGTH))
+		return (int(x % CHUNK_WIDTH), int(y % CHUNK_HEIGHT), int(z % CHUNK_LENGTH))
 
 	def get_block_number(self, position):
-		x, y, z = position
 		chunk_position = self.get_chunk_position(position)
 
 		if chunk_position not in self.chunks:
@@ -126,7 +124,7 @@ class World:
 			if number == 0:
 				return  # no point in creating a whole new chunk if we're not gonna be adding anything
 
-			self.chunks[chunk_position] = chunk.Chunk(self, chunk_position)
+			self.chunks[chunk_position] = Chunk(self, chunk_position)
 
 		if self.get_block_number(position) == number:  # no point updating mesh if the block is the same
 			return
@@ -146,17 +144,17 @@ class World:
 				self.chunks[chunk_position].update_at_position(position)
 				self.chunks[chunk_position].update_mesh()
 
-		if lx == chunk.CHUNK_WIDTH - 1:
+		if lx == CHUNK_WIDTH - 1:
 			try_update_chunk_at_position((cx + 1, cy, cz), (x + 1, y, z))
 		if lx == 0:
 			try_update_chunk_at_position((cx - 1, cy, cz), (x - 1, y, z))
 
-		if ly == chunk.CHUNK_HEIGHT - 1:
+		if ly == CHUNK_HEIGHT - 1:
 			try_update_chunk_at_position((cx, cy + 1, cz), (x, y + 1, z))
 		if ly == 0:
 			try_update_chunk_at_position((cx, cy - 1, cz), (x, y - 1, z))
 
-		if lz == chunk.CHUNK_LENGTH - 1:
+		if lz == CHUNK_LENGTH - 1:
 			try_update_chunk_at_position((cx, cy, cz + 1), (x, y, z + 1))
 		if lz == 0:
 			try_update_chunk_at_position((cx, cy, cz - 1), (x, y, z - 1))

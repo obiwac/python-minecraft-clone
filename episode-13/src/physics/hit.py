@@ -3,7 +3,7 @@ import math
 HIT_RANGE = 3
 
 
-class Hit_ray:
+class HitRay:
 	def __init__(self, world, rotation, starting_position):
 		self.world = world
 
@@ -22,7 +22,7 @@ class Hit_ray:
 		# block position in which point currently is
 		self.block = tuple(map(lambda x: int(round(x)), self.position))
 
-		# current distance the point has travelled
+		# current distance the point has traveled
 		self.distance = 0
 
 	# 'check' and 'step' both return 'True' if something is hit, and 'False' if not

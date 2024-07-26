@@ -1,12 +1,12 @@
 import math
-import entity
-import matrix
+from src.entity.entity import Entity
+from src.renderer.matrix import Matrix
 
 WALKING_SPEED = 4.317
 SPRINTING_SPEED = 7  # faster than in Minecraft, feels better
 
 
-class Player(entity.Entity):
+class Player(Entity):
 	def __init__(self, world, shader, width, height):
 		super().__init__(world)
 
@@ -15,8 +15,8 @@ class Player(entity.Entity):
 
 		# create matrices
 
-		self.mv_matrix = matrix.Matrix()
-		self.p_matrix = matrix.Matrix()
+		self.mv_matrix = Matrix()
+		self.p_matrix = Matrix()
 
 		# shaders
 
@@ -31,7 +31,7 @@ class Player(entity.Entity):
 		self.target_speed = WALKING_SPEED
 		self.speed = self.target_speed
 
-	def update(self, delta_time):
+	def update(self, delta_time: float):
 		# process input
 
 		if delta_time * 20 > 1:

@@ -1,7 +1,7 @@
 import nbtlib as nbt
 import base36
 
-import chunk
+from src.chunk.chunk import Chunk, CHUNK_HEIGHT, CHUNK_LENGTH, CHUNK_WIDTH
 
 
 class Save:
@@ -10,7 +10,7 @@ class Save:
 		self.path = path
 
 	def chunk_position_to_path(self, chunk_position):
-		x, y, z = chunk_position
+		x, _, z = chunk_position
 
 		chunk_path = "/".join(
 			(self.path, base36.dumps(x % 64), base36.dumps(z % 64), f"c.{base36.dumps(x)}.{base36.dumps(z)}.dat")
@@ -31,13 +31,13 @@ class Save:
 
 		# create chunk and fill it with the blocks from our chunk file
 
-		self.world.chunks[chunk_position] = chunk.Chunk(self.world, chunk_position)
+		self.world.chunks[chunk_position] = Chunk(self.world, chunk_position)
 
-		for x in range(chunk.CHUNK_WIDTH):
-			for y in range(chunk.CHUNK_HEIGHT):
-				for z in range(chunk.CHUNK_LENGTH):
+		for x in range(CHUNK_WIDTH):
+			for y in range(CHUNK_HEIGHT):
+				for z in range(CHUNK_LENGTH):
 					self.world.chunks[chunk_position].blocks[x][y][z] = chunk_blocks[
-						x * chunk.CHUNK_LENGTH * chunk.CHUNK_HEIGHT + z * chunk.CHUNK_HEIGHT + y
+						x * CHUNK_LENGTH * CHUNK_HEIGHT + z * CHUNK_HEIGHT + y
 					]
 
 	def save_chunk(self, chunk_position):
@@ -59,13 +59,13 @@ class Save:
 
 		# fill the chunk file with the blocks from our chunk
 
-		chunk_blocks = nbt.ByteArray([0] * (chunk.CHUNK_WIDTH * chunk.CHUNK_HEIGHT * chunk.CHUNK_LENGTH))
+		chunk_blocks = nbt.ByteArray([0] * (CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_LENGTH))
 
-		for x in range(chunk.CHUNK_WIDTH):
-			for y in range(chunk.CHUNK_HEIGHT):
-				for z in range(chunk.CHUNK_LENGTH):
+		for x in range(CHUNK_WIDTH):
+			for y in range(CHUNK_HEIGHT):
+				for z in range(CHUNK_LENGTH):
 					chunk_blocks[
-						x * chunk.CHUNK_LENGTH * chunk.CHUNK_HEIGHT + z * chunk.CHUNK_HEIGHT + y
+						x * CHUNK_LENGTH * CHUNK_HEIGHT + z * CHUNK_HEIGHT + y
 					] = self.world.chunks[
 						chunk_position
 					].blocks[x][y][z]

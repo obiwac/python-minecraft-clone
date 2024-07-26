@@ -3,7 +3,7 @@ import pyglet
 import pyglet.gl as gl
 
 
-class Texture_manager:
+class TextureManager:
 	def __init__(self, texture_width, texture_height, max_textures):
 		self.texture_width = texture_width
 		self.texture_height = texture_height

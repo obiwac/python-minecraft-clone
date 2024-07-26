@@ -6,15 +6,13 @@ pyglet.options["shadow_window"] = False
 pyglet.options["debug_gl"] = False
 
 import pyglet.gl as gl
+import pyglet.window.mouse
 
-import shader
-import player
-
-
-import chunk
-import world
-
-import hit
+from src.entity.player import SPRINTING_SPEED, WALKING_SPEED, Player
+from src.physics.hit import HIT_RANGE, HitRay
+from src.renderer.shader import Shader
+from src.world import World
+from src.chunk.chunk import CHUNK_HEIGHT, CHUNK_WIDTH, CHUNK_LENGTH
 
 
 class Window(pyglet.window.Window):
@@ -23,11 +21,11 @@ class Window(pyglet.window.Window):
 
 		# create world
 
-		self.world = world.World()
+		self.world = World()
 
 		# create shader
 
-		self.shader = shader.Shader("vert.glsl", "frag.glsl")
+		self.shader = Shader("shaders/vert.glsl", "shaders/frag.glsl")
 		self.shader_sampler_location = self.shader.find_uniform(b"texture_array_sampler")
 		self.shader.use()
 
@@ -38,7 +36,7 @@ class Window(pyglet.window.Window):
 
 		# player stuff
 
-		self.player = player.Player(self.world, self.shader, self.width, self.height)
+		self.player = Player(self.world, self.shader, self.width, self.height)
 
 		# misc stuff
 
@@ -101,54 +99,54 @@ class Window(pyglet.window.Window):
 		x, y, z = self.player.position
 		y += self.player.eyelevel
 
-		hit_ray = hit.Hit_ray(self.world, self.player.rotation, (x, y, z))
+		hit_ray = HitRay(self.world, self.player.rotation, (x, y, z))
 
-		while hit_ray.distance < hit.HIT_RANGE:
+		while hit_ray.distance < HIT_RANGE:
 			if hit_ray.step(hit_callback):
 				break
 
-	def on_mouse_motion(self, x, y, delta_x, delta_y):
+	def on_mouse_motion(self, x, y, dx, dy):
 		if self.mouse_captured:
 			sensitivity = 0.004
 
-			self.player.rotation[0] += delta_x * sensitivity
-			self.player.rotation[1] += delta_y * sensitivity
+			self.player.rotation[0] += dx * sensitivity
+			self.player.rotation[1] += dy * sensitivity
 
 			self.player.rotation[1] = max(-math.tau / 4, min(math.tau / 4, self.player.rotation[1]))
 
-	def on_mouse_drag(self, x, y, delta_x, delta_y, buttons, modifiers):
-		self.on_mouse_motion(x, y, delta_x, delta_y)
+	def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+		self.on_mouse_motion(x, y, dx, dy)
 
-	def on_key_press(self, key, modifiers):
+	def on_key_press(self, symbol, modifiers):
 		if not self.mouse_captured:
 			return
 
-		if key == pyglet.window.key.D:
+		if symbol == pyglet.window.key.D:
 			self.player.input[0] += 1
-		elif key == pyglet.window.key.A:
+		elif symbol == pyglet.window.key.A:
 			self.player.input[0] -= 1
-		elif key == pyglet.window.key.W:
+		elif symbol == pyglet.window.key.W:
 			self.player.input[2] += 1
-		elif key == pyglet.window.key.S:
+		elif symbol == pyglet.window.key.S:
 			self.player.input[2] -= 1
 
-		elif key == pyglet.window.key.SPACE:
+		elif symbol == pyglet.window.key.SPACE:
 			self.player.input[1] += 1
-		elif key == pyglet.window.key.LSHIFT:
+		elif symbol == pyglet.window.key.LSHIFT:
 			self.player.input[1] -= 1
-		elif key == pyglet.window.key.LCTRL:
-			self.player.target_speed = player.SPRINTING_SPEED
+		elif symbol == pyglet.window.key.LCTRL:
+			self.player.target_speed = SPRINTING_SPEED
 
-		elif key == pyglet.window.key.F:
+		elif symbol == pyglet.window.key.F:
 			self.player.flying = not self.player.flying
 
-		elif key == pyglet.window.key.G:
+		elif symbol == pyglet.window.key.G:
 			self.holding = random.randint(1, len(self.world.block_types) - 1)
 
-		elif key == pyglet.window.key.O:
+		elif symbol == pyglet.window.key.O:
 			self.world.save.save()
 
-		elif key == pyglet.window.key.R:
+		elif symbol == pyglet.window.key.R:
 			# how large is the world?
 
 			max_y = 0
@@ -159,13 +157,13 @@ class Window(pyglet.window.Window):
 			for pos in self.world.chunks:
 				x, y, z = pos
 
-				max_y = max(max_y, (y + 1) * chunk.CHUNK_HEIGHT)
+				max_y = max(max_y, (y + 1) * CHUNK_HEIGHT)
 
-				max_x = max(max_x, (x + 1) * chunk.CHUNK_WIDTH)
-				min_x = min(min_x, x * chunk.CHUNK_WIDTH)
+				max_x = max(max_x, (x + 1) * CHUNK_WIDTH)
+				min_x = min(min_x, x * CHUNK_WIDTH)
 
-				max_z = max(max_z, (z + 1) * chunk.CHUNK_LENGTH)
-				min_z = min(min_z, z * chunk.CHUNK_LENGTH)
+				max_z = max(max_z, (z + 1) * CHUNK_LENGTH)
+				min_z = min(min_z, z * CHUNK_LENGTH)
 
 			# get random X & Z coordinates to teleport the player to
 
@@ -174,36 +172,36 @@ class Window(pyglet.window.Window):
 
 			# find height at which to teleport to, by finding the first non-air block from the top of the world
 
-			for y in range(chunk.CHUNK_HEIGHT - 1, -1, -1):
+			for y in range(CHUNK_HEIGHT - 1, -1, -1):
 				if not self.world.get_block_number((x, y, z)):
 					continue
 
 				self.player.teleport((x, y + 1, z))
 				break
 
-		elif key == pyglet.window.key.ESCAPE:
+		elif symbol == pyglet.window.key.ESCAPE:
 			self.mouse_captured = False
 			self.set_exclusive_mouse(False)
 
-	def on_key_release(self, key, modifiers):
+	def on_key_release(self, symbol, modifiers):
 		if not self.mouse_captured:
 			return
 
-		if key == pyglet.window.key.D:
+		if symbol == pyglet.window.key.D:
 			self.player.input[0] -= 1
-		elif key == pyglet.window.key.A:
+		elif symbol == pyglet.window.key.A:
 			self.player.input[0] += 1
-		elif key == pyglet.window.key.W:
+		elif symbol == pyglet.window.key.W:
 			self.player.input[2] -= 1
-		elif key == pyglet.window.key.S:
+		elif symbol == pyglet.window.key.S:
 			self.player.input[2] += 1
 
-		elif key == pyglet.window.key.SPACE:
+		elif symbol == pyglet.window.key.SPACE:
 			self.player.input[1] -= 1
-		elif key == pyglet.window.key.LSHIFT:
+		elif symbol == pyglet.window.key.LSHIFT:
 			self.player.input[1] += 1
-		elif key == pyglet.window.key.LCTRL:
-			self.player.target_speed = player.WALKING_SPEED
+		elif symbol == pyglet.window.key.LCTRL:
+			self.player.target_speed = WALKING_SPEED
 
 
 class Game:
