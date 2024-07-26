@@ -4,3 +4,10 @@
 .vscode
 *.ogg
 *.sw[nop]
+*.so
+*.c
+*.so
+*.html
+*.cache
+dist
+build

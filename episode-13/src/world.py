@@ -1,5 +1,6 @@
 import math
-from src.chunk.chunk import CHUNK_HEIGHT, CHUNK_LENGTH, CHUNK_WIDTH, Chunk
+from src.chunk import CHUNK_HEIGHT, CHUNK_LENGTH, CHUNK_WIDTH
+from src.chunk.chunk import Chunk
 from src.save import Save
 from src.renderer.block_type import BlockType
 from src.renderer.texture_manager import TextureManager
@@ -100,9 +101,9 @@ class World:
 		if chunk_position not in self.chunks:
 			return 0
 
-		lx, ly, lz = self.get_local_position(position)
+		pos = self.get_local_position(position)
 
-		block_number = self.chunks[chunk_position].blocks[lx][ly][lz]
+		block_number = self.chunks[chunk_position].get_block(*pos)
 		return block_number
 
 	def is_opaque_block(self, position):
