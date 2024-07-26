@@ -77,10 +77,6 @@ class World:
 		self.chunks = {}
 		self.save.load()
 
-		for chunk_position in self.chunks:
-			self.chunks[chunk_position].update_subchunk_meshes()
-			self.chunks[chunk_position].update_mesh()
-
 	def get_chunk_position(self, position):
 		x, y, z = position
 
