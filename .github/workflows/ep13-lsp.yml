@@ -25,4 +25,5 @@ jobs:
           key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
       - name: Run pyright
         run: |
+          find .
           poetry run pyright
