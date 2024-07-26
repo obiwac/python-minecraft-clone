@@ -26,4 +26,4 @@ __all__ = [
 ]
 
 from . import cube
-from . import * # pyright: ignore
+from . import *  # pyright: ignore

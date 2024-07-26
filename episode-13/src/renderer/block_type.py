@@ -5,7 +5,9 @@ import models.cube  # default model
 
 class BlockType:
 	# new optional model argument (cube model by default)
-	def __init__(self, texture_manager, name="unknown", block_face_textures={"all": "cobblestone"}, model: Any=models.cube):
+	def __init__(
+		self, texture_manager, name="unknown", block_face_textures={"all": "cobblestone"}, model: Any = models.cube
+	):
 		self.name = name
 		self.block_face_textures = block_face_textures
 		self.model = model

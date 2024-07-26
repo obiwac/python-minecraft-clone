@@ -5,6 +5,7 @@ import pyglet.gl as gl
 class ShaderError(Exception):
 	...
 
+
 def create_shader(target, source_path):
 	# read shader source
 

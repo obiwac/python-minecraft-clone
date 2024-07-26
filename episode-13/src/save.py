@@ -64,11 +64,8 @@ class Save:
 		for x in range(CHUNK_WIDTH):
 			for y in range(CHUNK_HEIGHT):
 				for z in range(CHUNK_LENGTH):
-					chunk_blocks[
-						x * CHUNK_LENGTH * CHUNK_HEIGHT + z * CHUNK_HEIGHT + y
-					] = self.world.chunks[
-						chunk_position
-					].blocks[x][y][z]
+					block = self.world.chunks[chunk_position].blocks[x][y][z]
+					chunk_blocks[x * CHUNK_LENGTH * CHUNK_HEIGHT + z * CHUNK_HEIGHT + y] = block
 
 		# save the chunk file
 
