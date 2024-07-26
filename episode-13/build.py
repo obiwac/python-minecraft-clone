@@ -4,9 +4,10 @@ import Cython.Compiler.Options
 
 Cython.Compiler.Options.cimport_from_pyx = True  # needed?
 
+
 class BuildExt(build_ext):
 	def build_extension(self, ext):
-		self.inplace = True # Important or the LSP won't have access to the compiled files.
+		self.inplace = True  # Important or the LSP won't have access to the compiled files.
 		super().build_extension(ext)
 
 
