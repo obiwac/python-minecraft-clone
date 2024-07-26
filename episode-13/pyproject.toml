@@ -19,7 +19,7 @@ requires = ["poetry-core", "setuptools", "cython"]
 
 [tool.poetry.build]
 script = "build.py"
-generate-setup-file = false
+generate-setup-file = true
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -44,6 +44,6 @@ venv = ".venv"
 reportIndexIssue = false
 
 # From https://github.com/obiwac/python-minecraft-clone/pull/107:
-# F405 * may be undefined, or defined from star imports: These are indeed defined from star imports. I guess we could import all the symbols in '__all__' explicitly, but if there's a mistake here and it causes a runtime error, that's not the end of the world.
+# F405 X may be undefined, or defined from star imports: These are indeed defined from star imports. I guess we could import all the symbols in '__all__' explicitly, but if there's a mistake here and it causes a runtime error, that's not the end of the world.
 
 ignore = ["models/__init__.py"]

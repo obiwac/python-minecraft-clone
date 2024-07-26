@@ -15,7 +15,7 @@ jobs:
           python-version: "3.11"
       - uses: abatilo/actions-poetry@v2
       - name: Install dependencies and build Cython extension
-        run: poetry install
+        run: poetry install --no-root
       - name: Rebuild the project
         run: poetry build
       - name: Cache venv created by poetry (configured to be in '.venv')
@@ -24,6 +24,4 @@ jobs:
           path: ./.venv
           key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
       - name: Run pyright
-        run: |
-          find .
-          poetry run pyright
+        run: poetry run pyright
