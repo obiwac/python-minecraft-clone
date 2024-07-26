@@ -16,7 +16,7 @@ readme = "README.md"
 build="setup.py"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.11"
 pyglet = "^2.0.16"
 nbtlib = "^2.0.4"
 base36 = "^0.1.1"
