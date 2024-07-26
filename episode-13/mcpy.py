@@ -1,5 +1,6 @@
 import math
 import random
+import cProfile
 import pyglet
 
 pyglet.options["shadow_window"] = False
@@ -216,5 +217,8 @@ class Game:
 
 
 if __name__ == "__main__":
-	game = Game()
+	with cProfile.Profile() as profiler:
+		game = Game()
+		profiler.dump_stats("stats.prof")
+
 	game.run()
