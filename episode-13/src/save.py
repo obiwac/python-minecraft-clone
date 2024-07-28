@@ -1,3 +1,5 @@
+import gzip
+import pickle
 import nbtlib as nbt
 import base36
 
@@ -22,23 +24,29 @@ class Save:
 		# load the chunk file
 
 		chunk_path = self.chunk_position_to_path(chunk_position)
+		cache_path = f"{chunk_path}.cache"
 
 		try:
-			chunk_blocks = nbt.load(chunk_path)["Level"]["Blocks"]
+			with gzip.open(cache_path) as f:
+				blocks = pickle.load(f)
 
 		except FileNotFoundError:
-			return
+			try:
+				chunk_data = nbt.load(chunk_path)
+				blocks = list(map(int, chunk_data["Level"]["Blocks"]))
+
+				# cache blocks
+
+				with gzip.open(cache_path, "wb") as f:
+					pickle.dump(blocks, f)
+
+			except FileNotFoundError:
+				return
 
 		# create chunk and fill it with the blocks from our chunk file
 
 		self.world.chunks[chunk_position] = Chunk(self.world, chunk_position)
-
-		for x in range(CHUNK_WIDTH):
-			for y in range(CHUNK_HEIGHT):
-				for z in range(CHUNK_LENGTH):
-					self.world.chunks[chunk_position].blocks[x][y][z] = chunk_blocks[
-						x * CHUNK_LENGTH * CHUNK_HEIGHT + z * CHUNK_HEIGHT + y
-					]
+		self.world.chunks[chunk_position].copy_blocks(blocks)
 
 	def save_chunk(self, chunk_position):
 		x, y, z = chunk_position
@@ -77,12 +85,8 @@ class Save:
 		# 	for y in range(-15, 16):
 		# 		self.load_chunk((x, 0, y))
 
-		# for x in range(-4, 4):
-		# 	for y in range(-4, 4):
-		# 		self.load_chunk((x, 0, y))
-
-		for x in range(-1, 1):
-			for y in range(-1, 1):
+		for x in range(-4, 4):
+			for y in range(-4, 4):
 				self.load_chunk((x, 0, y))
 
 	def save(self):

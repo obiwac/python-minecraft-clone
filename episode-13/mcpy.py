@@ -1,5 +1,6 @@
 import math
 import random
+import cProfile
 import pyglet
 
 pyglet.options["shadow_window"] = False
@@ -49,6 +50,32 @@ class Window(pyglet.window.Window):
 			self.player.input = [0, 0, 0]
 
 		self.player.update(delta_time)
+
+		# Load the closest chunk which hasn't been loaded yet.
+
+		x, y, z = self.player.position
+		closest_chunk = None
+		min_distance = math.inf
+
+		for chunk_pos, chunk in self.world.chunks.items():
+			if chunk.loaded:
+				continue
+
+			cx, cy, cz = chunk_pos
+
+			cx *= CHUNK_WIDTH
+			cy *= CHUNK_HEIGHT
+			cz *= CHUNK_LENGTH
+
+			dist = (cx - x) ** 2 + (cy - y) ** 2 + (cz - z) ** 2
+
+			if dist < min_distance:
+				min_distance = dist
+				closest_chunk = chunk
+
+		if closest_chunk is not None:
+			closest_chunk.update_subchunk_meshes()
+			closest_chunk.update_mesh()
 
 	def on_draw(self):
 		self.player.update_matrices()
@@ -216,5 +243,8 @@ class Game:
 
 
 if __name__ == "__main__":
-	game = Game()
+	with cProfile.Profile() as profiler:
+		game = Game()
+		profiler.dump_stats("stats.prof")
+
 	game.run()
