@@ -127,7 +127,14 @@ class Matrix:
 		frustum_y = math.tan(math.radians(fovy) / 2)
 		frustum_x = frustum_y * aspect
 
-		self.frustum(-frustum_x * near, frustum_x * near, -frustum_y * near, frustum_y * near, near, far)
+		self.frustum(
+			-frustum_x * near,
+			frustum_x * near,
+			-frustum_y * near,
+			frustum_y * near,
+			near,
+			far,
+		)
 
 	def orthographic(self, left, right, bottom, top, near, far):
 		deltax = right - left

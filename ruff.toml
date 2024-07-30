@@ -1,0 +1,11 @@
+# This is separate from a pyproject.toml file as we want this configuration to apply to all projects in the repository.
+
+line-length = 120
+
+[lint]
+ignore = ["E402", "F405", "F403"]
+
+[format]
+quote-style = "double"
+indent-style = "tab"
+line-ending = "lf"

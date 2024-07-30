@@ -8,9 +8,7 @@ class Block_type:
 		# set our block type's vertex positions, texture coordinates, and indices to the default values in our numbers.py file
 
 		self.vertex_positions = numbers.vertex_positions
-		self.tex_coords = (
-			numbers.tex_coords.copy()
-		)  # we need to create a copy of this, since we need to modify our texture coordinates in a different way for each block type (to have different textures per block)
+		self.tex_coords = numbers.tex_coords.copy()  # we need to create a copy of this, since we need to modify our texture coordinates in a different way for each block type (to have different textures per block)
 		self.indices = numbers.indices
 
 		def set_block_face(face, texture):  # set a specific face of the block to a certain texture
