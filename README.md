@@ -48,6 +48,43 @@ If you are using Poetry, you can run the following command:
 poetry run python main.py
 ```
 
+## Episodes
+
+Here is a list of all the episodes and a brief description of what each one of them covers:
+
+- Intro/EP0: These videos just present the project and the series and show how to set up the environment on Linux and Windows for subsequent episodes.
+- EP1: In this episode, we create a window and set up an OpenGL context with Pyglet to draw a simple colour to the screen.
+- EP2: This episode covers vertex buffers (VAO/VBO) and indices, which we use to draw a quadrilateral to the screen.
+- EP3: Vertex and fragment shaders are introduced in this episode, which we use to colour in our quadrilateral with a colour gradient.
+- EP4: We make the scene 3D by introducing projection matrices. The result of this episode is a square rotating in 3D space.
+- EP5: In this episode, we introduce textures, texture arrays, and texture coordinates to our project, which we use to create our first block model. We also enable depth testing.
+- EP6: We take care of input handling and the camera in this episode, which allows us to move around the cube in 3D space.
+- EP7: Very quick episode to shade our block differently for each face, to help with depth perception and distinguish it with texturally similar blocks surrounding it.
+- EP8: We introduce the concept of chunks and chunk mesh generation in this episode, which allows us to render a large number of blocks efficiently.
+- EP9: In this episode, we add blocks with different block models than the cubes we've been working with so far. It also covers discarding fragments for transparency and texture filtering.
+- EP10: This episode introduces maybe the most important feature of Minecraft; block breaking and placing.
+- EP11: Until now, changes to the world could not be saved and loaded later. This episode introduces the NBT format and the `nbtlib` module to save and load world chunks.
+- EP12a: Before this episode we could just phase through blocks. Collisions are introduced in this episode, which prevents this.
+- EP12b: The player until now was also not affected by gravity or any kind of physics-based movement. This episode introduces gravity, jumping, and proper physics-based movement.
+
+The following episodes have been planned, but the videos for them have not been made:
+
+- EP13a: The code has gotten a little crusty. This episode restructures the codebase, adds a `pyproject.toml` file and switches to Poetry for better dependency management, and adds a formatter and a linter as well as a CI setup to check all this.
+- EP13b: Loading big save files took a long time before this. This episode covers profiling and optimization techniques and rewrites a lot of the chunk loading code in Cython to speed it up dramatically.
+- EP14: This episode adds mobs, which are non-player entities in the world which can move around on their own. This will probably be split into multiple parts, notably one for adding the mobs themselves (which will probably include player interactions and a basic combat system), pathfinding and AI, animations, and finally lighting (maybe with shadows too?).
+- EP15: This is not totally confirmed yet but I'd like this episode to cover basic 2D UI elements such as a reticle, and maybe even a GUI system with a hotbar and whatnot.
+
+Here is a wishlist of other episodes I'd like to make in the future after the aforementioned ones are completed, but that I don't have a clear plan for yet:
+
+- Sky boxes.
+- Partial transparency for water.
+- More advanced shaders such as wavy water and leaves, reflections, and bloom.
+- Networked multiplayer, possibly compatible with other Minecraft clients?
+- Split screen multiplayer with scissoring? Thought that's maybe not worth making a video on, but I think it would be cool to have that in `community`.
+- (Infinite) terrain generation.
+
+Feel free to send me suggestions for future episodes you'd like to see!
+
 ## Community
 
 The `community` directory is for experiments & contributions made by other people on the latest tutorial's code (see PR [#29](https://github.com/obiwac/python-minecraft-clone/pull/29)).
