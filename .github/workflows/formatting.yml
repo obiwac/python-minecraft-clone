@@ -7,23 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: chartboost/ruff-action@v1
         with:
-          python-version: "3.11"
-      - name: Create and activate venv
-        run: |
-          python -m venv .venv
-          source .venv/bin/activate
-      - name: Install dependencies
-        run: pip install ruff
-      - name: Cache venv
-        uses: actions/cache@v3
-        with:
-          path: ./.venv
-          key: venv-${{ runner.os }}
-      - name: Run formatter
-        run: |
-          ruff format --check .
-      - name: Run linter
-        run: |
-          ruff check .
+          args: 'format --check'
