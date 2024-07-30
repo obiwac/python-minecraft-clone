@@ -9,7 +9,10 @@ class Collider:
 	def __add__(self, pos):
 		x, y, z = pos
 
-		return Collider((self.x1 + x, self.y1 + y, self.z1 + z), (self.x2 + x, self.y2 + y, self.z2 + z))
+		return Collider(
+			(self.x1 + x, self.y1 + y, self.z1 + z),
+			(self.x2 + x, self.y2 + y, self.z2 + z),
+		)
 
 	def __and__(self, collider):
 		x = min(self.x2, collider.x2) - max(self.x1, collider.x1)

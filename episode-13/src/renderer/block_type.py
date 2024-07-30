@@ -6,7 +6,11 @@ import models.cube  # default model
 class BlockType:
 	# new optional model argument (cube model by default)
 	def __init__(
-		self, texture_manager, name="unknown", block_face_textures={"all": "cobblestone"}, model: Any = models.cube
+		self,
+		texture_manager,
+		name="unknown",
+		block_face_textures={"all": "cobblestone"},
+		model: Any = models.cube,
 	):
 		self.name = name
 		self.block_face_textures = block_face_textures
@@ -71,4 +75,7 @@ class BlockType:
 				set_block_face(5, texture_index)
 
 			else:
-				set_block_face(["right", "left", "top", "bottom", "front", "back"].index(face), texture_index)
+				set_block_face(
+					["right", "left", "top", "bottom", "front", "back"].index(face),
+					texture_index,
+				)

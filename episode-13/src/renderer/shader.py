@@ -2,8 +2,7 @@ import ctypes
 import pyglet.gl as gl
 
 
-class ShaderError(Exception):
-	...
+class ShaderError(Exception): ...
 
 
 def create_shader(target, source_path):
@@ -16,7 +15,8 @@ def create_shader(target, source_path):
 	source_buffer = ctypes.create_string_buffer(source)
 
 	buffer_pointer = ctypes.cast(
-		ctypes.pointer(ctypes.pointer(source_buffer)), ctypes.POINTER(ctypes.POINTER(ctypes.c_char))
+		ctypes.pointer(ctypes.pointer(source_buffer)),
+		ctypes.POINTER(ctypes.POINTER(ctypes.c_char)),
 	)
 
 	# compile shader

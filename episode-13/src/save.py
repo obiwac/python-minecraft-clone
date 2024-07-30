@@ -13,7 +13,12 @@ class Save:
 		x, _, z = chunk_position
 
 		chunk_path = "/".join(
-			(self.path, base36.dumps(x % 64), base36.dumps(z % 64), f"c.{base36.dumps(x)}.{base36.dumps(z)}.dat")
+			(
+				self.path,
+				base36.dumps(x % 64),
+				base36.dumps(z % 64),
+				f"c.{base36.dumps(x)}.{base36.dumps(z)}.dat",
+			)
 		)
 
 		return chunk_path

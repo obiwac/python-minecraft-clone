@@ -71,7 +71,11 @@ class Subchunk:
 					if block_number:
 						block_type = self.world.block_types[block_number]
 
-						x, y, z = (self.position[0] + local_x, self.position[1] + local_y, self.position[2] + local_z)
+						x, y, z = (
+							self.position[0] + local_x,
+							self.position[1] + local_y,
+							self.position[2] + local_z,
+						)
 
 						def can_render_face(position):
 							if not self.world.is_opaque_block(position):

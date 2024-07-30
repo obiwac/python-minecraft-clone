@@ -31,9 +31,7 @@ MAX_CPU_AHEAD_FRAMES = 3  # Number of frames the CPU can be ahead of the GPU unt
 # Recommended values are between 0 and 9
 
 # Legacy Smooth FPS
-SMOOTH_FPS = (
-	False  # Legacy way to force the flushing of command buffer and forces the CPU to wait for the GPU to finish rendering.
-)
+SMOOTH_FPS = False  # Legacy way to force the flushing of command buffer and forces the CPU to wait for the GPU to finish rendering.
 # Incompatible Max CPU Ahead Frames (it won't be effective)
 # Enable this to test whether its impact is better. Similar to Max CPU Ahead frames to 0
 

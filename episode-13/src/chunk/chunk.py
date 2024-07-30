@@ -3,7 +3,12 @@ import math
 
 import pyglet.gl as gl
 
-from src.chunk.subchunk import SUBCHUNK_HEIGHT, SUBCHUNK_LENGTH, SUBCHUNK_WIDTH, Subchunk
+from src.chunk.subchunk import (
+	SUBCHUNK_HEIGHT,
+	SUBCHUNK_LENGTH,
+	SUBCHUNK_WIDTH,
+	Subchunk,
+)
 
 CHUNK_WIDTH = 16
 CHUNK_HEIGHT = 128
