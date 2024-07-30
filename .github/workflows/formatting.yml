@@ -15,7 +15,7 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
       - name: Install dependencies
-        run: pip install tan ruff
+        run: pip install ruff
       - name: Cache venv
         uses: actions/cache@v3
         with:
@@ -23,7 +23,7 @@ jobs:
           key: venv-${{ runner.os }}
       - name: Run formatter
         run: |
-          tan --check . --use-tabs --line-length 120 --verbose
+          ruff format --check .
       - name: Run linter
         run: |
-          ruff check . --ignore E402 --ignore F405 --ignore F403
+          ruff check .
