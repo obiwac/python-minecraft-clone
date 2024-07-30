@@ -25,7 +25,6 @@ cython = "^3.0.10"
 pyright = "^1.1.373"
 
 [tool.poetry.group.dev.dependencies]
-tan = "^23.7.0"
 ruff = "^0.5.5"
 
 [tool.pyright]
