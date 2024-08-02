@@ -6,6 +6,5 @@ line-length = 120
 ignore = ["E402", "F405", "F403"]
 
 [format]
-quote-style = "double"
 indent-style = "tab"
 line-ending = "lf"
