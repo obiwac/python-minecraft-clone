@@ -13,7 +13,6 @@ authors = [
 	"anthony-63",
 ]
 readme = "README.md"
-build="setup.py"
 
 [tool.poetry.dependencies]
 python = "^3.11"
