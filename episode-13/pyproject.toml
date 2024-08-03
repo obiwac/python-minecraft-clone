@@ -13,19 +13,16 @@ authors = [
 	"anthony-63",
 ]
 readme = "README.md"
-build="setup.py"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 pyglet = "^2.0.16"
 nbtlib = "^2.0.4"
 base36 = "^0.1.1"
-pyglm = "^2.7.1"
-cython = "^3.0.10"
-pyright = "^1.1.373"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.5"
+pyright = "^1.1.374"
 
 [tool.pyright]
 exclude = [".venv"]
