@@ -23,7 +23,12 @@ __all__ = [
 	"snow",
 	"cactus",
 	"tinted_glass",
+	"pig",
+	"zombie",
+	"skeleton",
+	"creeper",
+	"cow",
+	"curry",
 ]
 
-from . import cube
 from . import *

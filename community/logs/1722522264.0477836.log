@@ -1,0 +1,7 @@
+[LOGS]
+[2024-08-01 19:54:25,028] [MainProcess/MainThread/INFO] (main.py/__init__) System Info: Python: CPython 3.12.4
+System: AMD64 Windows 10 10.0.19045
+CPU: Intel64 Family 6 Model 142 Stepping 9, GenuineIntel
+Display: Intel(R) HD Graphics 620
+(4, 6)
+[2024-08-01 19:54:25,035] [MainProcess/MainThread/INFO] (main.py/__init__) Creating Texture Array

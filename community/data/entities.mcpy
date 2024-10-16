@@ -1,0 +1,7 @@
+Player:   name "Player", width 0.6, height 1.8, model models.pig, texture pig
+Pig:      name "Pig", width 0.9, height 0.9, model models.pig, texture pig
+Zombie:   name "Zombie", width 0.6, height 1.95, model models.zombie, texture zombie
+Skeleton: name "Skeleton", width 0.6, height 1.99, model models.skeleton, texture skeleton
+Creeper:  name "Creeper", width 0.6, height 1.7, model models.creeper, texture creeper
+Cow:      name "Cow", width 0.9, height 1.3, model models.cow, texture cow
+Curry:    name "Curry", width 0.9, height 1.8, model models.curry, texture curry
